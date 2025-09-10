@@ -9,18 +9,26 @@ use axum::{
         State, WebSocketUpgrade,
         ws::{Message, Utf8Bytes, WebSocket},
     },
+    middleware::{self},
     response::{Html, IntoResponse},
     routing::get,
 };
 use chrono::Utc;
 use futures_util::{SinkExt, StreamExt};
+
 use tm_server_client::{
     ClientError, TrackmaniaServer,
     types::{ModeScriptCallbacks, XmlRpcMethods},
 };
 
-use tokio::sync::broadcast;
+use tokio::{signal, sync::broadcast};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+use monitoring::start_metrics_server;
+
+use crate::monitoring::track_metrics;
+
+pub mod monitoring;
 
 struct AppState {
     tx: broadcast::Sender<String>,
@@ -118,13 +126,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .route("/", get(index))
         .route("/subscribe/waypoint", get(websocket_handler))
         .route("/admin/{jaaa}", get(index))
+        .route_layer(middleware::from_fn(track_metrics))
         .with_state(app_state);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app).await.unwrap();
+
+    let app = axum::serve(listener, app).with_graceful_shutdown(shutdown_signal());
+
+    // When the prometheus exporter is turned on spawn it alongside the app.
+    if cfg!(feature = "monitoring") {
+        let (_main_server, _metrics_server) = tokio::join!(
+            async {
+                app.await.unwrap();
+            },
+            start_metrics_server()
+        );
+    } else {
+        app.await.unwrap();
+    }
 
     Ok(())
 }
@@ -246,4 +268,28 @@ fn check_username(state: &AppState, string: &mut String, name: &str) {
 // Include utf-8 file at **compile** time.
 async fn index() -> Html<&'static str> {
     Html(std::include_str!("../chat.html"))
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }
