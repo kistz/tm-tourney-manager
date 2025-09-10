@@ -1,0 +1,27 @@
+[package]
+name = "tm-tourney-manager"
+version = "0.1.0"
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+tm-server-client = { path = "../tm-server-client" }
+
+tokio = { version = "*", features = ["full"] }
+axum = { version = "*", features = ["ws"] }
+futures-util = { version = "0.3", default-features = false, features = [
+    "sink",
+    "std",
+] }
+
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "*"
+
+chrono = "*"

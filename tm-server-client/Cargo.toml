@@ -1,0 +1,24 @@
+[package]
+name = "tm-server-client"
+version = "0.0.0"
+description = "Call methods and receive events on and from a trackmania server."
+readme = "README.md"
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+edition.workspace = true
+publish = true
+
+[dependencies]
+tokio = { version = "*", features = ["full"] }
+bytes = "1"
+
+serde = { version = "1", features = ["derive"] }
+json = { package = "serde_json", version = "*" }
+dxr = { version = "0", features = [] }
+
+
+dashmap = "*"
+
+thiserror = "*"
