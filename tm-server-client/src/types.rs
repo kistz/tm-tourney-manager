@@ -1,3 +1,10 @@
+use std::{
+    cell::OnceCell,
+    sync::{Arc, LazyLock, Mutex, OnceLock},
+};
+
+use base64::{Engine, engine::general_purpose::STANDARD};
+
 use serde::{Deserialize, Serialize};
 
 use crate::{ClientError, TrackmaniaServer};
@@ -96,16 +103,16 @@ struct Team {
 }
 
 pub trait ModeScriptCallbacks {
-    fn on_way_point(&self, execute: impl Fn(WayPointEvent) + Send + Sync + 'static);
-    fn on_scores(&self, execute: impl Fn(ScoresEvent) + Send + Sync + 'static);
+    fn on_way_point(&self, execute: impl Fn(&WayPointEvent) + Send + Sync + 'static);
+    fn on_scores(&self, execute: impl Fn(&ScoresEvent) + Send + Sync + 'static);
 }
 
 impl ModeScriptCallbacks for TrackmaniaServer {
-    fn on_way_point(&self, execute: impl Fn(WayPointEvent) + Send + Sync + 'static) {
+    fn on_way_point(&self, execute: impl Fn(&WayPointEvent) + Send + Sync + 'static) {
         self.on("Trackmania.Event.WayPoint", execute);
     }
 
-    fn on_scores(&self, execute: impl Fn(ScoresEvent) + Send + Sync + 'static) {
+    fn on_scores(&self, execute: impl Fn(&ScoresEvent) + Send + Sync + 'static) {
         self.on("Trackmania.Scores", execute);
     }
 }
@@ -190,11 +197,21 @@ impl ModeScriptMethodsXmlRpc for TrackmaniaServer {
 pub trait XmlRpcMethods {
     async fn kick(&self, player: String, message: Option<String>) -> Result<bool, ClientError>;
 
-    async fn add_guest(&self, player: String) -> Result<bool, ClientError>;
+    async fn add_guest(&self, player: &str) -> Result<bool, ClientError>;
 
     async fn auto_save_replays(&self, enable: bool) -> Result<bool, ClientError>;
 
     async fn is_auto_save_replays_enabled(&self) -> Result<bool, ClientError>;
+
+    async fn save_current_replay(&self, path: &str) -> Result<bool, ClientError>;
+
+    async fn write_file(&self, path: &str, content: String) -> Result<bool, ClientError>;
+
+    async fn load_match_settings(&self, path: &str) -> Result<i32, ClientError>;
+
+    async fn chat_send_server_massage(&self, message: &str) -> Result<bool, ClientError>;
+
+    async fn restart_map(&self) -> Result<bool, ClientError>;
 }
 
 impl XmlRpcMethods for TrackmaniaServer {
@@ -202,8 +219,8 @@ impl XmlRpcMethods for TrackmaniaServer {
         todo!()
     }
 
-    async fn add_guest(&self, player: String) -> Result<bool, ClientError> {
-        todo!()
+    async fn add_guest(&self, login: &str) -> Result<bool, ClientError> {
+        self.call("AddGuest", login).await
     }
 
     async fn auto_save_replays(&self, enable: bool) -> Result<bool, ClientError> {
@@ -212,5 +229,25 @@ impl XmlRpcMethods for TrackmaniaServer {
 
     async fn is_auto_save_replays_enabled(&self) -> Result<bool, ClientError> {
         self.call("IsAutoSaveReplaysEnabled", ()).await
+    }
+
+    async fn save_current_replay(&self, path: &str) -> Result<bool, ClientError> {
+        self.call("IsAutoSaveReplaysEnabled", path).await
+    }
+
+    async fn write_file(&self, path: &str, content: String) -> Result<bool, ClientError> {
+        self.call("WriteFile", (path, content.into_bytes())).await
+    }
+
+    async fn load_match_settings(&self, path: &str) -> Result<i32, ClientError> {
+        self.call("LoadMatchSettings", path).await
+    }
+
+    async fn chat_send_server_massage(&self, message: &str) -> Result<bool, ClientError> {
+        self.call("ChatSendServerMessage", message).await
+    }
+
+    async fn restart_map(&self) -> Result<bool, ClientError> {
+        self.call("RestartMap", ()).await
     }
 }

@@ -1,6 +1,7 @@
 use std::borrow::Cow;
+use std::cell::LazyCell;
 use std::io::Cursor;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock, Mutex};
 
 use bytes::{Buf, BytesMut};
 use dashmap::DashMap;
@@ -14,6 +15,8 @@ use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter};
 use tokio::net::TcpStream;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::{broadcast, mpsc, oneshot};
+
+use crate::types::WayPointEvent;
 
 #[derive(Debug)]
 struct GbxPacket {
@@ -189,7 +192,7 @@ impl TrackmaniaServer {
                         _ = response.send(body_to_response(&packet.body).unwrap());
                     } else {
                         let callback = dxr::deserialize_xml::<MethodCall>(&packet.body).unwrap();
-                        println!("Callback: {callback:?}");
+                        println!("Callback: {callback:#?}");
                         if callback.name() == "ManiaPlanet.ModeScriptCallbackArray" {
                             let params = callback.params();
                             let callback_method_name = String::try_from_value(&params[0]).unwrap();
@@ -229,14 +232,15 @@ impl TrackmaniaServer {
     pub fn on<'a, T: DeserializeOwned>(
         &self,
         event: impl Into<&'a str>,
-        execute: impl Fn(T) + Send + Sync + 'static,
+        execute: impl Fn(&T) + Send + Sync + 'static,
     ) {
         let mut receiver = self.registered_callbacks.get(event.into());
 
         tokio::spawn(async move {
             while let Ok(received) = receiver.recv().await {
+                // This is pretty bad but whatever.
                 let de = { json::from_str::<T>(&received).unwrap() };
-                execute(de);
+                execute(&de);
             }
         });
     }

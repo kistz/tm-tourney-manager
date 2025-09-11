@@ -18,6 +18,7 @@ use futures_util::{SinkExt, StreamExt};
 
 use tm_server_client::{
     ClientError, TrackmaniaServer,
+    configurator::ServerConfiguration,
     types::{ModeScriptCallbacks, XmlRpcMethods},
 };
 
@@ -40,12 +41,19 @@ struct ServerPool {
     servers: Vec<TrackmaniaServer>,
 }
 
+// A Tournement can have multiple Events (usually on different days)
+struct Tournament {
+    events: Vec<Event>,
+}
+
+// Each Event can consist of multiple Stages
 struct Event {
     stages: Vec<Stage>,
     next_stage: usize,
     servers: ServerPool,
 }
 
+// Each Stage can consist of multiple parallel Matches
 struct Stage {
     starting: Utc,
     status: String,
@@ -53,12 +61,9 @@ struct Stage {
     matches: Vec<Match>,
 }
 
+// Each match can consist of multiple sequential Games.
 struct Match {
     server_handle: String,
-}
-
-struct Tournament {
-    events: Vec<Event>,
 }
 
 #[tokio::main]
@@ -83,6 +88,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .await;
 
     let _: Result<bool, ClientError> = server.call("EnableCallbacks", true).await;
+    let methods: Result<Vec<String>, ClientError> = server.call("system.listMethods", ()).await;
+    println!("{methods:#?}");
+
+    _ = server.add_guest("NGcBSsHMSq6Z_mvrXsojKg").await;
 
     let _: Result<bool, ClientError> = server
         .call(
@@ -111,6 +120,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _: Result<bool, ClientError> = server
         .call("ChatSendServerMessage", "Hey from Rust owo")
         .await;
+
+    server.configure_rounds().await;
 
     server.on_way_point(|info| println!("{info:?}"));
 
@@ -212,8 +223,21 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>) {
 
     let scores_channel = state.tx.clone();
 
+    let jaa = state.clone();
+
     state.trackmania_server.on_scores(move |scores| {
         _ = scores_channel.send(serde_json::to_string(&scores).unwrap());
+        /* tokio::spawn(async {
+            let mhm = jaa
+                .trackmania_server
+                .save_current_replay("joes_replay")
+                .await;
+
+            println!("{:?}", mhm);
+        }); */
+    });
+    state.trackmania_server.on_scores(move |scores| {
+        println!("{scores:#?}");
     });
 
     // Spawn the first task that will receive broadcast messages and send text

@@ -18,6 +18,7 @@ serde = { version = "1", features = ["derive"] }
 json = { package = "serde_json", version = "*" }
 dxr = { version = "0", features = [] }
 
+base64 = "*"
 
 dashmap = "*"
 

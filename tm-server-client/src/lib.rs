@@ -1,3 +1,4 @@
+pub mod configurator;
 mod core;
 pub mod types;
 

@@ -1204,6 +1204,7 @@ dependencies = [
 name = "tm-server-client"
 version = "0.0.0"
 dependencies = [
+ "base64",
  "bytes",
  "dashmap",
  "dxr",
