@@ -23,7 +23,7 @@ pub mod server_type;
 pub mod set_name_reducer;
 pub mod user_table;
 pub mod user_type;
-pub mod way_point_event_type;
+pub mod way_point_type;
 
 pub use client_connected_reducer::{
     client_connected, set_flags_for_client_connected, ClientConnectedCallbackId,
@@ -48,7 +48,7 @@ pub use server_type::Server;
 pub use set_name_reducer::{set_flags_for_set_name, set_name, SetNameCallbackId};
 pub use user_table::*;
 pub use user_type::User;
-pub use way_point_event_type::WayPointEvent;
+pub use way_point_type::WayPoint;
 
 #[derive(Clone, PartialEq, Debug)]
 
@@ -60,7 +60,7 @@ pub use way_point_event_type::WayPointEvent;
 pub enum Reducer {
     ClientConnected,
     IdentityDisconnected,
-    PostEvent { event: WayPointEvent },
+    PostEvent { event: WayPoint },
     SendMessage { text: String },
     SendMessageSched { arg: SendMessageSchedule },
     SetName { name: String },

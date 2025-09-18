@@ -1,121 +1,20 @@
-use std::{
-    cell::OnceCell,
-    sync::{Arc, LazyLock, Mutex, OnceLock},
-};
-
-use base64::{Engine, engine::general_purpose::STANDARD};
-
-use serde::{Deserialize, Serialize};
-//use tm_server_types::WayPointEvent;
+use tm_server_types::event::{Scores, WayPoint};
 
 use crate::{ClientError, TrackmaniaServer};
 
 pub use tm_server_types::*;
 
-/* #[derive(Debug, Serialize, Deserialize)]
-pub struct WayPointEvent {
-    #[serde(rename = "accountid")]
-    account_id: String,
-    login: String,
-    time: u32,
-    racetime: u32,
-    laptime: u32,
-    speed: f32,
-
-    #[serde(rename = "checkpointinrace")]
-    checkpoint_in_race: u32,
-    #[serde(rename = "checkpointinlap")]
-    checkpoint_in_lap: u32,
-    #[serde(rename = "isendrace")]
-    is_end_race: bool,
-    #[serde(rename = "isendlap")]
-    is_end_lap: bool,
-    #[serde(rename = "isinfinitelaps")]
-    is_infinite_laps: bool,
-    #[serde(rename = "isindependentlaps")]
-    is_independent_laps: bool,
-    #[serde(rename = "curracecheckpoints")]
-    current_race_checkpoints: Vec<u32>,
-    #[serde(rename = "curlapcheckpoints")]
-    current_lap_checkpoints: Vec<u32>,
-    #[serde(rename = "blockid")]
-    block_id: String,
-} */
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ScoresEvent {
-    #[serde(rename = "responseid")]
-    response_id: String,
-    section: String,
-    #[serde(rename = "useteams")]
-    use_teams: bool,
-
-    #[serde(rename = "winnerteam")]
-    winner_team: i32,
-    #[serde(rename = "winnerplayer")]
-    winner_player: String,
-
-    teams: Vec<Team>,
-    players: Vec<Player>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Player {
-    login: String,
-    #[serde(rename = "accountid")]
-    account_id: String,
-
-    name: String,
-
-    team: i32,
-
-    rank: u32,
-
-    #[serde(rename = "roundpoints")]
-    round_points: u32,
-    #[serde(rename = "mappoints")]
-    map_points: u32,
-    #[serde(rename = "matchpoints")]
-    match_points: u32,
-
-    #[serde(rename = "bestracetime")]
-    best_racetime: u32,
-
-    #[serde(rename = "bestracecheckpoints")]
-    best_race_checkpoints: Vec<u32>,
-    #[serde(rename = "bestlaptime")]
-    best_laptime: u32,
-    #[serde(rename = "bestlapcheckpoints")]
-    best_lap_checkpoints: Vec<u32>,
-    #[serde(rename = "prevracetime")]
-    previous_racetime: u32,
-    #[serde(rename = "prevracecheckpoints")]
-    previous_race_checkpoints: Vec<u32>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Team {
-    id: u32,
-    name: String,
-    #[serde(rename = "roundpoints")]
-    round_points: u32,
-    #[serde(rename = "mappoints")]
-    map_points: u32,
-    #[serde(rename = "matchpoints")]
-    match_points: u32,
-}
-
 pub trait ModeScriptCallbacks {
-    fn on_way_point(&self, execute: impl Fn(&WayPointEvent) + Send + Sync + 'static);
-    fn on_scores(&self, execute: impl Fn(&ScoresEvent) + Send + Sync + 'static);
+    fn on_way_point(&self, execute: impl Fn(&WayPoint) + Send + Sync + 'static);
+    fn on_scores(&self, execute: impl Fn(&Scores) + Send + Sync + 'static);
 }
 
 impl ModeScriptCallbacks for TrackmaniaServer {
-    fn on_way_point(&self, execute: impl Fn(&WayPointEvent) + Send + Sync + 'static) {
+    fn on_way_point(&self, execute: impl Fn(&WayPoint) + Send + Sync + 'static) {
         self.on("Trackmania.Event.WayPoint", execute);
     }
 
-    fn on_scores(&self, execute: impl Fn(&ScoresEvent) + Send + Sync + 'static) {
+    fn on_scores(&self, execute: impl Fn(&Scores) + Send + Sync + 'static) {
         self.on("Trackmania.Scores", execute);
     }
 }

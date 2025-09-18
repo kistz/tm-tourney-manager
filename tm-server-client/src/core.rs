@@ -1,7 +1,7 @@
 use std::borrow::Cow;
-use std::cell::LazyCell;
 use std::io::Cursor;
-use std::sync::{Arc, LazyLock, Mutex};
+use std::ops::Deref;
+use std::sync::Arc;
 
 use bytes::{Buf, BytesMut};
 use dashmap::DashMap;
@@ -9,8 +9,8 @@ use dxr::{
     DxrError, Fault, FaultResponse, MethodCall, MethodResponse, TryFromValue, TryToParams, Value,
 };
 
-use serde::de::DeserializeOwned;
 use thiserror::Error;
+use tm_server_types::event::Event;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter};
 use tokio::net::TcpStream;
 use tokio::sync::mpsc::Sender;
@@ -65,8 +65,8 @@ struct RegisiteredCallbacks(
         DashMap<
             String,
             (
-                broadcast::Receiver<Arc<String>>,
-                broadcast::Sender<Arc<String>>,
+                broadcast::Receiver<Arc<Event>>,
+                broadcast::Sender<Arc<Event>>,
             ),
         >,
     >,
@@ -78,11 +78,11 @@ impl RegisiteredCallbacks {
         RegisiteredCallbacks(Arc::new(DashMap::new()))
     }
 
-    fn get(&self, key: &str) -> broadcast::Receiver<Arc<String>> {
+    fn get(&self, key: &str) -> broadcast::Receiver<Arc<Event>> {
         if let Some(entry) = self.0.get(key) {
             entry.1.subscribe()
         } else {
-            let new_channel = broadcast::channel::<Arc<String>>(8);
+            let new_channel = broadcast::channel::<Arc<Event>>(8);
             let ret = new_channel.0.subscribe();
 
             self.0
@@ -92,9 +92,9 @@ impl RegisiteredCallbacks {
         }
     }
 
-    fn send(&self, key: &str, message: String) {
+    fn send(&self, key: &str, event: Event) {
         if let Some(entry) = self.0.get(key) {
-            _ = entry.1.send(Arc::new(message));
+            _ = entry.1.send(Arc::new(event));
         }
     }
 }
@@ -190,16 +190,29 @@ impl TrackmaniaServer {
                         _ = response.send(body_to_response(&packet.body).unwrap());
                     } else {
                         let callback = dxr::deserialize_xml::<MethodCall>(&packet.body).unwrap();
-                        println!("Callback: {callback:#?}");
+                        // println!("Callback: {callback:#?}");
                         if callback.name() == "ManiaPlanet.ModeScriptCallbackArray" {
                             let params = callback.params();
-                            let callback_method_name = String::try_from_value(&params[0]).unwrap();
+                            let modescript_callback_name =
+                                String::try_from_value(&params[0]).unwrap();
+
                             let value = Vec::<Value>::try_from_value(&params[1]).unwrap();
-                            let json_response = String::try_from_value(&value[0]).unwrap();
+                            let modescript_callback_body =
+                                String::try_from_value(&value[0]).unwrap();
 
-                            println!("Name: {callback_method_name}, JSON: {json_response:?}");
+                            println!(
+                                "Name: {modescript_callback_name}, JSON: {modescript_callback_body:?}"
+                            );
 
-                            registered_callbacks.send(&callback_method_name, json_response)
+                            let event = match modescript_callback_name.as_str() {
+                                "Trackmania.Event.WayPoint" => Event::WayPoint(
+                                    json::from_str(&modescript_callback_body).unwrap(),
+                                ),
+                                //TODO include event name
+                                _ => Event::Custom(modescript_callback_body),
+                            };
+
+                            registered_callbacks.send(&modescript_callback_name, event)
                         }
                     }
                 }
@@ -210,8 +223,8 @@ impl TrackmaniaServer {
                     // there is, this means that the peer closed the socket while
                     // sending a frame.
                     if buffer.is_empty() {
-                        println!("Empty Buffy");
-                        continue;
+                        println!("The Trackmania server ended the connection.");
+                        break;
                     } else {
                         panic!("connection reset by peer");
                     }
@@ -222,23 +235,24 @@ impl TrackmaniaServer {
     }
 
     // Returns a handle that reveives every message of the selected
-    pub fn subscribe<'a>(&self, event: impl Into<&'a str>) -> broadcast::Receiver<Arc<String>> {
+    pub fn subscribe<'a>(&'a self, event: impl Into<&'a str>) -> broadcast::Receiver<Arc<Event>> {
         self.registered_callbacks.get(event.into())
     }
 
     // Executes the specified function whenever event is triggered.
-    pub fn on<'a, T: DeserializeOwned>(
-        &self,
-        event: impl Into<&'a str>,
-        execute: impl Fn(&T) + Send + Sync + 'static,
-    ) {
+    pub fn on<'b, T, F>(&self, event: impl Into<&'b str>, execute: F)
+    where
+        for<'a> &'a T: From<&'a Event>,
+        F: Fn(&T),
+        F: Send + Sync + 'static,
+    {
         let mut receiver = self.registered_callbacks.get(event.into());
 
         tokio::spawn(async move {
             while let Ok(received) = receiver.recv().await {
-                // This is pretty bad but whatever.
-                let de = { json::from_str::<T>(&received).unwrap() };
-                execute(&de);
+                {
+                    execute(Into::<&T>::into(received.deref()));
+                };
             }
         });
     }

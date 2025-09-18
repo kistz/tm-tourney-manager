@@ -99,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     server.on_way_point(move |event| {
         println!("WHAT THE FUCK");
         if let Ok(event) = db.reducers.post_event(unsafe {
-            std::mem::transmute::<types::WayPointEvent, WayPointEvent>(event.clone())
+            std::mem::transmute::<types::event::WayPoint, WayPoint>(event.clone())
         }) {
             println!("event successfully posted")
         } else {

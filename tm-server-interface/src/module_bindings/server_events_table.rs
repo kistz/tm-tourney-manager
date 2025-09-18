@@ -5,7 +5,7 @@
 
 #![allow(unused, clippy::all)]
 use super::server_events_type::ServerEvents;
-use super::way_point_event_type::WayPointEvent;
+use super::way_point_type::WayPoint;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 /// Table handle for the table `server_events`.
