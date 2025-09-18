@@ -8,18 +8,12 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct Respawn {
-    pub account_id: String,
-    pub login: String,
-    pub time: u32,
-    pub number_respawns: u32,
-    pub racetime: i32,
-    pub laptime: i32,
-    pub checkpoint_in_race: i32,
-    pub checkpoint_in_lap: i32,
-    pub speed: f32,
+pub enum RoundTime {
+    None,
+
+    Time(u32),
 }
 
-impl __sdk::InModule for Respawn {
+impl __sdk::InModule for RoundTime {
     type Module = super::RemoteModule;
 }

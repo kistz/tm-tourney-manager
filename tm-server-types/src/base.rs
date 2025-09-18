@@ -6,3 +6,6 @@ pub use team::Team;
 
 mod map;
 pub use map::Map;
+
+mod time;
+pub use time::*;

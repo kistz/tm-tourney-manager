@@ -6,6 +6,8 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::round_time_type::RoundTime;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct Player {
@@ -17,11 +19,11 @@ pub struct Player {
     pub round_points: u32,
     pub map_points: u32,
     pub match_points: u32,
-    pub best_racetime: u32,
+    pub best_racetime: RoundTime,
     pub best_race_checkpoints: Vec<u32>,
-    pub best_laptime: u32,
+    pub best_laptime: RoundTime,
     pub best_lap_checkpoints: Vec<u32>,
-    pub previous_racetime: u32,
+    pub previous_racetime: RoundTime,
     pub previous_race_checkpoints: Vec<u32>,
 }
 

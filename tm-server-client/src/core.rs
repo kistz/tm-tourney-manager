@@ -133,7 +133,7 @@ impl TrackmaniaServer {
         println!("Connected to: {call}");
 
         let (sender, rx) = mpsc::channel::<GbxMethodCall>(32);
-        let (global_callback_sender, global_callback) = broadcast::channel(2);
+        let (global_callback_sender, global_callback) = broadcast::channel(100);
 
         let client = Self {
             global_callback,
@@ -246,7 +246,9 @@ impl TrackmaniaServer {
 
                             // Send the parsed event to all subscribed event handlers.
                             let event = Arc::new(event);
-                            _ = global_callback_sender.send(event.clone());
+                            if let Err(error) = global_callback_sender.send(event.clone()) {
+                                println!("Global Events Listener failed: {:?}", error);
+                            }
                             registered_callbacks.send(&modescript_callback_name, event);
                         } else {
                             println!("Old callback: {:?}", callback);

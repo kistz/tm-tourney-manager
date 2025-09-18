@@ -94,6 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     server.configure().await;
 
     server.event(move |event| {
+        println!("publishing");
         if db
             .reducers
             .post_event(

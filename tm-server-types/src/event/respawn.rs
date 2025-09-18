@@ -15,10 +15,10 @@ pub struct Respawn {
     laptime: i32,
 
     #[cfg_attr(feature = "serde", serde(rename = "checkpointinrace"))]
-    checkpoint_in_race: u32,
+    checkpoint_in_race: i32,
 
     #[cfg_attr(feature = "serde", serde(rename = "checkpointinlap"))]
-    checkpoint_in_lap: u32,
+    checkpoint_in_lap: i32,
 
     speed: f32,
 }

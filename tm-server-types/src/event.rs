@@ -73,7 +73,6 @@ pub enum Event {
 
 impl Event {
     pub fn new(name: String, body: String) -> Self {
-        //TODO include event names
         match name.as_str() {
             "Trackmania.Event.WayPoint" => Event::WayPoint(json::from_str(&body).unwrap()),
             "Trackmania.Event.Respawn" => Event::Respawn(json::from_str(&body).unwrap()),

@@ -26,6 +26,7 @@ pub mod player_type;
 pub mod podium_type;
 pub mod post_event_reducer;
 pub mod respawn_type;
+pub mod round_time_type;
 pub mod scores_type;
 pub mod send_message_reducer;
 pub mod send_message_sched_reducer;
@@ -71,6 +72,7 @@ pub use player_type::Player;
 pub use podium_type::Podium;
 pub use post_event_reducer::{post_event, set_flags_for_post_event, PostEventCallbackId};
 pub use respawn_type::Respawn;
+pub use round_time_type::RoundTime;
 pub use scores_type::Scores;
 pub use send_message_reducer::{send_message, set_flags_for_send_message, SendMessageCallbackId};
 pub use send_message_sched_reducer::{
