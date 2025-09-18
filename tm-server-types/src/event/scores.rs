@@ -8,15 +8,15 @@ use crate::{
 #[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
 pub struct Scores {
-    #[serde(rename = "responseid")]
+    #[cfg_attr(feature = "serde", serde(rename = "responseid"))]
     response_id: String,
     section: String,
-    #[serde(rename = "useteams")]
+    #[cfg_attr(feature = "serde", serde(rename = "useteams"))]
     use_teams: bool,
 
-    #[serde(rename = "winnerteam")]
+    #[cfg_attr(feature = "serde", serde(rename = "winnerteam"))]
     winner_team: i32,
-    #[serde(rename = "winnerplayer")]
+    #[cfg_attr(feature = "serde", serde(rename = "winnerplayer"))]
     winner_player: String,
 
     teams: Vec<Team>,

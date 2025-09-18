@@ -9,16 +9,18 @@ mod rounds;
 
 #[allow(async_fn_in_trait)]
 pub trait ServerConfiguration {
-    async fn configure(&self /* options: ExtraConfigOptions */, mode: &impl GameModeSettings);
+    async fn configure(
+        &self, /* options: ExtraConfigOptions *//* , mode: &impl GameModeSettings */
+    );
 }
 
 pub trait GameModeSettings: Serialize {}
 
 impl ServerConfiguration for TrackmaniaServer {
-    async fn configure(&self, mode: &impl GameModeSettings) {
-        let xml_string = quick_xml::se::to_string(mode);
+    async fn configure(&self /* , mode: &impl GameModeSettings */) {
+        //let xml_string = quick_xml::se::to_string(mode);
 
-        println!("Serialized Config: {:?}", xml_string);
+        //println!("Serialized Config: {:?}", xml_string);
 
         let content = r#"<?xml version="1.0" encoding="utf-8" ?>
 <playlist>

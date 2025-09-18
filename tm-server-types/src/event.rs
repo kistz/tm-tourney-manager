@@ -24,10 +24,10 @@ pub use scores::Scores;
 #[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
 pub enum Event {
-    WayPoint(Box<WayPoint>),
-    Respawn(Box<Respawn>),
-    StartLine(Box<StartLine>),
-    Scores(Box<Scores>),
+    WayPoint(WayPoint),
+    Respawn(Respawn),
+    StartLine(StartLine),
+    Scores(Scores),
 
     Custom(String),
 }

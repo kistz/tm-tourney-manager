@@ -2,7 +2,7 @@ use spacetimedb::{
     Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp, reducer,
     table,
 };
-use tm_server_types::event::WayPoint;
+use tm_server_types::event::{Event, WayPoint};
 
 #[table(name = user, public)]
 pub struct User {
@@ -41,11 +41,11 @@ pub struct ServerStatus {}
 pub struct ServerEvents {
     event: String,
     content: String,
-    typed: WayPoint,
+    typed: Event,
 }
 
 #[reducer]
-pub fn post_event(ctx: &ReducerContext, event: WayPoint) {
+pub fn post_event(ctx: &ReducerContext, event: Event) {
     log::info!("{event:?}");
     ctx.db.server_events().insert(ServerEvents {
         event: "jaaa".to_string(),

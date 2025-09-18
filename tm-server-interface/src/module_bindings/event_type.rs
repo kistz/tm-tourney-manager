@@ -6,16 +6,25 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::event_type::Event;
+use super::respawn_type::Respawn;
+use super::scores_type::Scores;
+use super::start_line_type::StartLine;
+use super::way_point_type::WayPoint;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct ServerEvents {
-    pub event: String,
-    pub content: String,
-    pub typed: Event,
+pub enum Event {
+    WayPoint(WayPoint),
+
+    Respawn(Respawn),
+
+    StartLine(StartLine),
+
+    Scores(Scores),
+
+    Custom(String),
 }
 
-impl __sdk::InModule for ServerEvents {
+impl __sdk::InModule for Event {
     type Module = super::RemoteModule;
 }

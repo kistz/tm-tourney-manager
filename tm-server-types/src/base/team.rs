@@ -5,10 +5,10 @@
 pub struct Team {
     id: u32,
     name: String,
-    #[serde(rename = "roundpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "roundpoints"))]
     round_points: u32,
-    #[serde(rename = "mappoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "mappoints"))]
     map_points: u32,
-    #[serde(rename = "matchpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "matchpoints"))]
     match_points: u32,
 }

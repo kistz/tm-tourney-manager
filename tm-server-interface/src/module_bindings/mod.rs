@@ -7,10 +7,14 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 pub mod client_connected_reducer;
+pub mod event_type;
 pub mod identity_disconnected_reducer;
 pub mod message_table;
 pub mod message_type;
+pub mod player_type;
 pub mod post_event_reducer;
+pub mod respawn_type;
+pub mod scores_type;
 pub mod send_message_reducer;
 pub mod send_message_sched_reducer;
 pub mod send_message_schedule_table;
@@ -21,6 +25,8 @@ pub mod server_status_type;
 pub mod server_table;
 pub mod server_type;
 pub mod set_name_reducer;
+pub mod start_line_type;
+pub mod team_type;
 pub mod user_table;
 pub mod user_type;
 pub mod way_point_type;
@@ -28,12 +34,16 @@ pub mod way_point_type;
 pub use client_connected_reducer::{
     client_connected, set_flags_for_client_connected, ClientConnectedCallbackId,
 };
+pub use event_type::Event;
 pub use identity_disconnected_reducer::{
     identity_disconnected, set_flags_for_identity_disconnected, IdentityDisconnectedCallbackId,
 };
 pub use message_table::*;
 pub use message_type::Message;
+pub use player_type::Player;
 pub use post_event_reducer::{post_event, set_flags_for_post_event, PostEventCallbackId};
+pub use respawn_type::Respawn;
+pub use scores_type::Scores;
 pub use send_message_reducer::{send_message, set_flags_for_send_message, SendMessageCallbackId};
 pub use send_message_sched_reducer::{
     send_message_sched, set_flags_for_send_message_sched, SendMessageSchedCallbackId,
@@ -46,6 +56,8 @@ pub use server_status_type::ServerStatus;
 pub use server_table::*;
 pub use server_type::Server;
 pub use set_name_reducer::{set_flags_for_set_name, set_name, SetNameCallbackId};
+pub use start_line_type::StartLine;
+pub use team_type::Team;
 pub use user_table::*;
 pub use user_type::User;
 pub use way_point_type::WayPoint;
@@ -60,7 +72,7 @@ pub use way_point_type::WayPoint;
 pub enum Reducer {
     ClientConnected,
     IdentityDisconnected,
-    PostEvent { event: WayPoint },
+    PostEvent { event: Event },
     SendMessage { text: String },
     SendMessageSched { arg: SendMessageSchedule },
     SetName { name: String },

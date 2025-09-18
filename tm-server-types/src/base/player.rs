@@ -4,7 +4,7 @@
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
 pub struct Player {
     login: String,
-    #[serde(rename = "accountid")]
+    #[cfg_attr(feature = "serde", serde(rename = "accountid"))]
     account_id: String,
 
     name: String,
@@ -13,24 +13,24 @@ pub struct Player {
 
     rank: u32,
 
-    #[serde(rename = "roundpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "roundpoints"))]
     round_points: u32,
-    #[serde(rename = "mappoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "mappoints"))]
     map_points: u32,
-    #[serde(rename = "matchpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "matchpoints"))]
     match_points: u32,
 
-    #[serde(rename = "bestracetime")]
+    #[cfg_attr(feature = "serde", serde(rename = "bestracetime"))]
     best_racetime: u32,
 
-    #[serde(rename = "bestracecheckpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "bestracecheckpoints"))]
     best_race_checkpoints: Vec<u32>,
-    #[serde(rename = "bestlaptime")]
+    #[cfg_attr(feature = "serde", serde(rename = "bestlaptime"))]
     best_laptime: u32,
-    #[serde(rename = "bestlapcheckpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "bestlapcheckpoints"))]
     best_lap_checkpoints: Vec<u32>,
-    #[serde(rename = "prevracetime")]
+    #[cfg_attr(feature = "serde", serde(rename = "prevracetime"))]
     previous_racetime: u32,
-    #[serde(rename = "prevracecheckpoints")]
+    #[cfg_attr(feature = "serde", serde(rename = "prevracecheckpoints"))]
     previous_race_checkpoints: Vec<u32>,
 }

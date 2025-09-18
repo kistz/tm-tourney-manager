@@ -92,9 +92,9 @@ impl RegisiteredCallbacks {
         }
     }
 
-    fn send(&self, key: &str, event: Event) {
+    fn send(&self, key: &str, event: Arc<Event>) {
         if let Some(entry) = self.0.get(key) {
-            _ = entry.1.send(Arc::new(event));
+            _ = entry.1.send(event);
         }
     }
 }
@@ -102,6 +102,7 @@ impl RegisiteredCallbacks {
 pub struct TrackmaniaServer {
     sender: Sender<GbxMethodCall>,
     response_mapping: Arc<DashMap<u32, oneshot::Sender<MethodResponse>>>,
+    global_callback: broadcast::Receiver<Arc<Event>>,
     registered_callbacks: RegisiteredCallbacks,
 }
 
@@ -116,22 +117,19 @@ impl TrackmaniaServer {
         let _ = reader.read(&mut buf).await;
 
         let size = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
-        //let handler = u32::from_le_bytes([msg[4], msg[5], msg[6], msg[7]]);
         let call = String::from_utf8(buf[4..((size + 4) as usize)].to_vec()).unwrap();
 
         println!("Connected to: {call}");
 
         let (sender, mut rx) = mpsc::channel::<GbxMethodCall>(32);
+        let (global_callback_sender, global_callback) = broadcast::channel(2);
 
         let client = Self {
-            //reader,
-            // writer,
+            global_callback,
             sender,
             response_mapping: Arc::new(DashMap::new()),
 
             registered_callbacks: RegisiteredCallbacks::new(),
-            //handler: 0x80000000,
-            //buffer: BytesMut::with_capacity(1024),
         };
 
         let writer_response = client.response_mapping.clone();
@@ -165,6 +163,7 @@ impl TrackmaniaServer {
         let _read_manager = tokio::spawn(async move {
             let reader_response = reader_response;
             let registered_callbacks = registered_callbacks;
+            let global_callback_sender = global_callback_sender;
 
             let mut buffer: BytesMut = BytesMut::with_capacity(1024);
 
@@ -212,7 +211,9 @@ impl TrackmaniaServer {
                                 _ => Event::Custom(modescript_callback_body),
                             };
 
-                            registered_callbacks.send(&modescript_callback_name, event)
+                            let event = Arc::new(event);
+                            global_callback_sender.send(event.clone());
+                            registered_callbacks.send(&modescript_callback_name, event);
                         }
                     }
                 }
@@ -252,6 +253,18 @@ impl TrackmaniaServer {
             while let Ok(received) = receiver.recv().await {
                 {
                     execute(Into::<&T>::into(received.deref()));
+                };
+            }
+        });
+    }
+
+    pub fn event(&self, handle: impl Fn(&Event) + Send + Sync + 'static) {
+        let mut receiver = self.global_callback.resubscribe();
+
+        tokio::spawn(async move {
+            while let Ok(received) = receiver.recv().await {
+                {
+                    handle(&received);
                 };
             }
         });

@@ -4,8 +4,8 @@
 // This was generated using spacetimedb cli version 1.3.2 (commit 4b41cf3d71aa85cd4e75c96cbb54324481ee0b27).
 
 #![allow(unused, clippy::all)]
+use super::event_type::Event;
 use super::server_events_type::ServerEvents;
-use super::way_point_type::WayPoint;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 /// Table handle for the table `server_events`.

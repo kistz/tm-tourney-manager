@@ -1,12 +1,13 @@
 use spacetimedb_sdk::{
-    DbContext, Error, Event, Identity, Status, Table, TableWithPrimaryKey, credentials,
+    DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
 };
 
 mod module_bindings;
 use module_bindings::*;
 use tm_server_client::{
     ClientError, TrackmaniaServer,
-    types::{self, ModeScriptCallbacks},
+    configurator::ServerConfiguration,
+    types::{self, ModeScriptCallbacks, event::Event},
 };
 use tokio::signal;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -94,16 +95,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Spawn a thread, where the connection will process messages and invoke callbacks.
     db.run_threaded();
 
-    println!("hmmge");
+    server.configure().await;
 
-    server.on_way_point(move |event| {
-        println!("WHAT THE FUCK");
-        if let Ok(event) = db.reducers.post_event(unsafe {
-            std::mem::transmute::<types::event::WayPoint, WayPoint>(event.clone())
-        }) {
-            println!("event successfully posted")
-        } else {
-            println!("event publishing failed")
+    server.event(move |event| {
+        if db
+            .reducers
+            .post_event(
+                //SAFETY: Its the same type. Sadly Rust does not know that :< .
+                unsafe {
+                    std::mem::transmute::<types::event::Event, module_bindings::Event>(
+                        event.clone(),
+                    )
+                },
+            )
+            .is_err()
+        {
+            println!("Event failed to publish!")
         }
     });
 
@@ -194,7 +201,7 @@ fn on_user_updated(_ctx: &EventContext, old: &User, new: &User) {
 /// Our `Message::on_insert` callback: print new messages.
 fn on_message_inserted(ctx: &EventContext, message: &Message) {
     println!("{:?}", ctx.event);
-    if let Event::Reducer(_) = ctx.event {
+    if let StdbEvent::Reducer(_) = ctx.event {
         print_message(ctx, message)
     }
 }
