@@ -99,7 +99,7 @@ impl RegisiteredCallbacks {
     }
 }
 
-/// Struct to interact with a server through xml-rpc.
+/// Interact with a server through xml-rpc.
 /// Implemented with separate read and write threads.
 /// Events will also execute as separate tokio tasks.
 /// Interaction should be fully typed and can be achieved by importing trait from the types module.
@@ -248,6 +248,8 @@ impl TrackmaniaServer {
                             let event = Arc::new(event);
                             _ = global_callback_sender.send(event.clone());
                             registered_callbacks.send(&modescript_callback_name, event);
+                        } else {
+                            println!("Old callback: {:?}", callback);
                         }
                     }
                 }

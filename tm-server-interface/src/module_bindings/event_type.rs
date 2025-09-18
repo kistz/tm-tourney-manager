@@ -6,9 +6,24 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::custom_type::Custom;
+use super::end_map_end_type::EndMapEnd;
+use super::end_map_start_type::EndMapStart;
+use super::end_round_end_type::EndRoundEnd;
+use super::end_round_start_type::EndRoundStart;
+use super::give_up_type::GiveUp;
+use super::loading_map_end_type::LoadingMapEnd;
+use super::loading_map_start_type::LoadingMapStart;
+use super::play_loop_end_type::PlayLoopEnd;
+use super::play_loop_start_type::PlayLoopStart;
+use super::podium_type::Podium;
 use super::respawn_type::Respawn;
 use super::scores_type::Scores;
 use super::start_line_type::StartLine;
+use super::start_map_type::StartMap;
+use super::start_turn_type::StartTurn;
+use super::unloading_map_end_type::UnloadingMapEnd;
+use super::unloading_map_start_type::UnloadingMapStart;
 use super::way_point_type::WayPoint;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
@@ -22,7 +37,41 @@ pub enum Event {
 
     Scores(Scores),
 
-    Custom(String),
+    GiveUp(GiveUp),
+
+    LoadingMapStart(LoadingMapStart),
+
+    LoadingMapEnd(LoadingMapEnd),
+
+    StartMapStart(StartMap),
+
+    StartMapEnd(StartMap),
+
+    EndMapStart(EndMapStart),
+
+    EndMapEnd(EndMapEnd),
+
+    UnloadingMapStart(UnloadingMapStart),
+
+    UnloadingMapEnd(UnloadingMapEnd),
+
+    StartTurnStart(StartTurn),
+
+    StartTurnEnd(StartTurn),
+
+    PlayLoopStart(PlayLoopStart),
+
+    PlayLoopEnd(PlayLoopEnd),
+
+    EndRoundStart(EndRoundStart),
+
+    EndRoundEnd(EndRoundEnd),
+
+    PodiumStart(Podium),
+
+    PodiumEnd(Podium),
+
+    Custom(Custom),
 }
 
 impl __sdk::InModule for Event {
