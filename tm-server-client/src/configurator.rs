@@ -1,5 +1,3 @@
-use base64::Engine;
-use dxr::Value;
 use serde::Serialize;
 
 use crate::TrackmaniaServer;

@@ -1,5 +1,4 @@
 mod way_point;
-
 pub use way_point::WayPoint;
 
 mod start_line;
@@ -31,15 +30,16 @@ pub enum Event {
     Respawn(Respawn),
     StartLine(StartLine),
     Scores(Scores),
+    GiveUp(GiveUp),
 
     Custom(Custom),
 }
 
 impl Event {
     pub fn new(name: String, body: String) -> Self {
+        //TODO include event name
         match name.as_str() {
             "Trackmania.Event.WayPoint" => Event::WayPoint(json::from_str(&body).unwrap()),
-            //TODO include event name
             _ => Event::Custom(Custom::new(name, body)),
         }
     }

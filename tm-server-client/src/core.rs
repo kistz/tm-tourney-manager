@@ -11,7 +11,7 @@ use dxr::{
 
 use thiserror::Error;
 use tm_server_types::event::Event;
-use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter};
+use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::{broadcast, mpsc, oneshot};
@@ -99,10 +99,21 @@ impl RegisiteredCallbacks {
     }
 }
 
+/// Struct to interact with a server through xml-rpc.
+/// Implemented with separate read and write threads.
+/// Events will also execute as separate tokio tasks.
+/// Interaction should be fully typed and can be achieved by importing trait from the types module.
 pub struct TrackmaniaServer {
-    sender: Sender<GbxMethodCall>,
+    /// Handler to reach the write thread and pass a message to the server.
+    message_sender: Sender<GbxMethodCall>,
+
+    /// Associates a handler value with a oneshot channel to correctly receive the response.
     response_mapping: Arc<DashMap<u32, oneshot::Sender<MethodResponse>>>,
+
+    /// Subscriptions to the global_callback receive every event raised on the server.
     global_callback: broadcast::Receiver<Arc<Event>>,
+
+    /// Allows to subscribe to specific callbacks.
     registered_callbacks: RegisiteredCallbacks,
 }
 
@@ -110,7 +121,7 @@ impl TrackmaniaServer {
     pub async fn new(url: impl Into<String>) -> Self {
         let stream = BufWriter::new(TcpStream::connect(url.into()).await.unwrap());
 
-        let (mut reader, mut writer) = io::split(stream);
+        let (mut reader, writer) = io::split(stream);
 
         // Expect the "GbxRemote 2" handshake message.
         let mut buf = vec![0; 15];
@@ -121,52 +132,74 @@ impl TrackmaniaServer {
 
         println!("Connected to: {call}");
 
-        let (sender, mut rx) = mpsc::channel::<GbxMethodCall>(32);
+        let (sender, rx) = mpsc::channel::<GbxMethodCall>(32);
         let (global_callback_sender, global_callback) = broadcast::channel(2);
 
         let client = Self {
             global_callback,
-            sender,
+            message_sender: sender,
             response_mapping: Arc::new(DashMap::new()),
 
             registered_callbacks: RegisiteredCallbacks::new(),
         };
 
         let writer_response = client.response_mapping.clone();
-        let _write_manager = tokio::spawn(async move {
-            let writer_response = writer_response;
+        Self::setup_write_loop(rx, writer, writer_response);
+
+        let reader_response = client.response_mapping.clone();
+        let registered_callbacks = client.registered_callbacks.clone();
+        Self::setup_read_loop(
+            reader_response,
+            registered_callbacks,
+            global_callback_sender,
+            reader,
+        );
+        client
+    }
+
+    /// Internal helper to setup the thread which is responsible for sending messages to the server.
+    fn setup_write_loop(
+        mut write_request: mpsc::Receiver<GbxMethodCall>,
+        mut writer: WriteHalf<BufWriter<TcpStream>>,
+        writer_response: Arc<DashMap<u32, oneshot::Sender<MethodResponse>>>,
+    ) {
+        tokio::spawn(async move {
             let mut handler = 0x80000000u32;
 
             // Start receiving messages and only stop when all senders get out of scope.
-            while let Some(cmd) = rx.recv().await {
-                println!("{cmd:?}");
-
+            while let Some(cmd) = write_request.recv().await {
                 match cmd {
                     GbxMethodCall::MethodCall { message, responder } => {
                         // Increment the handler before each method call
                         handler += 1;
 
+                        // Since GbxRemote packets expect little endian write them out.
                         writer.write_u32_le(message.len() as u32).await.unwrap();
                         writer.write_u32_le(handler).await.unwrap();
+
+                        // The body of the packet.
                         writer.write_all(message.as_bytes()).await.unwrap();
 
                         let _ = writer.flush().await;
 
                         writer_response.insert(handler, responder);
-                    } //GbxMethodCall::Callback { .. } => todo!(),
+                    }
                 }
             }
         });
+    }
 
-        let reader_response = client.response_mapping.clone();
-        let registered_callbacks = client.registered_callbacks.clone();
-        let _read_manager = tokio::spawn(async move {
-            let reader_response = reader_response;
-            let registered_callbacks = registered_callbacks;
-            let global_callback_sender = global_callback_sender;
-
+    /// Internal helper to setup the thread which is responsible for receiving messages (method call responses and events) from the server.
+    fn setup_read_loop(
+        reader_response: Arc<DashMap<u32, oneshot::Sender<MethodResponse>>>,
+        registered_callbacks: RegisiteredCallbacks,
+        global_callback_sender: broadcast::Sender<Arc<Event>>,
+        mut reader: ReadHalf<BufWriter<TcpStream>>,
+    ) {
+        tokio::spawn(async move {
             let mut buffer: BytesMut = BytesMut::with_capacity(1024);
 
+            /// Ensures only complete messages get passed as a valid packet and keeps the buffer in check.
             fn parse_packet(buffer: &mut BytesMut) -> Option<GbxPacket> {
                 let mut cursor = Cursor::new(&buffer[..]);
 
@@ -180,13 +213,18 @@ impl TrackmaniaServer {
                 }
             }
 
+            // The main reading loop continously receiveing messages from the server.
             loop {
+                // When we succeed parsing a packet...
                 while let Some(packet) = parse_packet(&mut buffer) {
+                    //check if this is a method response we are waiting for.
                     if packet.is_method_response() {
                         let (_, response) = reader_response.remove(&packet.handler).unwrap();
                         _ = response.send(body_to_response(&packet.body).unwrap());
                     } else {
+                        // if its not a method response it must be an event.
                         let callback = dxr::deserialize_xml::<MethodCall>(&packet.body).unwrap();
+                        // Event from the ModeScript extension which is the newer counterpart to the legacy events.
                         if callback.name() == "ManiaPlanet.ModeScriptCallbackArray" {
                             let params = callback.params();
                             let modescript_callback_name =
@@ -199,11 +237,14 @@ impl TrackmaniaServer {
                             println!(
                                 "Name: {modescript_callback_name}, JSON: {modescript_callback_body:?}"
                             );
+
+                            // Parse the event to make it fully typed.
                             let event = Event::new(
                                 modescript_callback_name.clone(),
                                 modescript_callback_body,
                             );
 
+                            // Send the parsed event to all subscribed event handlers.
                             let event = Arc::new(event);
                             _ = global_callback_sender.send(event.clone());
                             registered_callbacks.send(&modescript_callback_name, event);
@@ -211,6 +252,10 @@ impl TrackmaniaServer {
                     }
                 }
 
+                // If we failed parsing a full packet we must have a partial packet.
+                // That means wewait for the another activity on the tcp socket.
+                // If the tcp socket returns 0 it has closed and we disconnect.
+                // Otherwise we loop around and try to parse a full packet again above.
                 if 0 == reader.read_buf(&mut buffer).await.unwrap() {
                     // The remote closed the connection. For this to be a clean
                     // shutdown, there should be no data in the read buffer. If
@@ -225,15 +270,14 @@ impl TrackmaniaServer {
                 }
             }
         });
-        client
     }
 
-    // Returns a handle that reveives every message of the selected
+    /// Returns a handle that receives every message of the selected event.
     pub fn subscribe<'a>(&'a self, event: impl Into<&'a str>) -> broadcast::Receiver<Arc<Event>> {
         self.registered_callbacks.get(event.into())
     }
 
-    // Executes the specified function whenever event is triggered.
+    /// Executes the specified function whenever the specified event is triggered.
     pub fn on<'b, T, F>(&self, event: impl Into<&'b str>, execute: F)
     where
         for<'a> &'a T: From<&'a Event>,
@@ -243,26 +287,25 @@ impl TrackmaniaServer {
         let mut receiver = self.registered_callbacks.get(event.into());
 
         tokio::spawn(async move {
-            while let Ok(received) = receiver.recv().await {
-                {
-                    execute(Into::<&T>::into(received.deref()));
-                };
+            while let Ok(event) = receiver.recv().await {
+                execute(Into::<&T>::into(event.deref()));
             }
         });
     }
 
+    /// The specified handler function gets called on every event that the server sends to us.
     pub fn event(&self, handle: impl Fn(&Event) + Send + Sync + 'static) {
         let mut receiver = self.global_callback.resubscribe();
 
         tokio::spawn(async move {
-            while let Ok(received) = receiver.recv().await {
-                {
-                    handle(&received);
-                };
+            while let Ok(event) = receiver.recv().await {
+                handle(&event);
             }
         });
     }
 
+    /// Allows to call a method on the server.
+    /// Needs to be awaited in order to be executed and receive the response.
     pub async fn call<P: TryToParams, R: TryFromValue>(
         &self,
         method: &str,
@@ -275,6 +318,7 @@ impl TrackmaniaServer {
         Ok(R::try_from_value(&result)?)
     }
 
+    // Internal helper to get correct method call response.
     async fn call_inner(
         &self,
         method: Cow<'_, str>,
@@ -282,24 +326,28 @@ impl TrackmaniaServer {
     ) -> Result<Value, ClientError> {
         // serialize XML-RPC method call
         let request = MethodCall::new(method, params);
-
         let xml = dxr::serialize_xml(&request)
             .map_err(|error| DxrError::invalid_data(error.to_string()))?;
+
+        // concatenate the body with the xml header.
         let body = [r#"<?xml version="1.0"?>"#, xml.as_str()].join("");
 
-        let local_sender = self.sender.clone();
+        // Obtain the way to send a message to the server.
+        let message_sender = self.message_sender.clone();
 
         let response = tokio::spawn(async move {
-            let (resp_tx, resp_rx) = oneshot::channel();
-            local_sender
+            // Responsible to notify us when the method response is there.
+            let (send_me_response, waiting) = oneshot::channel();
+            message_sender
                 .send(GbxMethodCall::MethodCall {
                     message: body,
-                    responder: resp_tx,
+                    responder: send_me_response,
                 })
                 .await
                 .unwrap();
 
-            resp_rx.await.unwrap()
+            // Wait till we receive the response for the method call.
+            waiting.await.unwrap()
         })
         .await
         .unwrap();
