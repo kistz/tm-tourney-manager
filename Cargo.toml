@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["tm-server-client", "tm-tourney-manager"]
+members = ["tm-server-client", "tm-server-types", "tm-tourney-manager"]
 
 package.authors = ["kistz (Kilian Strunz)"]
 package.categories = ["api-bindings", "network-programming", "asynchronous"]

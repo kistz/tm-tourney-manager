@@ -1,16 +1,25 @@
 use base64::Engine;
 use dxr::Value;
+use serde::Serialize;
 
 use crate::TrackmaniaServer;
 use crate::types::XmlRpcMethods;
 
+mod rounds;
+
 #[allow(async_fn_in_trait)]
 pub trait ServerConfiguration {
-    async fn configure_rounds(&self /* options: ExtraConfigOptions */);
+    async fn configure(&self /* options: ExtraConfigOptions */, mode: &impl GameModeSettings);
 }
 
+pub trait GameModeSettings: Serialize {}
+
 impl ServerConfiguration for TrackmaniaServer {
-    async fn configure_rounds(&self) {
+    async fn configure(&self, mode: &impl GameModeSettings) {
+        let xml_string = quick_xml::se::to_string(mode);
+
+        println!("Serialized Config: {:?}", xml_string);
+
         let content = r#"<?xml version="1.0" encoding="utf-8" ?>
 <playlist>
 	<gameinfos>

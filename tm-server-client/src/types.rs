@@ -6,10 +6,13 @@ use std::{
 use base64::{Engine, engine::general_purpose::STANDARD};
 
 use serde::{Deserialize, Serialize};
+//use tm_server_types::WayPointEvent;
 
 use crate::{ClientError, TrackmaniaServer};
 
-#[derive(Debug, Serialize, Deserialize)]
+pub use tm_server_types::*;
+
+/* #[derive(Debug, Serialize, Deserialize)]
 pub struct WayPointEvent {
     #[serde(rename = "accountid")]
     account_id: String,
@@ -37,7 +40,7 @@ pub struct WayPointEvent {
     current_lap_checkpoints: Vec<u32>,
     #[serde(rename = "blockid")]
     block_id: String,
-}
+} */
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScoresEvent {

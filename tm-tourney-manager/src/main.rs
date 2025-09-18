@@ -1,4 +1,4 @@
-use std::{
+/* use std::{
     collections::HashSet,
     sync::{Arc, Mutex},
 };
@@ -14,7 +14,9 @@ use axum::{
     routing::get,
 };
 use chrono::Utc;
+use diesel::prelude::*;
 use futures_util::{SinkExt, StreamExt};
+use tm_tourney_manager::{models::Post, schema::posts::dsl::*};
 
 use tm_server_client::{
     ClientError, TrackmaniaServer,
@@ -22,6 +24,7 @@ use tm_server_client::{
     types::{ModeScriptCallbacks, XmlRpcMethods},
 };
 
+use tm_tourney_manager::establish_connection;
 use tokio::{signal, sync::broadcast};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -121,7 +124,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .call("ChatSendServerMessage", "Hey from Rust owo")
         .await;
 
-    server.configure_rounds().await;
+    /*  let connection = &mut establish_connection();
+    let results = posts
+        .filter(published.eq(true))
+        .limit(5)
+        .select(Post::as_select())
+        .load(connection)
+        .expect("Error loading posts");
+
+    println!("Displaying {} posts", results.len());
+    for post in results {
+        println!("{}", post.title);
+        println!("-----------\n");
+        println!("{}", post.body);
+    } */
+
+    //server.configure().await;
 
     server.on_way_point(|info| println!("{info:?}"));
 
@@ -136,6 +154,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let app = Router::new()
         .route("/", get(index))
         .route("/subscribe/waypoint", get(websocket_handler))
+        //.route("/{tournament}",)
         .route("/admin/{jaaa}", get(index))
         .route_layer(middleware::from_fn(track_metrics))
         .with_state(app_state);
@@ -145,7 +164,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
 
-    let app = axum::serve(listener, app).with_graceful_shutdown(shutdown_signal());
+    let app = axum::serve(listener, app).with_graceful_shutdown(signal());
 
     // When the prometheus exporter is turned on spawn it alongside the app.
     if cfg!(feature = "monitoring") {
@@ -294,7 +313,7 @@ async fn index() -> Html<&'static str> {
     Html(std::include_str!("../chat.html"))
 }
 
-async fn shutdown_signal() {
+async fn signal() {
     let ctrl_c = async {
         signal::ctrl_c()
             .await
@@ -317,3 +336,6 @@ async fn shutdown_signal() {
         _ = terminate => {},
     }
 }
+ */
+
+pub fn main() {}

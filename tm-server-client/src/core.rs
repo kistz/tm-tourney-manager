@@ -16,8 +16,6 @@ use tokio::net::TcpStream;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::{broadcast, mpsc, oneshot};
 
-use crate::types::WayPointEvent;
-
 #[derive(Debug)]
 struct GbxPacket {
     handler: u32,

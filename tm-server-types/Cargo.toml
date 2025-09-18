@@ -1,0 +1,17 @@
+[package]
+name = "tm-server-types"
+version = "0.1.0"
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+spacetimedb-lib = { version = "*", optional = true }
+serde = { version = "*", optional = true }
+
+
+[features]
+serde = ["dep:serde"]
+spacetime = ["dep:spacetimedb-lib"]
