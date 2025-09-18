@@ -182,14 +182,11 @@ impl TrackmaniaServer {
 
             loop {
                 while let Some(packet) = parse_packet(&mut buffer) {
-                    //println!("Packet: {packet:?}");
-
                     if packet.is_method_response() {
                         let (_, response) = reader_response.remove(&packet.handler).unwrap();
                         _ = response.send(body_to_response(&packet.body).unwrap());
                     } else {
                         let callback = dxr::deserialize_xml::<MethodCall>(&packet.body).unwrap();
-                        // println!("Callback: {callback:#?}");
                         if callback.name() == "ManiaPlanet.ModeScriptCallbackArray" {
                             let params = callback.params();
                             let modescript_callback_name =
@@ -202,17 +199,13 @@ impl TrackmaniaServer {
                             println!(
                                 "Name: {modescript_callback_name}, JSON: {modescript_callback_body:?}"
                             );
-
-                            let event = match modescript_callback_name.as_str() {
-                                "Trackmania.Event.WayPoint" => Event::WayPoint(
-                                    json::from_str(&modescript_callback_body).unwrap(),
-                                ),
-                                //TODO include event name
-                                _ => Event::Custom(modescript_callback_body),
-                            };
+                            let event = Event::new(
+                                modescript_callback_name.clone(),
+                                modescript_callback_body,
+                            );
 
                             let event = Arc::new(event);
-                            global_callback_sender.send(event.clone());
+                            _ = global_callback_sender.send(event.clone());
                             registered_callbacks.send(&modescript_callback_name, event);
                         }
                     }

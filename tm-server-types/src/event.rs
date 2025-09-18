@@ -17,6 +17,9 @@ pub use give_up::GiveUp;
 mod scores;
 pub use scores::Scores;
 
+mod custom;
+pub use custom::Custom;
+
 /// Can hold every Event trasmitted trough the ModeScript events.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
@@ -29,5 +32,15 @@ pub enum Event {
     StartLine(StartLine),
     Scores(Scores),
 
-    Custom(String),
+    Custom(Custom),
+}
+
+impl Event {
+    pub fn new(name: String, body: String) -> Self {
+        match name.as_str() {
+            "Trackmania.Event.WayPoint" => Event::WayPoint(json::from_str(&body).unwrap()),
+            //TODO include event name
+            _ => Event::Custom(Custom::new(name, body)),
+        }
+    }
 }

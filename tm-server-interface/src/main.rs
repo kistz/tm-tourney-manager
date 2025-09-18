@@ -4,11 +4,7 @@ use spacetimedb_sdk::{
 
 mod module_bindings;
 use module_bindings::*;
-use tm_server_client::{
-    ClientError, TrackmaniaServer,
-    configurator::ServerConfiguration,
-    types::{self, ModeScriptCallbacks, event::Event},
-};
+use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -18,7 +14,7 @@ const HOST: &str = "http://localhost:1234";
 /// The database name we chose when we published our module.
 const DB_NAME: &str = "stdbtest";
 
-const TOKEN: &str = "eyJhbGciOiJIUzI1NiIsImVudiI6InRyYWNrbWFuaWEtcHJvZCIsInZlciI6IjEifQ.eyJqdGkiOiI5ZDNlZDE3OC05M2NjLTExZjAtOGI4OS0wYTU4YTlmZWFjMDIiLCJpc3MiOiJOYWRlb1NlcnZpY2VzIiwiaWF0IjoxNzU4MTE2NzQ2LCJyYXQiOjE3NTgxMTg1NDYsImV4cCI6MTc1ODEyMDM0NiwiYXVkIjoiTmFkZW9MaXZlU2VydmljZXMiLCJ1c2ciOiJTZXJ2ZXIiLCJzaWQiOiI5ZDNlY2U5NC05M2NjLTExZjAtODFlMC0wYTU4YTlmZWFjMDIiLCJzYXQiOjE3NTgxMTY3NDYsInN1YiI6ImU2M2I1Y2RjLWJmYmItNGUwNy04MzFiLTZhOWMyNjBmNWRiMyIsImF1biI6ImpvZXN0ZXN0Y2VsbGFyIiwicnRrIjpmYWxzZSwicGNlIjpmYWxzZX0.FGgjE5mhM74-RR4SWfLyt2R8ab5HL0DKHkp2OsdQ7bY";
+//const TOKEN: &str = "eyJhbGciOiJIUzI1NiIsImVudiI6InRyYWNrbWFuaWEtcHJvZCIsInZlciI6IjEifQ.eyJqdGkiOiI5ZDNlZDE3OC05M2NjLTExZjAtOGI4OS0wYTU4YTlmZWFjMDIiLCJpc3MiOiJOYWRlb1NlcnZpY2VzIiwiaWF0IjoxNzU4MTE2NzQ2LCJyYXQiOjE3NTgxMTg1NDYsImV4cCI6MTc1ODEyMDM0NiwiYXVkIjoiTmFkZW9MaXZlU2VydmljZXMiLCJ1c2ciOiJTZXJ2ZXIiLCJzaWQiOiI5ZDNlY2U5NC05M2NjLTExZjAtODFlMC0wYTU4YTlmZWFjMDIiLCJzYXQiOjE3NTgxMTY3NDYsInN1YiI6ImU2M2I1Y2RjLWJmYmItNGUwNy04MzFiLTZhOWMyNjBmNWRiMyIsImF1biI6ImpvZXN0ZXN0Y2VsbGFyIiwicnRrIjpmYWxzZSwicGNlIjpmYWxzZX0.FGgjE5mhM74-RR4SWfLyt2R8ab5HL0DKHkp2OsdQ7bY";
 
 /// Load credentials from a file and connect to the database.
 fn connect_to_db() -> DbConnection {
@@ -103,9 +99,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .post_event(
                 //SAFETY: Its the same type. Sadly Rust does not know that :< .
                 unsafe {
-                    std::mem::transmute::<types::event::Event, module_bindings::Event>(
-                        event.clone(),
-                    )
+                    std::mem::transmute::<
+                        tm_server_client::types::event::Event,
+                        module_bindings::Event,
+                    >(event.clone())
                 },
             )
             .is_err()
@@ -256,18 +253,4 @@ fn on_sub_applied(ctx: &SubscriptionEventContext) {
 fn on_sub_error(_ctx: &ErrorContext, err: Error) {
     eprintln!("Subscription failed: {}", err);
     std::process::exit(1);
-}
-
-/// Read each line of standard input, and either set our name or send a message as appropriate.
-fn user_input_loop(ctx: &DbConnection) {
-    for line in std::io::stdin().lines() {
-        let Ok(line) = line else {
-            panic!("Failed to read from stdin.");
-        };
-        if let Some(name) = line.strip_prefix("/name ") {
-            ctx.reducers.set_name(name.to_string()).unwrap();
-        } else {
-            ctx.reducers.send_message(line).unwrap();
-        }
-    }
 }

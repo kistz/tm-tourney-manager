@@ -2,7 +2,7 @@ use spacetimedb::{
     Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp, reducer,
     table,
 };
-use tm_server_types::event::{Event, WayPoint};
+use tm_server_types::event::Event;
 
 #[table(name = user, public)]
 pub struct User {
@@ -178,8 +178,8 @@ fn send_message_sched(ctx: &ReducerContext, arg: SendMessageSchedule) -> Result<
 }
 
 #[reducer(init)]
-pub fn init(ctx: &ReducerContext) {
-    let ten_seconds = TimeDuration::from_micros(10_000_000);
+pub fn init(_ctx: &ReducerContext) {
+    let _ten_seconds = TimeDuration::from_micros(10_000_000);
     /* ctx.db.send_message_schedule().insert(SendMessageSchedule {
         scheduled_id: 0,
         text: "I'm a bot sending a message every 10 seconds".to_string(),

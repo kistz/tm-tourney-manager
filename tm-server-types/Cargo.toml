@@ -10,7 +10,10 @@ edition.workspace = true
 
 [dependencies]
 spacetimedb-lib = { version = "*", optional = true }
+
 serde = { version = "*", optional = true }
+# Renamed to json because maybe swtich to simd-json
+json = { package = "serde_json", version = "*" }
 
 
 [features]
