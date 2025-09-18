@@ -1,0 +1,266 @@
+use spacetimedb_sdk::{
+    DbContext, Error, Event, Identity, Status, Table, TableWithPrimaryKey, credentials,
+};
+
+mod module_bindings;
+use module_bindings::*;
+use tm_server_client::{
+    ClientError, TrackmaniaServer,
+    types::{self, ModeScriptCallbacks},
+};
+use tokio::signal;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+/// The URI of the SpacetimeDB instance hosting our chat database and module.
+const HOST: &str = "http://localhost:1234";
+
+/// The database name we chose when we published our module.
+const DB_NAME: &str = "stdbtest";
+
+const TOKEN: &str = "eyJhbGciOiJIUzI1NiIsImVudiI6InRyYWNrbWFuaWEtcHJvZCIsInZlciI6IjEifQ.eyJqdGkiOiI5ZDNlZDE3OC05M2NjLTExZjAtOGI4OS0wYTU4YTlmZWFjMDIiLCJpc3MiOiJOYWRlb1NlcnZpY2VzIiwiaWF0IjoxNzU4MTE2NzQ2LCJyYXQiOjE3NTgxMTg1NDYsImV4cCI6MTc1ODEyMDM0NiwiYXVkIjoiTmFkZW9MaXZlU2VydmljZXMiLCJ1c2ciOiJTZXJ2ZXIiLCJzaWQiOiI5ZDNlY2U5NC05M2NjLTExZjAtODFlMC0wYTU4YTlmZWFjMDIiLCJzYXQiOjE3NTgxMTY3NDYsInN1YiI6ImU2M2I1Y2RjLWJmYmItNGUwNy04MzFiLTZhOWMyNjBmNWRiMyIsImF1biI6ImpvZXN0ZXN0Y2VsbGFyIiwicnRrIjpmYWxzZSwicGNlIjpmYWxzZX0.FGgjE5mhM74-RR4SWfLyt2R8ab5HL0DKHkp2OsdQ7bY";
+
+/// Load credentials from a file and connect to the database.
+fn connect_to_db() -> DbConnection {
+    DbConnection::builder()
+        // Register our `on_connect` callback, which will save our auth token.
+        .on_connect(on_connected)
+        // Register our `on_connect_error` callback, which will print a message, then exit the process.
+        .on_connect_error(on_connect_error)
+        // Our `on_disconnect` callback, which will print a message, then exit the process.
+        .on_disconnect(on_disconnected)
+        // If the user has previously connected, we'll have saved a token in the `on_connect` callback.
+        // In that case, we'll load it and pass it to `with_token`,
+        // so we can re-authenticate as the same `Identity`.
+        //.with_token(Some(TOKEN))
+        // Set the database name we chose when we called `spacetime publish`.
+        .with_module_name(DB_NAME)
+        // Set the URI of the SpacetimeDB host that's running our database.
+        .with_uri(HOST)
+        // Finalize configuration and connect!
+        .build()
+        .expect("Failed to connect")
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| format!("{}=trace", env!("CARGO_CRATE_NAME")).into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    //Initialize the Trackmania server
+    let server = TrackmaniaServer::new("127.0.0.1:5001").await;
+
+    let _: Result<bool, ClientError> = server.call("SetApiVersion", "2025-07-04").await;
+
+    let _: Result<bool, ClientError> = server
+        .call("Authenticate", ("SuperAdmin", "SuperAdmin"))
+        .await;
+
+    let _: Result<bool, ClientError> = server.call("EnableCallbacks", true).await;
+
+    let _: Result<bool, ClientError> = server
+        .call(
+            "TriggerModeScriptEventArray",
+            ("XmlRpc.SetApiVersion", ["3.11"]),
+        )
+        .await;
+
+    let _: Result<bool, ClientError> = server
+        .call(
+            "TriggerModeScriptEventArray",
+            ("XmlRpc.EnableCallbacks", ["true"]),
+        )
+        .await;
+    // Connect to the database
+    let db = connect_to_db();
+
+    let _: Result<bool, ClientError> = server
+        .call(
+            "ChatSendServerMessage",
+            "Server Interface connected successfully :>",
+        )
+        .await;
+
+    // Register callbacks to run in response to database events.
+    register_callbacks(&db);
+
+    // Subscribe to SQL queries in order to construct a local partial replica of the database.
+    subscribe_to_tables(&db);
+
+    // Spawn a thread, where the connection will process messages and invoke callbacks.
+    db.run_threaded();
+
+    println!("hmmge");
+
+    server.on_way_point(move |event| {
+        println!("WHAT THE FUCK");
+        if let Ok(event) = db.reducers.post_event(unsafe {
+            std::mem::transmute::<types::WayPointEvent, WayPointEvent>(event.clone())
+        }) {
+            println!("event successfully posted")
+        } else {
+            println!("event publishing failed")
+        }
+    });
+
+    match signal::ctrl_c().await {
+        Ok(()) => {}
+        Err(err) => {
+            eprintln!("Unable to listen for shutdown signal: {}", err);
+            // we also shut down in case of error
+        }
+    }
+
+    Ok(())
+}
+
+/// Our `on_connect` callback: save our credentials to a file.
+fn on_connected(_ctx: &DbConnection, _identity: Identity, token: &str) {
+    /* if let Err(e) = creds_store().save(token) {
+        eprintln!("Failed to save credentials: {:?}", e);
+    } */
+    println!("Token connected: {token}");
+}
+
+/// Our `on_connect_error` callback: print the error, then exit the process.
+fn on_connect_error(_ctx: &ErrorContext, err: Error) {
+    eprintln!("Connection error: {:?}", err);
+    std::process::exit(1);
+}
+
+/// Our `on_disconnect` callback: print a note, then exit the process.
+fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
+    if let Some(err) = err {
+        eprintln!("Disconnected: {}", err);
+        std::process::exit(1);
+    } else {
+        println!("Disconnected.");
+        std::process::exit(0);
+    }
+}
+
+/// Register all the callbacks our app will use to respond to database events.
+fn register_callbacks(ctx: &DbConnection) {
+    // When a new user joins, print a notification.
+    ctx.db.user().on_insert(on_user_inserted);
+
+    // When a user's status changes, print a notification.
+    ctx.db.user().on_update(on_user_updated);
+
+    // When a new message is received, print it.
+    ctx.db.message().on_insert(on_message_inserted);
+
+    // When we fail to set our name, print a warning.
+    ctx.reducers.on_set_name(on_name_set);
+
+    // When we fail to send a message, print a warning.
+    ctx.reducers.on_send_message(on_message_sent);
+}
+
+/// Our `User::on_insert` callback:
+/// if the user is online, print a notification.
+fn on_user_inserted(_ctx: &EventContext, user: &User) {
+    if user.online {
+        println!("User {} connected.", user_name_or_identity(user));
+    }
+}
+
+fn user_name_or_identity(user: &User) -> String {
+    user.name
+        .clone()
+        .unwrap_or_else(|| user.identity.to_hex().to_string())
+}
+
+fn on_user_updated(_ctx: &EventContext, old: &User, new: &User) {
+    if old.name != new.name {
+        println!(
+            "User {} renamed to {}.",
+            user_name_or_identity(old),
+            user_name_or_identity(new)
+        );
+    }
+    if old.online && !new.online {
+        println!("User {} disconnected.", user_name_or_identity(new));
+    }
+    if !old.online && new.online {
+        println!("User {} connected.", user_name_or_identity(new));
+    }
+}
+
+/// Our `Message::on_insert` callback: print new messages.
+fn on_message_inserted(ctx: &EventContext, message: &Message) {
+    println!("{:?}", ctx.event);
+    if let Event::Reducer(_) = ctx.event {
+        print_message(ctx, message)
+    }
+}
+
+fn print_message(ctx: &impl RemoteDbContext, message: &Message) {
+    let sender = ctx
+        .db()
+        .user()
+        .identity()
+        .find(&message.sender.clone())
+        .map(|u| user_name_or_identity(&u))
+        .unwrap_or_else(|| "unknown".to_string());
+    println!("{}: {}", sender, message.text);
+}
+
+/// Our `on_set_name` callback: print a warning if the reducer failed.
+fn on_name_set(ctx: &ReducerEventContext, name: &String) {
+    if let Status::Failed(err) = &ctx.event.status {
+        eprintln!("Failed to change name to {:?}: {}", name, err);
+    }
+}
+
+/// Our `on_send_message` callback: print a warning if the reducer failed.
+fn on_message_sent(ctx: &ReducerEventContext, text: &String) {
+    if let Status::Failed(err) = &ctx.event.status {
+        eprintln!("Failed to send message {:?}: {}", text, err);
+    }
+}
+
+/// Register subscriptions for all rows of both tables.
+fn subscribe_to_tables(ctx: &DbConnection) {
+    ctx.subscription_builder()
+        .on_applied(on_sub_applied)
+        .on_error(on_sub_error)
+        .subscribe(["SELECT * FROM user", "SELECT * FROM message"]);
+}
+
+/// Our `on_subscription_applied` callback:
+/// sort all past messages and print them in timestamp order.
+fn on_sub_applied(ctx: &SubscriptionEventContext) {
+    let mut messages = ctx.db.message().iter().collect::<Vec<_>>();
+    messages.sort_by_key(|m| m.sent);
+    for message in messages {
+        print_message(ctx, &message);
+    }
+    println!("Fully connected and all subscriptions applied.");
+    println!("Use /name to set your name, or type a message!");
+}
+
+/// Or `on_error` callback:
+/// print the error, then exit the process.
+fn on_sub_error(_ctx: &ErrorContext, err: Error) {
+    eprintln!("Subscription failed: {}", err);
+    std::process::exit(1);
+}
+
+/// Read each line of standard input, and either set our name or send a message as appropriate.
+fn user_input_loop(ctx: &DbConnection) {
+    for line in std::io::stdin().lines() {
+        let Ok(line) = line else {
+            panic!("Failed to read from stdin.");
+        };
+        if let Some(name) = line.strip_prefix("/name ") {
+            ctx.reducers.set_name(name.to_string()).unwrap();
+        } else {
+            ctx.reducers.send_message(line).unwrap();
+        }
+    }
+}

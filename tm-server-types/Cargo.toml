@@ -1,11 +1,12 @@
 [package]
 name = "tm-server-types"
-version = "0.1.0"
+
+version.workspace = true
 authors.workspace = true
-categories.workspace = true
 keywords.workspace = true
-edition.workspace = true
+categories.workspace = true
 license.workspace = true
+edition.workspace = true
 
 [dependencies]
 spacetimedb-lib = { version = "*", optional = true }

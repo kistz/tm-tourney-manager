@@ -1,8 +1,9 @@
 [package]
 name = "tm-server-client"
-version = "0.0.0"
 description = "Call methods on and receive events from a trackmania server."
 readme = "README.md"
+
+version.workspace = true
 authors.workspace = true
 keywords.workspace = true
 categories.workspace = true
