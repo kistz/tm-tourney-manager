@@ -8,6 +8,7 @@ keywords.workspace = true
 categories.workspace = true
 license.workspace = true
 edition.workspace = true
+repository.workspace = true
 
 [dependencies]
 tokio = { version = "*", features = ["full"] }
@@ -15,5 +16,5 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 tm-server-client = { path = "../tm-server-client" }
-spacetimedb-sdk = "1.3.2"
+spacetimedb-sdk = "*"
 hex = "0.4"

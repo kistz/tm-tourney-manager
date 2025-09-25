@@ -8,8 +8,14 @@ members = [
 ]
 
 package.authors = ["kistz (Kilian Strunz)"]
-package.categories = ["api-bindings", "network-programming", "asynchronous"]
-package.keywords = ["trackmania", "nadeo", "gbxremote", "gbx", "api"]
+package.categories = [
+    "api-bindings",
+    "network-programming",
+    "asynchronous",
+    "trackmania",
+]
+package.keywords = ["trackmania", "nadeo", "gbxremote", "gbx", "api", "xml-rpc"]
 package.edition = "2024"
 package.license = "MIT OR Apache-2.0"
 package.version = "0.0.0"
+package.repository = "https://github.com/kistz/tm-tourney-manager"

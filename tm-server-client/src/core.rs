@@ -9,12 +9,13 @@ use dxr::{
     DxrError, Fault, FaultResponse, MethodCall, MethodResponse, TryFromValue, TryToParams, Value,
 };
 
+use tachyonix::Sender;
 use thiserror::Error;
 use tm_server_types::event::Event;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
-use tokio::sync::mpsc::Sender;
-use tokio::sync::{broadcast, mpsc, oneshot};
+//use tokio::sync::mpsc::Sender;
+use tokio::sync::{broadcast, oneshot};
 
 #[derive(Debug)]
 struct GbxPacket {
@@ -132,8 +133,10 @@ impl TrackmaniaServer {
 
         println!("Connected to: {call}");
 
-        let (sender, rx) = mpsc::channel::<GbxMethodCall>(32);
-        let (global_callback_sender, global_callback) = broadcast::channel(100);
+        let (sender, rx) = tachyonix::channel::<GbxMethodCall>(32);
+
+        // With many players trackmania can dump a shitload of events so the capacity is very large to prevent overflows.
+        let (global_callback_sender, global_callback) = broadcast::channel(222);
 
         let client = Self {
             global_callback,
@@ -159,7 +162,7 @@ impl TrackmaniaServer {
 
     /// Internal helper to setup the thread which is responsible for sending messages to the server.
     fn setup_write_loop(
-        mut write_request: mpsc::Receiver<GbxMethodCall>,
+        mut write_request: tachyonix::Receiver<GbxMethodCall>,
         mut writer: WriteHalf<BufWriter<TcpStream>>,
         writer_response: Arc<DashMap<u32, oneshot::Sender<MethodResponse>>>,
     ) {
@@ -167,7 +170,7 @@ impl TrackmaniaServer {
             let mut handler = 0x80000000u32;
 
             // Start receiving messages and only stop when all senders get out of scope.
-            while let Some(cmd) = write_request.recv().await {
+            while let Ok(cmd) = write_request.recv().await {
                 match cmd {
                     GbxMethodCall::MethodCall { message, responder } => {
                         // Increment the handler before each method call

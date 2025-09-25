@@ -2,10 +2,10 @@ use spacetimedb_sdk::{
     DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
 };
 
-mod module_bindings;
-use module_bindings::*;
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
+mod tourney_api_gen;
+use tourney_api_gen::*;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 /// The URI of the SpacetimeDB instance hosting our chat database and module.
@@ -94,7 +94,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     server.configure().await;
 
     server.event(move |event| {
-        println!("publishing");
         if db
             .reducers
             .post_event(
@@ -102,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 unsafe {
                     std::mem::transmute::<
                         tm_server_client::types::event::Event,
-                        module_bindings::Event,
+                        tourney_api_gen::Event,
                     >(event.clone())
                 },
             )

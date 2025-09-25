@@ -1,6 +1,6 @@
 [package]
 name = "tm-server-client"
-description = "Call methods on and receive events from a trackmania server."
+description = "Call methods on and receive events from a trackmania server through XML-RPC"
 readme = "README.md"
 publish = true
 
@@ -10,11 +10,13 @@ keywords.workspace = true
 categories.workspace = true
 license.workspace = true
 edition.workspace = true
+repository.workspace = true
 
 [dependencies]
 tm-server-types = { path = "../tm-server-types", features = ["serde"] }
 
 tokio = { version = "*", features = ["full"] }
+tachyonix = "*"
 bytes = "1"
 
 serde = { version = "1", features = ["derive"] }
