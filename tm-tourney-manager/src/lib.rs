@@ -4,85 +4,20 @@ use spacetimedb::{
 };
 use tm_server_types::event::Event;
 
-#[table(name = entity, public)]
-pub struct Entity {
-    #[primary_key]
-    identity: Identity,
-    name: String,
-    online: bool,
+mod entity;
+mod event;
+mod r#match;
+mod stage;
+mod tournament;
 
-    role: Roles,
-}
+#[table(name = event_template,public)]
+pub struct EventTemplate {}
 
-#[derive(Debug, Clone, Copy, SpacetimeType)]
-pub enum Roles {
-    User,
-    TrackmaniaServer,
-}
+#[table(name = stage_template,public)]
+pub struct StageTemplate {}
 
-/* #[table(name = server)]
-pub struct Server {
-    server_id: String,
-
-    owner: User,
-    events: ServerEvents,
-
-    status: ServerStatus,
-}
-
-#[derive(Debug, SpacetimeType)]
-pub struct ServerStatus {} */
-
-#[table(name = tournament,public)]
-pub struct Tournament {
-    #[auto_inc]
-    #[primary_key]
-    id: u128,
-
-    creator: String,
-
-    events: Vec<u128>,
-}
-
-#[table(name = tournament_event,public)]
-pub struct TournamentEvent {
-    #[auto_inc]
-    #[primary_key]
-    event_id: u128,
-
-    stages: Vec<u128>,
-}
-
-#[table(name = stage,public)]
-pub struct Stage {
-    #[auto_inc]
-    #[primary_key]
-    stage_id: u128,
-
-    matches: Vec<u128>,
-}
-
-// The table name needs to be plural since match is a rust keyword
-#[table(name = matches, public)]
-pub struct Match {
-    #[auto_inc]
-    #[primary_key]
-    match_id: u128,
-    //server_id: String,
-    content: String,
-    event: Event,
-}
-
-#[table(name = match_events,public)]
-pub struct MatchEvents {
-    #[auto_inc]
-    #[primary_key]
-    id: u128,
-
-    match_id: String,
-
-    event: Event,
-}
+#[table(name = match_template,public)]
+pub struct MatchTemplate {}
 
 #[reducer]
 pub fn post_event(ctx: &ReducerContext, event: Event) {
@@ -97,7 +32,7 @@ pub fn post_event(ctx: &ReducerContext, event: Event) {
 #[reducer(client_connected)]
 // Called when a client connects to a SpacetimeDB database server
 pub fn client_connected(ctx: &ReducerContext) {
-    if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
+    /* if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
         // If this is a returning user, i.e. we already have a `User` with this `Identity`,
         // set `online: true`, but leave `name` and `identity` unchanged.
         ctx.db.entity().identity().update(Entity {
@@ -112,13 +47,13 @@ pub fn client_connected(ctx: &ReducerContext) {
             identity: ctx.sender,
             online: true,
         }); */
-    }
+    } */
 }
 
 #[reducer(client_disconnected)]
 // Called when a client disconnects from SpacetimeDB database server
 pub fn identity_disconnected(ctx: &ReducerContext) {
-    if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
+    /* if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
         ctx.db.entity().identity().update(Entity {
             online: false,
             ..user
@@ -130,7 +65,7 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
             "Disconnect event for unknown user with identity {:?}",
             ctx.sender
         );
-    }
+    } */
 }
 
 #[table(name = send_message_schedule, scheduled(send_message_sched))]

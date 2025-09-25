@@ -5,7 +5,7 @@ This has a few advantages:
 1. Unique identities for users and servers through trackmanias authentication.
 2. Ability to generate a typed interface for multiple languages through spacetime.
 3. Everything happening in matches gets recorded automatically and can be reconstructed.
-4. Live counters for custom tournament frontends. 
+4. Live updating weboscket based api for custom tournament frontends. 
 
 ## Project Structure
 - `tm-server-types`: Provides type abstractions over GBX Remote 2 for use by all other crates or standalone.
