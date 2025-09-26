@@ -18,3 +18,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tm-server-client = { path = "../tm-server-client" }
 spacetimedb-sdk = "*"
 hex = "0.4"
+
+nadeo-api = "*"

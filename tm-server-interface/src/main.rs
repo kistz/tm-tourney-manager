@@ -1,3 +1,4 @@
+use nadeo_api::NadeoClient;
 use spacetimedb_sdk::{
     DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
 };
@@ -12,12 +13,17 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 const HOST: &str = "http://localhost:1234";
 
 /// The database name we chose when we published our module.
-const DB_NAME: &str = "stdbtest";
-
-//const TOKEN: &str = "eyJhbGciOiJIUzI1NiIsImVudiI6InRyYWNrbWFuaWEtcHJvZCIsInZlciI6IjEifQ.eyJqdGkiOiI5ZDNlZDE3OC05M2NjLTExZjAtOGI4OS0wYTU4YTlmZWFjMDIiLCJpc3MiOiJOYWRlb1NlcnZpY2VzIiwiaWF0IjoxNzU4MTE2NzQ2LCJyYXQiOjE3NTgxMTg1NDYsImV4cCI6MTc1ODEyMDM0NiwiYXVkIjoiTmFkZW9MaXZlU2VydmljZXMiLCJ1c2ciOiJTZXJ2ZXIiLCJzaWQiOiI5ZDNlY2U5NC05M2NjLTExZjAtODFlMC0wYTU4YTlmZWFjMDIiLCJzYXQiOjE3NTgxMTY3NDYsInN1YiI6ImU2M2I1Y2RjLWJmYmItNGUwNy04MzFiLTZhOWMyNjBmNWRiMyIsImF1biI6ImpvZXN0ZXN0Y2VsbGFyIiwicnRrIjpmYWxzZSwicGNlIjpmYWxzZX0.FGgjE5mhM74-RR4SWfLyt2R8ab5HL0DKHkp2OsdQ7bY";
+const DB_NAME: &str = "tourney-manager";
 
 /// Load credentials from a file and connect to the database.
 fn connect_to_db() -> DbConnection {
+    /* let nando_auth = NadeoClient::builder()
+    .with_server_auth("joestestcellar", r#"O#2nvOW^6+Y,\*CS"#)
+    .build()
+    .await
+    .unwrap(); */
+    //let TOKEN = "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI2OTgwOWMzNy02NWI0LTQ3Y2YtOTE5Ny1jZGI3NmU4MjVlNWUifQ.eyJleHAiOjE3NTg5MjU5NzEsImlhdCI6MTc1ODg4OTk3MSwianRpIjoiNWU0NzE1NzQtMWM4My1mYTVmLWY5MzQtOTA5ZmVhNzUwODczIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1Njc4L3JlYWxtcy9tYXN0ZXIiLCJzdWIiOiIxM2RiMjk5OS04NjVlLTRjNmEtYWZjOC0zMjU4YzI0MDQxZGYiLCJ0eXAiOiJTZXJpYWxpemVkLUlEIiwic2lkIjoiZGIxOWMxOTAtYjc3NS00ZDZiLTk1NTAtY2ViMjMzNzBjOWE2Iiwic3RhdGVfY2hlY2tlciI6IjFLcmloUG1XY3NuLUhPWHNrV3FVa0kxMi1wUFVENVlWa25WUGU1RmZUNk0ifQ.U2McRKPxmwT33AdCask2nlwmobTt48nVG7Y01AmgNdcd5pgmFeeziAHHoyRZjj1Zz89tODCHUIO-wVc1VQnx6Q";
+
     DbConnection::builder()
         // Register our `on_connect` callback, which will save our auth token.
         .on_connect(on_connected)
@@ -82,11 +88,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         )
         .await;
 
-    // Register callbacks to run in response to database events.
+    /*  // Register callbacks to run in response to database events.
     register_callbacks(&db);
 
     // Subscribe to SQL queries in order to construct a local partial replica of the database.
-    subscribe_to_tables(&db);
+    subscribe_to_tables(&db); */
+
+    db.db.server().on_update(server_update);
 
     // Spawn a thread, where the connection will process messages and invoke callbacks.
     db.run_threaded();
@@ -147,8 +155,8 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
     }
 }
 
-/// Register all the callbacks our app will use to respond to database events.
-fn register_callbacks(ctx: &DbConnection) {
+// Register all the callbacks our app will use to respond to database events.
+/* fn register_callbacks(ctx: &DbConnection) {
     // When a new user joins, print a notification.
     ctx.db.user().on_insert(on_user_inserted);
 
@@ -163,94 +171,8 @@ fn register_callbacks(ctx: &DbConnection) {
 
     // When we fail to send a message, print a warning.
     ctx.reducers.on_send_message(on_message_sent);
-}
+} */
 
-/// Our `User::on_insert` callback:
-/// if the user is online, print a notification.
-fn on_user_inserted(_ctx: &EventContext, user: &User) {
-    if user.online {
-        println!("User {} connected.", user_name_or_identity(user));
-    }
-}
-
-fn user_name_or_identity(user: &User) -> String {
-    user.name
-        .clone()
-        .unwrap_or_else(|| user.identity.to_hex().to_string())
-}
-
-fn on_user_updated(_ctx: &EventContext, old: &User, new: &User) {
-    if old.name != new.name {
-        println!(
-            "User {} renamed to {}.",
-            user_name_or_identity(old),
-            user_name_or_identity(new)
-        );
-    }
-    if old.online && !new.online {
-        println!("User {} disconnected.", user_name_or_identity(new));
-    }
-    if !old.online && new.online {
-        println!("User {} connected.", user_name_or_identity(new));
-    }
-}
-
-/// Our `Message::on_insert` callback: print new messages.
-fn on_message_inserted(ctx: &EventContext, message: &Message) {
-    println!("{:?}", ctx.event);
-    if let StdbEvent::Reducer(_) = ctx.event {
-        print_message(ctx, message)
-    }
-}
-
-fn print_message(ctx: &impl RemoteDbContext, message: &Message) {
-    let sender = ctx
-        .db()
-        .user()
-        .identity()
-        .find(&message.sender.clone())
-        .map(|u| user_name_or_identity(&u))
-        .unwrap_or_else(|| "unknown".to_string());
-    println!("{}: {}", sender, message.text);
-}
-
-/// Our `on_set_name` callback: print a warning if the reducer failed.
-fn on_name_set(ctx: &ReducerEventContext, name: &String) {
-    if let Status::Failed(err) = &ctx.event.status {
-        eprintln!("Failed to change name to {:?}: {}", name, err);
-    }
-}
-
-/// Our `on_send_message` callback: print a warning if the reducer failed.
-fn on_message_sent(ctx: &ReducerEventContext, text: &String) {
-    if let Status::Failed(err) = &ctx.event.status {
-        eprintln!("Failed to send message {:?}: {}", text, err);
-    }
-}
-
-/// Register subscriptions for all rows of both tables.
-fn subscribe_to_tables(ctx: &DbConnection) {
-    ctx.subscription_builder()
-        .on_applied(on_sub_applied)
-        .on_error(on_sub_error)
-        .subscribe(["SELECT * FROM user", "SELECT * FROM message"]);
-}
-
-/// Our `on_subscription_applied` callback:
-/// sort all past messages and print them in timestamp order.
-fn on_sub_applied(ctx: &SubscriptionEventContext) {
-    let mut messages = ctx.db.message().iter().collect::<Vec<_>>();
-    messages.sort_by_key(|m| m.sent);
-    for message in messages {
-        print_message(ctx, &message);
-    }
-    println!("Fully connected and all subscriptions applied.");
-    println!("Use /name to set your name, or type a message!");
-}
-
-/// Or `on_error` callback:
-/// print the error, then exit the process.
-fn on_sub_error(_ctx: &ErrorContext, err: Error) {
-    eprintln!("Subscription failed: {}", err);
-    std::process::exit(1);
+fn server_update(ctx: &EventContext, old: &Server, new: &Server) {
+    println!("achso")
 }

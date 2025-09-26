@@ -4,14 +4,16 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::event_type::Event;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct User {
-    pub identity: __sdk::Identity,
-    pub name: String,
-    pub online: bool,
+pub struct ServerEvent {
+    pub id: u128,
+    pub match_id: String,
+    pub event: Event,
 }
 
-impl __sdk::InModule for User {
+impl __sdk::InModule for ServerEvent {
     type Module = super::RemoteModule;
 }

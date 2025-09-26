@@ -4,20 +4,13 @@ use spacetimedb::{
 };
 use tm_server_types::event::Event;
 
-mod entity;
 mod event;
+mod leaderboard;
 mod r#match;
+mod server;
 mod stage;
 mod tournament;
-
-#[table(name = event_template,public)]
-pub struct EventTemplate {}
-
-#[table(name = stage_template,public)]
-pub struct StageTemplate {}
-
-#[table(name = match_template,public)]
-pub struct MatchTemplate {}
+mod user;
 
 #[reducer]
 pub fn post_event(ctx: &ReducerContext, event: Event) {

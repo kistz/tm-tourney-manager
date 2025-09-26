@@ -4,17 +4,15 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::server_events_type::ServerEvents;
-use super::server_status_type::ServerStatus;
-use super::user_type::User;
+use super::server_command_type::ServerCommand;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct Server {
+    pub online: bool,
     pub server_id: String,
-    pub owner: User,
-    pub events: ServerEvents,
-    pub status: ServerStatus,
+    pub owner_id: String,
+    pub server_command: ServerCommand,
 }
 
 impl __sdk::InModule for Server {

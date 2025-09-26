@@ -2,10 +2,8 @@
 // WILL NOT BE SAVED. MODIFY TABLES IN YOUR MODULE SOURCE CODE INSTEAD.
 
 #![allow(unused, clippy::all)]
-use super::server_events_type::ServerEvents;
-use super::server_status_type::ServerStatus;
+use super::server_command_type::ServerCommand;
 use super::server_type::Server;
-use super::user_type::User;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 /// Table handle for the table `server`.
@@ -84,6 +82,23 @@ impl<'ctx> __sdk::Table for ServerTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<Server>("server");
+    _table.add_unique_constraint::<String>("server_id", |row| &row.server_id);
+}
+pub struct ServerUpdateCallbackId(__sdk::CallbackId);
+
+impl<'ctx> __sdk::TableWithPrimaryKey for ServerTableHandle<'ctx> {
+    type UpdateCallbackId = ServerUpdateCallbackId;
+
+    fn on_update(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
+    ) -> ServerUpdateCallbackId {
+        ServerUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    }
+
+    fn remove_on_update(&self, callback: ServerUpdateCallbackId) {
+        self.imp.remove_on_update(callback.0)
+    }
 }
 
 #[doc(hidden)]
@@ -95,4 +110,34 @@ pub(super) fn parse_table_update(
             .with_cause(e)
             .into()
     })
+}
+
+/// Access to the `server_id` unique index on the table `server`,
+/// which allows point queries on the field of the same name
+/// via the [`ServerServerIdUnique::find`] method.
+///
+/// Users are encouraged not to explicitly reference this type,
+/// but to directly chain method calls,
+/// like `ctx.db.server().server_id().find(...)`.
+pub struct ServerServerIdUnique<'ctx> {
+    imp: __sdk::UniqueConstraintHandle<Server, String>,
+    phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
+}
+
+impl<'ctx> ServerTableHandle<'ctx> {
+    /// Get a handle on the `server_id` unique index on the table `server`.
+    pub fn server_id(&self) -> ServerServerIdUnique<'ctx> {
+        ServerServerIdUnique {
+            imp: self.imp.get_unique_constraint::<String>("server_id"),
+            phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<'ctx> ServerServerIdUnique<'ctx> {
+    /// Find the subscribed row whose `server_id` column value is equal to `col_val`,
+    /// if such a row is present in the client cache.
+    pub fn find(&self, col_val: &String) -> Option<Server> {
+        self.imp.find(col_val)
+    }
 }

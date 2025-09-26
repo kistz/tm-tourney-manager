@@ -1,17 +1,15 @@
 use spacetimedb::{Identity, SpacetimeType, table};
 
-#[table(name = entity, public)]
-pub struct Entity {
+#[table(name = user, public)]
+pub struct User {
     #[primary_key]
     identity: Identity,
     name: String,
     online: bool,
-
-    role: Roles,
 }
 
-#[derive(Debug, Clone, Copy, SpacetimeType)]
+/* #[derive(Debug, Clone, Copy, SpacetimeType)]
 pub enum Roles {
     User,
     TrackmaniaServer,
-}
+} */
