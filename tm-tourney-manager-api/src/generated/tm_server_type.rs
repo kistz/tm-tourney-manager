@@ -4,12 +4,17 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::server_command_type::ServerCommand;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct EventTemplate {
-    pub name: String,
+pub struct TmServer {
+    pub server_id: String,
+    pub owner_id: String,
+    pub online: bool,
+    pub server_command: ServerCommand,
 }
 
-impl __sdk::InModule for EventTemplate {
+impl __sdk::InModule for TmServer {
     type Module = super::RemoteModule;
 }

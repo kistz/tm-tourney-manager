@@ -18,3 +18,7 @@ crate-type = ["cdylib"]
 log = "0.4"
 spacetimedb = { version = "*" }
 tm-server-types = { path = "../tm-server-types", features = ['spacetime'] }
+
+[features]
+default = ["development"]
+development = []

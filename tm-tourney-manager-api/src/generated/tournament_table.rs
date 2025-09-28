@@ -84,6 +84,7 @@ impl<'ctx> __sdk::Table for TournamentTableHandle<'ctx> {
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<Tournament>("tournament");
     _table.add_unique_constraint::<u128>("id", |row| &row.id);
+    _table.add_unique_constraint::<String>("name", |row| &row.name);
 }
 pub struct TournamentUpdateCallbackId(__sdk::CallbackId);
 
@@ -139,6 +140,36 @@ impl<'ctx> TournamentIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u128) -> Option<Tournament> {
+        self.imp.find(col_val)
+    }
+}
+
+/// Access to the `name` unique index on the table `tournament`,
+/// which allows point queries on the field of the same name
+/// via the [`TournamentNameUnique::find`] method.
+///
+/// Users are encouraged not to explicitly reference this type,
+/// but to directly chain method calls,
+/// like `ctx.db.tournament().name().find(...)`.
+pub struct TournamentNameUnique<'ctx> {
+    imp: __sdk::UniqueConstraintHandle<Tournament, String>,
+    phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
+}
+
+impl<'ctx> TournamentTableHandle<'ctx> {
+    /// Get a handle on the `name` unique index on the table `tournament`.
+    pub fn name(&self) -> TournamentNameUnique<'ctx> {
+        TournamentNameUnique {
+            imp: self.imp.get_unique_constraint::<String>("name"),
+            phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<'ctx> TournamentNameUnique<'ctx> {
+    /// Find the subscribed row whose `name` column value is equal to `col_val`,
+    /// if such a row is present in the client cache.
+    pub fn find(&self, col_val: &String) -> Option<Tournament> {
         self.imp.find(col_val)
     }
 }

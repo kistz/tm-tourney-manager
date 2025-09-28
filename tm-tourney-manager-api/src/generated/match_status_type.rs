@@ -4,17 +4,17 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::server_command_type::ServerCommand;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct Server {
-    pub online: bool,
-    pub server_id: String,
-    pub owner_id: String,
-    pub server_command: ServerCommand,
+#[derive(Copy, Eq, Hash)]
+pub enum MatchStatus {
+    Upcoming,
+
+    Live,
+
+    Ended,
 }
 
-impl __sdk::InModule for Server {
+impl __sdk::InModule for MatchStatus {
     type Module = super::RemoteModule;
 }

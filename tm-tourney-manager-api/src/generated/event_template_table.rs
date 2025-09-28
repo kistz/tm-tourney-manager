@@ -81,6 +81,23 @@ impl<'ctx> __sdk::Table for EventTemplateTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<EventTemplate>("event_template");
+    _table.add_unique_constraint::<u128>("id", |row| &row.id);
+}
+pub struct EventTemplateUpdateCallbackId(__sdk::CallbackId);
+
+impl<'ctx> __sdk::TableWithPrimaryKey for EventTemplateTableHandle<'ctx> {
+    type UpdateCallbackId = EventTemplateUpdateCallbackId;
+
+    fn on_update(
+        &self,
+        callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
+    ) -> EventTemplateUpdateCallbackId {
+        EventTemplateUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    }
+
+    fn remove_on_update(&self, callback: EventTemplateUpdateCallbackId) {
+        self.imp.remove_on_update(callback.0)
+    }
 }
 
 #[doc(hidden)]
@@ -92,4 +109,34 @@ pub(super) fn parse_table_update(
             .with_cause(e)
             .into()
     })
+}
+
+/// Access to the `id` unique index on the table `event_template`,
+/// which allows point queries on the field of the same name
+/// via the [`EventTemplateIdUnique::find`] method.
+///
+/// Users are encouraged not to explicitly reference this type,
+/// but to directly chain method calls,
+/// like `ctx.db.event_template().id().find(...)`.
+pub struct EventTemplateIdUnique<'ctx> {
+    imp: __sdk::UniqueConstraintHandle<EventTemplate, u128>,
+    phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
+}
+
+impl<'ctx> EventTemplateTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `event_template`.
+    pub fn id(&self) -> EventTemplateIdUnique<'ctx> {
+        EventTemplateIdUnique {
+            imp: self.imp.get_unique_constraint::<u128>("id"),
+            phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<'ctx> EventTemplateIdUnique<'ctx> {
+    /// Find the subscribed row whose `id` column value is equal to `col_val`,
+    /// if such a row is present in the client cache.
+    pub fn find(&self, col_val: &u128) -> Option<EventTemplate> {
+        self.imp.find(col_val)
+    }
 }

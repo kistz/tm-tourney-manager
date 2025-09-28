@@ -7,7 +7,9 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 pub mod add_event_reducer;
+pub mod add_server_reducer;
 pub mod client_connected_reducer;
+pub mod create_event_template_reducer;
 pub mod create_tournament_reducer;
 pub mod custom_type;
 pub mod end_map_end_type;
@@ -43,14 +45,14 @@ pub mod send_message_schedule_type;
 pub mod server_command_type;
 pub mod server_event_table;
 pub mod server_event_type;
-pub mod server_table;
-pub mod server_type;
 pub mod stage_template_table;
 pub mod stage_template_type;
 pub mod start_line_type;
 pub mod start_map_type;
 pub mod start_turn_type;
 pub mod team_type;
+pub mod tm_server_table;
+pub mod tm_server_type;
 pub mod tournament_event_table;
 pub mod tournament_event_type;
 pub mod tournament_stage_table;
@@ -65,8 +67,12 @@ pub mod user_type;
 pub mod way_point_type;
 
 pub use add_event_reducer::{add_event, set_flags_for_add_event, AddEventCallbackId};
+pub use add_server_reducer::{add_server, set_flags_for_add_server, AddServerCallbackId};
 pub use client_connected_reducer::{
     client_connected, set_flags_for_client_connected, ClientConnectedCallbackId,
+};
+pub use create_event_template_reducer::{
+    create_event_template, set_flags_for_create_event_template, CreateEventTemplateCallbackId,
 };
 pub use create_tournament_reducer::{
     create_tournament, set_flags_for_create_tournament, CreateTournamentCallbackId,
@@ -109,14 +115,14 @@ pub use send_message_schedule_type::SendMessageSchedule;
 pub use server_command_type::ServerCommand;
 pub use server_event_table::*;
 pub use server_event_type::ServerEvent;
-pub use server_table::*;
-pub use server_type::Server;
 pub use stage_template_table::*;
 pub use stage_template_type::StageTemplate;
 pub use start_line_type::StartLine;
 pub use start_map_type::StartMap;
 pub use start_turn_type::StartTurn;
 pub use team_type::Team;
+pub use tm_server_table::*;
+pub use tm_server_type::TmServer;
 pub use tournament_event_table::*;
 pub use tournament_event_type::TournamentEvent;
 pub use tournament_stage_table::*;
@@ -139,7 +145,9 @@ pub use way_point_type::WayPoint;
 
 pub enum Reducer {
     AddEvent { with: u128, to: u128 },
+    AddServer { id: String },
     ClientConnected,
+    CreateEventTemplate { name: String },
     CreateTournament { name: String },
     IdentityDisconnected,
     PostEvent { event: Event },
@@ -154,7 +162,9 @@ impl __sdk::Reducer for Reducer {
     fn reducer_name(&self) -> &'static str {
         match self {
             Reducer::AddEvent { .. } => "add_event",
+            Reducer::AddServer { .. } => "add_server",
             Reducer::ClientConnected => "client_connected",
+            Reducer::CreateEventTemplate { .. } => "create_event_template",
             Reducer::CreateTournament { .. } => "create_tournament",
             Reducer::IdentityDisconnected => "identity_disconnected",
             Reducer::PostEvent { .. } => "post_event",
@@ -173,9 +183,20 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 )?
                 .into(),
             ),
+            "add_server" => Ok(
+                __sdk::parse_reducer_args::<add_server_reducer::AddServerArgs>(
+                    "add_server",
+                    &value.args,
+                )?
+                .into(),
+            ),
             "client_connected" => Ok(__sdk::parse_reducer_args::<
                 client_connected_reducer::ClientConnectedArgs,
             >("client_connected", &value.args)?
+            .into()),
+            "create_event_template" => Ok(__sdk::parse_reducer_args::<
+                create_event_template_reducer::CreateEventTemplateArgs,
+            >("create_event_template", &value.args)?
             .into()),
             "create_tournament" => Ok(__sdk::parse_reducer_args::<
                 create_tournament_reducer::CreateTournamentArgs,
@@ -214,9 +235,9 @@ pub struct DbUpdate {
     match_template: __sdk::TableUpdate<MatchTemplate>,
     matches: __sdk::TableUpdate<Match>,
     send_message_schedule: __sdk::TableUpdate<SendMessageSchedule>,
-    server: __sdk::TableUpdate<Server>,
     server_event: __sdk::TableUpdate<ServerEvent>,
     stage_template: __sdk::TableUpdate<StageTemplate>,
+    tm_server: __sdk::TableUpdate<TmServer>,
     tournament: __sdk::TableUpdate<Tournament>,
     tournament_event: __sdk::TableUpdate<TournamentEvent>,
     tournament_stage: __sdk::TableUpdate<TournamentStage>,
@@ -241,15 +262,15 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "send_message_schedule" => db_update.send_message_schedule.append(
                     send_message_schedule_table::parse_table_update(table_update)?,
                 ),
-                "server" => db_update
-                    .server
-                    .append(server_table::parse_table_update(table_update)?),
                 "server_event" => db_update
                     .server_event
                     .append(server_event_table::parse_table_update(table_update)?),
                 "stage_template" => db_update
                     .stage_template
                     .append(stage_template_table::parse_table_update(table_update)?),
+                "tm_server" => db_update
+                    .tm_server
+                    .append(tm_server_table::parse_table_update(table_update)?),
                 "tournament" => db_update
                     .tournament
                     .append(tournament_table::parse_table_update(table_update)?),
@@ -288,8 +309,9 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
-        diff.event_template =
-            cache.apply_diff_to_table::<EventTemplate>("event_template", &self.event_template);
+        diff.event_template = cache
+            .apply_diff_to_table::<EventTemplate>("event_template", &self.event_template)
+            .with_updates_by_pk(|row| &row.id);
         diff.match_template = cache
             .apply_diff_to_table::<MatchTemplate>("match_template", &self.match_template)
             .with_updates_by_pk(|row| &row.id);
@@ -302,14 +324,14 @@ impl __sdk::DbUpdate for DbUpdate {
                 &self.send_message_schedule,
             )
             .with_updates_by_pk(|row| &row.scheduled_id);
-        diff.server = cache
-            .apply_diff_to_table::<Server>("server", &self.server)
-            .with_updates_by_pk(|row| &row.server_id);
         diff.server_event = cache
             .apply_diff_to_table::<ServerEvent>("server_event", &self.server_event)
             .with_updates_by_pk(|row| &row.id);
         diff.stage_template =
             cache.apply_diff_to_table::<StageTemplate>("stage_template", &self.stage_template);
+        diff.tm_server = cache
+            .apply_diff_to_table::<TmServer>("tm_server", &self.tm_server)
+            .with_updates_by_pk(|row| &row.server_id);
         diff.tournament = cache
             .apply_diff_to_table::<Tournament>("tournament", &self.tournament)
             .with_updates_by_pk(|row| &row.id);
@@ -335,9 +357,9 @@ pub struct AppliedDiff<'r> {
     match_template: __sdk::TableAppliedDiff<'r, MatchTemplate>,
     matches: __sdk::TableAppliedDiff<'r, Match>,
     send_message_schedule: __sdk::TableAppliedDiff<'r, SendMessageSchedule>,
-    server: __sdk::TableAppliedDiff<'r, Server>,
     server_event: __sdk::TableAppliedDiff<'r, ServerEvent>,
     stage_template: __sdk::TableAppliedDiff<'r, StageTemplate>,
+    tm_server: __sdk::TableAppliedDiff<'r, TmServer>,
     tournament: __sdk::TableAppliedDiff<'r, Tournament>,
     tournament_event: __sdk::TableAppliedDiff<'r, TournamentEvent>,
     tournament_stage: __sdk::TableAppliedDiff<'r, TournamentStage>,
@@ -370,7 +392,6 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.send_message_schedule,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<Server>("server", &self.server, event);
         callbacks.invoke_table_row_callbacks::<ServerEvent>(
             "server_event",
             &self.server_event,
@@ -381,6 +402,7 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.stage_template,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<TmServer>("tm_server", &self.tm_server, event);
         callbacks.invoke_table_row_callbacks::<Tournament>("tournament", &self.tournament, event);
         callbacks.invoke_table_row_callbacks::<TournamentEvent>(
             "tournament_event",
@@ -987,9 +1009,9 @@ impl __sdk::SpacetimeModule for RemoteModule {
         match_template_table::register_table(client_cache);
         matches_table::register_table(client_cache);
         send_message_schedule_table::register_table(client_cache);
-        server_table::register_table(client_cache);
         server_event_table::register_table(client_cache);
         stage_template_table::register_table(client_cache);
+        tm_server_table::register_table(client_cache);
         tournament_table::register_table(client_cache);
         tournament_event_table::register_table(client_cache);
         tournament_stage_table::register_table(client_cache);

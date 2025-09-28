@@ -33,6 +33,10 @@ pub enum EventStatus {
 
 #[table(name = event_template,public)]
 pub struct EventTemplate {
+    #[auto_inc]
+    #[primary_key]
+    id: u128,
+
     name: String,
 }
 
@@ -49,3 +53,6 @@ pub fn add_event(ctx: &ReducerContext, with: u128, to: u128) {
         leaderboard: todo!(),
     }); */
 }
+
+#[reducer]
+pub fn create_event_template(ctx: &ReducerContext, name: String /* config:  */) {}

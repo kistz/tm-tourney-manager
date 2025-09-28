@@ -2420,6 +2420,7 @@ dependencies = [
  "nadeo-api",
  "spacetimedb-sdk",
  "tm-server-client",
+ "tm-tourney-manager-api",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -2441,6 +2442,14 @@ dependencies = [
  "log",
  "spacetimedb",
  "tm-server-types",
+]
+
+[[package]]
+name = "tm-tourney-manager-api"
+version = "0.0.0"
+dependencies = [
+ "hex",
+ "spacetimedb-sdk",
 ]
 
 [[package]]

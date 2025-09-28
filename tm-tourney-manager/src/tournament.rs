@@ -11,6 +11,7 @@ pub struct Tournament {
     creator: String,
     owners: Vec<String>,
 
+    #[unique]
     name: String,
 
     status: TournamentStatus,
@@ -22,9 +23,13 @@ pub struct Tournament {
 
 #[derive(Debug, SpacetimeType)]
 pub enum TournamentStatus {
+    // API cant query it
     Planning,
+    // API is public
     Announced,
+    // Events have started
     Ongoing,
+    // Whole Tournament finshed
     Ended,
 }
 

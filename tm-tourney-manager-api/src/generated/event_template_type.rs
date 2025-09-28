@@ -6,9 +6,11 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-#[derive(Copy, Eq, Hash)]
-pub enum MatchStatus {}
+pub struct EventTemplate {
+    pub id: u128,
+    pub name: String,
+}
 
-impl __sdk::InModule for MatchStatus {
+impl __sdk::InModule for EventTemplate {
     type Module = super::RemoteModule;
 }

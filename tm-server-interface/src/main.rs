@@ -3,10 +3,11 @@ use spacetimedb_sdk::{
     DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
 };
 
+use tm_tourney_manager_api::*;
+
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
-mod tourney_api_gen;
-use tourney_api_gen::*;
+
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 /// The URI of the SpacetimeDB instance hosting our chat database and module.
@@ -15,6 +16,8 @@ const HOST: &str = "http://localhost:1234";
 /// The database name we chose when we published our module.
 const DB_NAME: &str = "tourney-manager";
 
+const TM_SERVER_ID: &str = "test";
+
 /// Load credentials from a file and connect to the database.
 fn connect_to_db() -> DbConnection {
     /* let nando_auth = NadeoClient::builder()
@@ -22,7 +25,7 @@ fn connect_to_db() -> DbConnection {
     .build()
     .await
     .unwrap(); */
-    //let TOKEN = "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI2OTgwOWMzNy02NWI0LTQ3Y2YtOTE5Ny1jZGI3NmU4MjVlNWUifQ.eyJleHAiOjE3NTg5MjU5NzEsImlhdCI6MTc1ODg4OTk3MSwianRpIjoiNWU0NzE1NzQtMWM4My1mYTVmLWY5MzQtOTA5ZmVhNzUwODczIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1Njc4L3JlYWxtcy9tYXN0ZXIiLCJzdWIiOiIxM2RiMjk5OS04NjVlLTRjNmEtYWZjOC0zMjU4YzI0MDQxZGYiLCJ0eXAiOiJTZXJpYWxpemVkLUlEIiwic2lkIjoiZGIxOWMxOTAtYjc3NS00ZDZiLTk1NTAtY2ViMjMzNzBjOWE2Iiwic3RhdGVfY2hlY2tlciI6IjFLcmloUG1XY3NuLUhPWHNrV3FVa0kxMi1wUFVENVlWa25WUGU1RmZUNk0ifQ.U2McRKPxmwT33AdCask2nlwmobTt48nVG7Y01AmgNdcd5pgmFeeziAHHoyRZjj1Zz89tODCHUIO-wVc1VQnx6Q";
+    //let TOKEN = "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwMDAwZWQ0MS1iODc1LTQ5NGMtYmMxOS02MTc4YWVjMWFhNzYifQ.eyJleHAiOjE3NTkwMDM1MTcsImlhdCI6MTc1ODk2NzUxNywianRpIjoiNDg3MWYwYzctODkzZi1jYTE5LTNmZWItM2NmMWQyM2ExZTliIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1Njc4L3JlYWxtcy9tYXN0ZXIiLCJzdWIiOiI2MjRkMWFmNC1iMTY2LTQ1MmYtYjdjYi0wZGM2YmY5NzZlNTAiLCJ0eXAiOiJTZXJpYWxpemVkLUlEIiwic2lkIjoiZWNhYjdkNTUtOTMwMC00YjlhLTkxNmQtMjE2ZWQxNjRmMWM3Iiwic3RhdGVfY2hlY2tlciI6Ik5WTC1KRWFKb0Z2YlF6eVpSdHJQc18xSHY0WGp6Vk1qbldxQUF1ZXF1OG8ifQ.kgOwfQqPfYKDZMZTn0VYhAGl8Jm68TZGcCDErvNKYZni6cBEP3Cy6Ukly7uxq_omzrVOhBFoher1szDFZ6aL_A";
 
     DbConnection::builder()
         // Register our `on_connect` callback, which will save our auth token.
@@ -79,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         )
         .await;
     // Connect to the database
-    let db = connect_to_db();
+    let spacetime = connect_to_db();
 
     let _: Result<bool, ClientError> = server
         .call(
@@ -94,22 +97,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Subscribe to SQL queries in order to construct a local partial replica of the database.
     subscribe_to_tables(&db); */
 
-    db.db.server().on_update(server_update);
+    spacetime.reducers.add_server(TM_SERVER_ID.into());
+
+    spacetime.db.tm_server().on_update(server_update);
 
     // Spawn a thread, where the connection will process messages and invoke callbacks.
-    db.run_threaded();
+    spacetime.run_threaded();
 
     server.configure().await;
 
     server.event(move |event| {
-        if db
+        if spacetime
             .reducers
             .post_event(
                 //SAFETY: Its the same type. Sadly Rust does not know that :< .
                 unsafe {
                     std::mem::transmute::<
                         tm_server_client::types::event::Event,
-                        tourney_api_gen::Event,
+                        tm_tourney_manager_api::Event,
                     >(event.clone())
                 },
             )
@@ -173,6 +178,6 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
     ctx.reducers.on_send_message(on_message_sent);
 } */
 
-fn server_update(ctx: &EventContext, old: &Server, new: &Server) {
+fn server_update(ctx: &EventContext, old: &TmServer, new: &TmServer) {
     println!("achso")
 }

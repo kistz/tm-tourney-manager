@@ -15,7 +15,11 @@ pub struct Match {
 }
 
 #[derive(Debug, SpacetimeType)]
-pub enum MatchStatus {}
+pub enum MatchStatus {
+    Upcoming,
+    Live,
+    Ended,
+}
 
 #[table(name = server_event,public)]
 pub struct ServerEvent {

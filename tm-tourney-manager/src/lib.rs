@@ -1,6 +1,6 @@
 use spacetimedb::{
-    Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration, Timestamp, reducer,
-    table,
+    reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration,
+    Timestamp,
 };
 use tm_server_types::event::Event;
 
