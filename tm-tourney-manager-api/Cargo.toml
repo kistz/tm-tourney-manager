@@ -8,6 +8,8 @@ license.workspace = true
 version.workspace = true
 repository.workspace = true
 
+publish = true
+
 [dependencies]
 spacetimedb-sdk = "*"
 hex = "0.4"

@@ -30,3 +30,17 @@ pub fn add_server(ctx: &ReducerContext, id: String) {
         server_command: ServerCommand { pause: false },
     });
 }
+
+#[cfg(feature = "development")]
+#[reducer]
+pub fn call_server(ctx: &ReducerContext, id: String) {
+    log::debug!("updated");
+    if let Some(server) = ctx.db.tm_server().server_id().find(id) {
+        ctx.db.tm_server().server_id().update(TmServer {
+            server_command: ServerCommand {
+                pause: !server.server_command.pause,
+            },
+            ..server
+        });
+    }
+}

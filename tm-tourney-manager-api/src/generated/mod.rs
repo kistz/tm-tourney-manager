@@ -8,6 +8,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 pub mod add_event_reducer;
 pub mod add_server_reducer;
+pub mod call_server_reducer;
 pub mod client_connected_reducer;
 pub mod create_event_template_reducer;
 pub mod create_tournament_reducer;
@@ -68,6 +69,7 @@ pub mod way_point_type;
 
 pub use add_event_reducer::{add_event, set_flags_for_add_event, AddEventCallbackId};
 pub use add_server_reducer::{add_server, set_flags_for_add_server, AddServerCallbackId};
+pub use call_server_reducer::{call_server, set_flags_for_call_server, CallServerCallbackId};
 pub use client_connected_reducer::{
     client_connected, set_flags_for_client_connected, ClientConnectedCallbackId,
 };
@@ -146,6 +148,7 @@ pub use way_point_type::WayPoint;
 pub enum Reducer {
     AddEvent { with: u128, to: u128 },
     AddServer { id: String },
+    CallServer { id: String },
     ClientConnected,
     CreateEventTemplate { name: String },
     CreateTournament { name: String },
@@ -163,6 +166,7 @@ impl __sdk::Reducer for Reducer {
         match self {
             Reducer::AddEvent { .. } => "add_event",
             Reducer::AddServer { .. } => "add_server",
+            Reducer::CallServer { .. } => "call_server",
             Reducer::ClientConnected => "client_connected",
             Reducer::CreateEventTemplate { .. } => "create_event_template",
             Reducer::CreateTournament { .. } => "create_tournament",
@@ -186,6 +190,13 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "add_server" => Ok(
                 __sdk::parse_reducer_args::<add_server_reducer::AddServerArgs>(
                     "add_server",
+                    &value.args,
+                )?
+                .into(),
+            ),
+            "call_server" => Ok(
+                __sdk::parse_reducer_args::<call_server_reducer::CallServerArgs>(
+                    "call_server",
                     &value.args,
                 )?
                 .into(),

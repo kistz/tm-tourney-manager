@@ -1,3 +1,8 @@
+use std::{
+    sync::{LazyLock, OnceLock},
+    thread,
+};
+
 use nadeo_api::NadeoClient;
 use spacetimedb_sdk::{
     DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
@@ -6,7 +11,10 @@ use spacetimedb_sdk::{
 use tm_tourney_manager_api::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
-use tokio::signal;
+use tokio::{
+    signal,
+    task::{block_in_place, spawn_blocking},
+};
 
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -17,6 +25,10 @@ const HOST: &str = "http://localhost:1234";
 const DB_NAME: &str = "tourney-manager";
 
 const TM_SERVER_ID: &str = "test";
+
+/// Exposes the associated trackmania server globally.
+static SERVER: OnceLock<TrackmaniaServer> = OnceLock::new();
+static SPACETIME: OnceLock<DbConnection> = OnceLock::new();
 
 /// Load credentials from a file and connect to the database.
 fn connect_to_db() -> DbConnection {
@@ -57,8 +69,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    //Initialize the Trackmania server
-    let server = TrackmaniaServer::new("127.0.0.1:5001").await;
+    {
+        //Initialize the Trackmania server
+        let server = TrackmaniaServer::new("127.0.0.1:5001").await;
+        _ = SERVER.set(server);
+    }
+
+    let server = SERVER.wait();
 
     let _: Result<bool, ClientError> = server.call("SetApiVersion", "2025-07-04").await;
 
@@ -81,8 +98,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             ("XmlRpc.EnableCallbacks", ["true"]),
         )
         .await;
-    // Connect to the database
-    let spacetime = connect_to_db();
 
     let _: Result<bool, ClientError> = server
         .call(
@@ -91,22 +106,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         )
         .await;
 
+    {
+        let spacetime = connect_to_db();
+        _ = SPACETIME.set(spacetime);
+    }
+
+    let spacetime = SPACETIME.wait();
+    // Connect to the database
+
     /*  // Register callbacks to run in response to database events.
     register_callbacks(&db);
 
     // Subscribe to SQL queries in order to construct a local partial replica of the database.
     subscribe_to_tables(&db); */
 
-    spacetime.reducers.add_server(TM_SERVER_ID.into());
+    _ = spacetime
+        .subscription_builder()
+        .on_applied(|d| println!("subscribed"))
+        .on_error(|what, mhm| println!("{mhm:?}"))
+        .subscribe("SELECT * FROM tm_server WHERE server_id = 'test'");
+
+    _ = spacetime.reducers.add_server(TM_SERVER_ID.into());
 
     spacetime.db.tm_server().on_update(server_update);
-
-    // Spawn a thread, where the connection will process messages and invoke callbacks.
-    spacetime.run_threaded();
 
     server.configure().await;
 
     server.event(move |event| {
+        let spacetime = SPACETIME.wait();
         if spacetime
             .reducers
             .post_event(
@@ -121,6 +148,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             .is_err()
         {
             println!("Event failed to publish!")
+        }
+    });
+
+    // Spawn a thread, where the connection will process messages and invoke callbacks.
+    tokio::spawn(async move {
+        loop {
+            _ = spacetime.run_async().await;
         }
     });
 
@@ -179,5 +213,23 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
 } */
 
 fn server_update(ctx: &EventContext, old: &TmServer, new: &TmServer) {
+    let server = SERVER.wait();
+    let paused = new.server_command.pause;
+
+    tokio::task::spawn(async move {
+        let _: Result<bool, ClientError> =
+            server.call("ChatSendServerMessage", "Method called").await;
+
+        let _: Result<bool, ClientError> = server
+            .call(
+                "TriggerModeScriptEventArray",
+                (
+                    "Maniaplanet.Pause.SetActive",
+                    [if paused { "true" } else { "false" }],
+                ),
+            )
+            .await;
+    });
+
     println!("achso")
 }
