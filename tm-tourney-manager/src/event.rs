@@ -1,30 +1,39 @@
 use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
 
-use crate::leaderboard::Leaderboard;
+use crate::{leaderboard::Leaderboard, tournament::tournament};
+
+mod scheduling;
 
 #[table(name = tournament_event,public)]
 pub struct TournamentEvent {
     #[auto_inc]
     #[primary_key]
-    event_id: u128,
+    pub id: u128,
 
-    /// The template used for this Event.
-    template: u128,
-    /// To which instantiation the template belongs.
     tournament: u128,
 
-    status: EventStatus,
+    // Unique for the tournament
+    name: String,
+
+    //TODO registered players
 
     //Scheduled time
-    starting: String,
+    //starting: String,
+    status: EventStatus,
 
     stages: Vec<u128>,
+    //leaderboard: Leaderboard,
+}
 
-    leaderboard: Leaderboard,
+impl TournamentEvent {
+    pub fn add_stage(&mut self, stage: u128) {
+        self.stages.push(stage);
+    }
 }
 
 #[derive(Debug, SpacetimeType)]
 pub enum EventStatus {
+    Planning,
     Registration,
     Scheduled,
     Ongoing,
@@ -40,18 +49,23 @@ pub struct EventTemplate {
     name: String,
 }
 
+/// Adds a new Event to the specified Tournament.
 #[reducer]
-pub fn add_event(ctx: &ReducerContext, with: u128, to: u128) {
-    //TODO
-    /* ctx.db.event().insert(Event {
-        event_id: 0,
-        template: with,
-        tournament: to,
-        status: todo!(),
-        starting: todo!(),
-        stages: todo!(),
-        leaderboard: todo!(),
-    }); */
+pub fn add_event(ctx: &ReducerContext, name: String, to: u128, with: Option<u128>) {
+    //TODO authorization
+    if let Some(mut tournamet) = ctx.db.tournament().id().find(to) {
+        let event = ctx.db.tournament_event().insert(TournamentEvent {
+            id: 0,
+            tournament: to,
+            name,
+            status: EventStatus::Planning,
+            stages: Vec::new(),
+        });
+
+        tournamet.add_event(event.id);
+
+        ctx.db.tournament().id().update(tournamet);
+    }
 }
 
 #[reducer]

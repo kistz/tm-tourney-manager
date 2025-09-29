@@ -1,7 +1,4 @@
-use std::{
-    sync::{LazyLock, OnceLock},
-    thread,
-};
+use std::sync::OnceLock;
 
 use nadeo_api::NadeoClient;
 use spacetimedb_sdk::{
@@ -11,10 +8,7 @@ use spacetimedb_sdk::{
 use tm_tourney_manager_api::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
-use tokio::{
-    signal,
-    task::{block_in_place, spawn_blocking},
-};
+use tokio::signal;
 
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -106,25 +100,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         )
         .await;
 
+    // Connect to the database
     {
         let spacetime = connect_to_db();
         _ = SPACETIME.set(spacetime);
     }
 
     let spacetime = SPACETIME.wait();
-    // Connect to the database
-
-    /*  // Register callbacks to run in response to database events.
-    register_callbacks(&db);
-
-    // Subscribe to SQL queries in order to construct a local partial replica of the database.
-    subscribe_to_tables(&db); */
 
     _ = spacetime
         .subscription_builder()
-        .on_applied(|d| println!("subscribed"))
-        .on_error(|what, mhm| println!("{mhm:?}"))
-        .subscribe("SELECT * FROM tm_server WHERE server_id = 'test'");
+        .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
+        .on_error(|_, mhm| tracing::error!("Subscription failed: {mhm:?}"))
+        .subscribe(format!(
+            "SELECT * FROM tm_server WHERE id = '{TM_SERVER_ID}'"
+        ));
 
     _ = spacetime.reducers.add_server(TM_SERVER_ID.into());
 
@@ -137,7 +127,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         if spacetime
             .reducers
             .post_event(
-                //SAFETY: Its the same type. Sadly Rust does not know that :< .
+                TM_SERVER_ID.into(),
+                //SAFETY: Its the same type. Sadly Rust can not know that :< .
                 unsafe {
                     std::mem::transmute::<
                         tm_server_client::types::event::Event,
@@ -212,11 +203,11 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
     ctx.reducers.on_send_message(on_message_sent);
 } */
 
-fn server_update(ctx: &EventContext, old: &TmServer, new: &TmServer) {
+fn server_update(_: &EventContext, _: &TmServer, new: &TmServer) {
     let server = SERVER.wait();
     let paused = new.server_command.pause;
 
-    tokio::task::spawn(async move {
+    tokio::spawn(async move {
         let _: Result<bool, ClientError> =
             server.call("ChatSendServerMessage", "Method called").await;
 
@@ -230,6 +221,4 @@ fn server_update(ctx: &EventContext, old: &TmServer, new: &TmServer) {
             )
             .await;
     });
-
-    println!("achso")
 }

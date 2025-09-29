@@ -6,15 +6,15 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct AddEventArgs {
+pub(super) struct AddStageArgs {
     pub name: String,
     pub to: u128,
     pub with: Option<u128>,
 }
 
-impl From<AddEventArgs> for super::Reducer {
-    fn from(args: AddEventArgs) -> Self {
-        Self::AddEvent {
+impl From<AddStageArgs> for super::Reducer {
+    fn from(args: AddStageArgs) -> Self {
+        Self::AddStage {
             name: args.name,
             to: args.to,
             with: args.with,
@@ -22,59 +22,59 @@ impl From<AddEventArgs> for super::Reducer {
     }
 }
 
-impl __sdk::InModule for AddEventArgs {
+impl __sdk::InModule for AddStageArgs {
     type Module = super::RemoteModule;
 }
 
-pub struct AddEventCallbackId(__sdk::CallbackId);
+pub struct AddStageCallbackId(__sdk::CallbackId);
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `add_event`.
+/// Extension trait for access to the reducer `add_stage`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait add_event {
-    /// Request that the remote module invoke the reducer `add_event` to run as soon as possible.
+pub trait add_stage {
+    /// Request that the remote module invoke the reducer `add_stage` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
-    ///  and its status can be observed by listening for [`Self::on_add_event`] callbacks.
-    fn add_event(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()>;
-    /// Register a callback to run whenever we are notified of an invocation of the reducer `add_event`.
+    ///  and its status can be observed by listening for [`Self::on_add_stage`] callbacks.
+    fn add_stage(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()>;
+    /// Register a callback to run whenever we are notified of an invocation of the reducer `add_stage`.
     ///
     /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
     /// to determine the reducer's status.
     ///
-    /// The returned [`AddEventCallbackId`] can be passed to [`Self::remove_on_add_event`]
+    /// The returned [`AddStageCallbackId`] can be passed to [`Self::remove_on_add_stage`]
     /// to cancel the callback.
-    fn on_add_event(
+    fn on_add_stage(
         &self,
         callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
             + Send
             + 'static,
-    ) -> AddEventCallbackId;
-    /// Cancel a callback previously registered by [`Self::on_add_event`],
+    ) -> AddStageCallbackId;
+    /// Cancel a callback previously registered by [`Self::on_add_stage`],
     /// causing it not to run in the future.
-    fn remove_on_add_event(&self, callback: AddEventCallbackId);
+    fn remove_on_add_stage(&self, callback: AddStageCallbackId);
 }
 
-impl add_event for super::RemoteReducers {
-    fn add_event(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()> {
+impl add_stage for super::RemoteReducers {
+    fn add_stage(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()> {
         self.imp
-            .call_reducer("add_event", AddEventArgs { name, to, with })
+            .call_reducer("add_stage", AddStageArgs { name, to, with })
     }
-    fn on_add_event(
+    fn on_add_stage(
         &self,
         mut callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
             + Send
             + 'static,
-    ) -> AddEventCallbackId {
-        AddEventCallbackId(self.imp.on_reducer(
-            "add_event",
+    ) -> AddStageCallbackId {
+        AddStageCallbackId(self.imp.on_reducer(
+            "add_stage",
             Box::new(move |ctx: &super::ReducerEventContext| {
                 let super::ReducerEventContext {
                     event:
                         __sdk::ReducerEvent {
-                            reducer: super::Reducer::AddEvent { name, to, with },
+                            reducer: super::Reducer::AddStage { name, to, with },
                             ..
                         },
                     ..
@@ -86,27 +86,27 @@ impl add_event for super::RemoteReducers {
             }),
         ))
     }
-    fn remove_on_add_event(&self, callback: AddEventCallbackId) {
-        self.imp.remove_on_reducer("add_event", callback.0)
+    fn remove_on_add_stage(&self, callback: AddStageCallbackId) {
+        self.imp.remove_on_reducer("add_stage", callback.0)
     }
 }
 
 #[allow(non_camel_case_types)]
 #[doc(hidden)]
-/// Extension trait for setting the call-flags for the reducer `add_event`.
+/// Extension trait for setting the call-flags for the reducer `add_stage`.
 ///
 /// Implemented for [`super::SetReducerFlags`].
 ///
 /// This type is currently unstable and may be removed without a major version bump.
-pub trait set_flags_for_add_event {
-    /// Set the call-reducer flags for the reducer `add_event` to `flags`.
+pub trait set_flags_for_add_stage {
+    /// Set the call-reducer flags for the reducer `add_stage` to `flags`.
     ///
     /// This type is currently unstable and may be removed without a major version bump.
-    fn add_event(&self, flags: __ws::CallReducerFlags);
+    fn add_stage(&self, flags: __ws::CallReducerFlags);
 }
 
-impl set_flags_for_add_event for super::SetReducerFlags {
-    fn add_event(&self, flags: __ws::CallReducerFlags) {
-        self.imp.set_call_reducer_flags("add_event", flags);
+impl set_flags_for_add_stage for super::SetReducerFlags {
+    fn add_stage(&self, flags: __ws::CallReducerFlags) {
+        self.imp.set_call_reducer_flags("add_stage", flags);
     }
 }

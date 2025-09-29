@@ -9,9 +9,10 @@ use super::server_command_type::ServerCommand;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct TmServer {
-    pub server_id: String,
+    pub id: String,
     pub owner_id: String,
     pub online: bool,
+    pub active_match: Option<u128>,
     pub server_command: ServerCommand,
 }
 

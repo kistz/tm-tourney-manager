@@ -1,30 +1,29 @@
-use spacetimedb::{
-    reducer, table, Identity, ReducerContext, ScheduleAt, SpacetimeType, Table, TimeDuration,
-    Timestamp,
-};
-use tm_server_types::event::Event;
+use spacetimedb::{ReducerContext, reducer};
 
-mod event;
-mod leaderboard;
-mod r#match;
-mod server;
-mod stage;
-mod tournament;
-mod user;
+pub mod event;
+pub mod leaderboard;
+pub mod r#match;
+pub mod server;
+pub mod stage;
+pub mod tournament;
+pub mod user;
 
-#[reducer]
-pub fn post_event(ctx: &ReducerContext, event: Event) {
-    /* log::info!("{event:?}");
-    ctx.db.server_events().insert(ServerEvents {
-        event: "jaaa".to_string(),
-        content: "".to_owned(),
-        typed: event,
-    }); */
+#[reducer(init)]
+pub fn init(_ctx: &ReducerContext) {
+    /* let _ten_seconds = TimeDuration::from_micros(10_000_000);
+    /* ctx.db.send_message_schedule().insert(SendMessageSchedule {
+        scheduled_id: 0,
+        text: "I'm a bot sending a message every 10 seconds".to_string(),
+
+        // Creating a `ScheduleAt` from a `Duration` results in the reducer
+        // being called in a loop, once every `loop_duration`.
+        scheduled_at: ten_seconds.into(),
+    }); */ */
 }
 
 #[reducer(client_connected)]
 // Called when a client connects to a SpacetimeDB database server
-pub fn client_connected(ctx: &ReducerContext) {
+pub fn client_connected(_ctx: &ReducerContext) {
     /* if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
         // If this is a returning user, i.e. we already have a `User` with this `Identity`,
         // set `online: true`, but leave `name` and `identity` unchanged.
@@ -45,7 +44,7 @@ pub fn client_connected(ctx: &ReducerContext) {
 
 #[reducer(client_disconnected)]
 // Called when a client disconnects from SpacetimeDB database server
-pub fn identity_disconnected(ctx: &ReducerContext) {
+pub fn identity_disconnected(_ctx: &ReducerContext) {
     /* if let Some(user) = ctx.db.entity().identity().find(ctx.sender) {
         ctx.db.entity().identity().update(Entity {
             online: false,
@@ -59,47 +58,4 @@ pub fn identity_disconnected(ctx: &ReducerContext) {
             ctx.sender
         );
     } */
-}
-
-#[table(name = send_message_schedule, scheduled(send_message_sched))]
-struct SendMessageSchedule {
-    // Mandatory fields:
-    // ============================
-    /// An identifier for the scheduled reducer call.
-    #[primary_key]
-    #[auto_inc]
-    scheduled_id: u64,
-
-    /// Information about when the reducer should be called.
-    scheduled_at: ScheduleAt,
-
-    // In addition to the mandatory fields, any number of fields can be added.
-    // These can be used to provide extra information to the scheduled reducer.
-
-    // Custom fields:
-    // ============================
-    /// The text of the scheduled message to send.
-    text: String,
-}
-
-#[reducer]
-fn send_message_sched(ctx: &ReducerContext, arg: SendMessageSchedule) -> Result<(), String> {
-    /* let message_to_send = arg.text;
-
-    _ = send_message(ctx, message_to_send); */
-
-    Ok(())
-}
-
-#[reducer(init)]
-pub fn init(_ctx: &ReducerContext) {
-    let _ten_seconds = TimeDuration::from_micros(10_000_000);
-    /* ctx.db.send_message_schedule().insert(SendMessageSchedule {
-        scheduled_id: 0,
-        text: "I'm a bot sending a message every 10 seconds".to_string(),
-
-        // Creating a `ScheduleAt` from a `Duration` results in the reducer
-        // being called in a loop, once every `loop_duration`.
-        scheduled_at: ten_seconds.into(),
-    }); */
 }

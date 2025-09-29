@@ -7,6 +7,9 @@ This has a few advantages:
 3. Everything happening in matches gets recorded automatically and can be reconstructed.
 4. Live updating weboscket based api for custom tournament frontends. 
 
+## Architecture
+First let's discuss the architecture of the backend/database to give you an idea what possible. 
+
 ## Project Structure
 - `tm-server-types`: Provides type abstractions over GBX Remote 2 for use by all other crates or standalone.
 - `tm-server-client`: Implements the GBX Remote 2 protocol to interact with a Trackmania server over xml-rpc.

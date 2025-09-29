@@ -4,14 +4,17 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::match_status_type::MatchStatus;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct SendMessageSchedule {
-    pub scheduled_id: u64,
-    pub scheduled_at: __sdk::ScheduleAt,
-    pub text: String,
+pub struct StageMatch {
+    pub id: u128,
+    pub stage_id: u128,
+    pub server_id: Option<String>,
+    pub status: MatchStatus,
 }
 
-impl __sdk::InModule for SendMessageSchedule {
+impl __sdk::InModule for StageMatch {
     type Module = super::RemoteModule;
 }

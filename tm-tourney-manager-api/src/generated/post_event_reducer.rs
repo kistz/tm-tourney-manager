@@ -9,12 +9,16 @@ use super::event_type::Event;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct PostEventArgs {
+    pub id: String,
     pub event: Event,
 }
 
 impl From<PostEventArgs> for super::Reducer {
     fn from(args: PostEventArgs) -> Self {
-        Self::PostEvent { event: args.event }
+        Self::PostEvent {
+            id: args.id,
+            event: args.event,
+        }
     }
 }
 
@@ -34,7 +38,7 @@ pub trait post_event {
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed by listening for [`Self::on_post_event`] callbacks.
-    fn post_event(&self, event: Event) -> __sdk::Result<()>;
+    fn post_event(&self, id: String, event: Event) -> __sdk::Result<()>;
     /// Register a callback to run whenever we are notified of an invocation of the reducer `post_event`.
     ///
     /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
@@ -44,7 +48,7 @@ pub trait post_event {
     /// to cancel the callback.
     fn on_post_event(
         &self,
-        callback: impl FnMut(&super::ReducerEventContext, &Event) + Send + 'static,
+        callback: impl FnMut(&super::ReducerEventContext, &String, &Event) + Send + 'static,
     ) -> PostEventCallbackId;
     /// Cancel a callback previously registered by [`Self::on_post_event`],
     /// causing it not to run in the future.
@@ -52,12 +56,13 @@ pub trait post_event {
 }
 
 impl post_event for super::RemoteReducers {
-    fn post_event(&self, event: Event) -> __sdk::Result<()> {
-        self.imp.call_reducer("post_event", PostEventArgs { event })
+    fn post_event(&self, id: String, event: Event) -> __sdk::Result<()> {
+        self.imp
+            .call_reducer("post_event", PostEventArgs { id, event })
     }
     fn on_post_event(
         &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &Event) + Send + 'static,
+        mut callback: impl FnMut(&super::ReducerEventContext, &String, &Event) + Send + 'static,
     ) -> PostEventCallbackId {
         PostEventCallbackId(self.imp.on_reducer(
             "post_event",
@@ -65,7 +70,7 @@ impl post_event for super::RemoteReducers {
                 let super::ReducerEventContext {
                     event:
                         __sdk::ReducerEvent {
-                            reducer: super::Reducer::PostEvent { event },
+                            reducer: super::Reducer::PostEvent { id, event },
                             ..
                         },
                     ..
@@ -73,7 +78,7 @@ impl post_event for super::RemoteReducers {
                 else {
                     unreachable!()
                 };
-                callback(ctx, event)
+                callback(ctx, id, event)
             }),
         ))
     }

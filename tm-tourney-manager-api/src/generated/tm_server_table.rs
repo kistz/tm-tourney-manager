@@ -82,7 +82,7 @@ impl<'ctx> __sdk::Table for TmServerTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<TmServer>("tm_server");
-    _table.add_unique_constraint::<String>("server_id", |row| &row.server_id);
+    _table.add_unique_constraint::<String>("id", |row| &row.id);
 }
 pub struct TmServerUpdateCallbackId(__sdk::CallbackId);
 
@@ -112,30 +112,30 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `server_id` unique index on the table `tm_server`,
+/// Access to the `id` unique index on the table `tm_server`,
 /// which allows point queries on the field of the same name
-/// via the [`TmServerServerIdUnique::find`] method.
+/// via the [`TmServerIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.tm_server().server_id().find(...)`.
-pub struct TmServerServerIdUnique<'ctx> {
+/// like `ctx.db.tm_server().id().find(...)`.
+pub struct TmServerIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<TmServer, String>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 impl<'ctx> TmServerTableHandle<'ctx> {
-    /// Get a handle on the `server_id` unique index on the table `tm_server`.
-    pub fn server_id(&self) -> TmServerServerIdUnique<'ctx> {
-        TmServerServerIdUnique {
-            imp: self.imp.get_unique_constraint::<String>("server_id"),
+    /// Get a handle on the `id` unique index on the table `tm_server`.
+    pub fn id(&self) -> TmServerIdUnique<'ctx> {
+        TmServerIdUnique {
+            imp: self.imp.get_unique_constraint::<String>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> TmServerServerIdUnique<'ctx> {
-    /// Find the subscribed row whose `server_id` column value is equal to `col_val`,
+impl<'ctx> TmServerIdUnique<'ctx> {
+    /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &String) -> Option<TmServer> {
         self.imp.find(col_val)

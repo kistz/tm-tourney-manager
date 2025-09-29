@@ -4,16 +4,15 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::match_status_type::MatchStatus;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct Match {
-    pub match_id: u128,
-    pub template: u128,
-    pub status: MatchStatus,
+pub struct EventStage {
+    pub id: u128,
+    pub event_id: u128,
+    pub name: String,
+    pub matches: Vec<u128>,
 }
 
-impl __sdk::InModule for Match {
+impl __sdk::InModule for EventStage {
     type Module = super::RemoteModule;
 }

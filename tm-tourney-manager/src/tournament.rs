@@ -6,7 +6,7 @@ use crate::leaderboard::Leaderboard;
 pub struct Tournament {
     #[auto_inc]
     #[primary_key]
-    id: u128,
+    pub id: u128,
 
     creator: String,
     owners: Vec<String>,
@@ -19,6 +19,12 @@ pub struct Tournament {
     events: Vec<u128>,
 
     leaderboard: Option<Leaderboard>,
+}
+
+impl Tournament {
+    pub fn add_event(&mut self, event: u128) {
+        self.events.push(event);
+    }
 }
 
 #[derive(Debug, SpacetimeType)]
@@ -35,6 +41,7 @@ pub enum TournamentStatus {
 
 #[reducer]
 fn create_tournament(ctx: &ReducerContext, name: String) {
+    //TODO authorization
     ctx.db.tournament().insert(Tournament {
         //Extracted from request
         name,

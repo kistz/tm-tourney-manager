@@ -3,7 +3,6 @@
 
 #![allow(unused, clippy::all)]
 use super::event_status_type::EventStatus;
-use super::leaderboard_type::Leaderboard;
 use super::tournament_event_type::TournamentEvent;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
@@ -83,7 +82,7 @@ impl<'ctx> __sdk::Table for TournamentEventTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<TournamentEvent>("tournament_event");
-    _table.add_unique_constraint::<u128>("event_id", |row| &row.event_id);
+    _table.add_unique_constraint::<u128>("id", |row| &row.id);
 }
 pub struct TournamentEventUpdateCallbackId(__sdk::CallbackId);
 
@@ -113,30 +112,30 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `event_id` unique index on the table `tournament_event`,
+/// Access to the `id` unique index on the table `tournament_event`,
 /// which allows point queries on the field of the same name
-/// via the [`TournamentEventEventIdUnique::find`] method.
+/// via the [`TournamentEventIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.tournament_event().event_id().find(...)`.
-pub struct TournamentEventEventIdUnique<'ctx> {
+/// like `ctx.db.tournament_event().id().find(...)`.
+pub struct TournamentEventIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<TournamentEvent, u128>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 impl<'ctx> TournamentEventTableHandle<'ctx> {
-    /// Get a handle on the `event_id` unique index on the table `tournament_event`.
-    pub fn event_id(&self) -> TournamentEventEventIdUnique<'ctx> {
-        TournamentEventEventIdUnique {
-            imp: self.imp.get_unique_constraint::<u128>("event_id"),
+    /// Get a handle on the `id` unique index on the table `tournament_event`.
+    pub fn id(&self) -> TournamentEventIdUnique<'ctx> {
+        TournamentEventIdUnique {
+            imp: self.imp.get_unique_constraint::<u128>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> TournamentEventEventIdUnique<'ctx> {
-    /// Find the subscribed row whose `event_id` column value is equal to `col_val`,
+impl<'ctx> TournamentEventIdUnique<'ctx> {
+    /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u128) -> Option<TournamentEvent> {
         self.imp.find(col_val)
