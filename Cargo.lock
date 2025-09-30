@@ -2430,6 +2430,7 @@ dependencies = [
 name = "tm-server-types"
 version = "0.0.0"
 dependencies = [
+ "dxr",
  "serde",
  "serde_json",
  "spacetimedb-lib",

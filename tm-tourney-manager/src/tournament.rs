@@ -17,8 +17,10 @@ pub struct Tournament {
     status: TournamentStatus,
 
     events: Vec<u128>,
+    //leaderboard: Option<Leaderboard>,
 
-    leaderboard: Option<Leaderboard>,
+    //TODO: teams
+    // they could be configured on a per tournament basis.
 }
 
 impl Tournament {
@@ -52,6 +54,6 @@ fn create_tournament(ctx: &ReducerContext, name: String) {
         status: TournamentStatus::Planning,
         owners: Vec::new(),
         events: Vec::new(),
-        leaderboard: None,
+        //leaderboard: None,
     });
 }

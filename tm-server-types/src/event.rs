@@ -34,7 +34,10 @@ pub use podium::*;
 mod play_loop;
 pub use play_loop::*;
 
-/// Can hold every Event trasmitted trough the ModeScript events.
+mod player;
+pub use player::*;
+
+/// Can hold every Event trasmitted trough the ModeScript or vanilla events.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -55,6 +58,10 @@ pub enum Event {
     EndMapEnd(EndMapEnd),
     UnloadingMapStart(UnloadingMapStart),
     UnloadingMapEnd(UnloadingMapEnd),
+
+    PlayerConenct(PlayerConnect),
+    PlayerDisconnect(PlayerDisconnect),
+    PlayerChat(PlayerChat),
 
     StartTurnStart(StartTurn),
     StartTurnEnd(StartTurn),

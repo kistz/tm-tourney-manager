@@ -8,7 +8,12 @@ This has a few advantages:
 4. Live updating weboscket based api for custom tournament frontends. 
 
 ## Architecture
-First let's discuss the architecture of the backend/database to give you an idea what possible. 
+First let's discuss the architecture of the backend/database to give you an idea whats possible. 
+At the core the tourney-manager allows you to define 4 things:
+- Tournament: Self explaining xdd. Has multiple events an owner and optionally additional organizers.
+- Event: Something which can be considered as one unit/playday and has dependencies and rules for advancing e.g. a eliminationi bracket. Consists of multiple stages. 
+- Stage: A parallelizable point in time at the event with multiple matches.
+- Match: A concrete instantiation where players compete.
 
 ## Project Structure
 - `tm-server-types`: Provides type abstractions over GBX Remote 2 for use by all other crates or standalone.

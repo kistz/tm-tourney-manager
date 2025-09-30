@@ -2,6 +2,7 @@ use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::event::Event;
 
 use crate::{
+    leaderboard::Leaderboard,
     server::{TmServer, tm_server},
     stage::event_stage,
 };
@@ -19,6 +20,8 @@ pub struct StageMatch {
 
     //template: u128,
     status: MatchStatus,
+
+    //leaderboard: Leaderboard,
 }
 
 #[derive(Debug, SpacetimeType)]

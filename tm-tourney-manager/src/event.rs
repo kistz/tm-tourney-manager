@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{ReducerContext, SpacetimeType, Table, TimeDuration, Timestamp, reducer, table};
 
 use crate::{leaderboard::Leaderboard, tournament::tournament};
 
@@ -12,15 +12,19 @@ pub struct TournamentEvent {
 
     tournament: u128,
 
-    // Unique for the tournament
+    // Unique event name for the tournament
     name: String,
+    // This could allow eventually to distinguish between monitoring leaderboards and matches or smth.
+    //event_type: EventType,
+    phase: EventPhase,
+    // The Timestamp at which the event starts.
+    // If no starting time is selected it has to be started manually.
+    starting_at: Option<Timestamp>,
+    // Estimated duration how long the tourney is gonna take.
+    estimate: Option<TimeDuration>,
 
     //TODO registered players
-
-    //Scheduled time
-    //starting: String,
-    status: EventStatus,
-
+    //config: EventConfig,
     stages: Vec<u128>,
     //leaderboard: Leaderboard,
 }
@@ -32,21 +36,41 @@ impl TournamentEvent {
 }
 
 #[derive(Debug, SpacetimeType)]
-pub enum EventStatus {
+pub enum EventPhase {
+    /// If you just created the event it will be in the planning phase.
+    /// Here you can set everything up as you like.
+    /// The event is not visible to the public.
     Planning,
-    Registration,
-    Scheduled,
+    /// To advance into the preparation phase you MUST define a starting time aswell as
+    /// an estimated duration how long the event will take.
+    Preparation,
+    /// Once the event is ongoing the configuration is immutable.
+    /// That means it will play through the configured stages and advancing logic.
     Ongoing,
-    Ended,
+    /// The whole tournament is now immutable.
+    Completed,
 }
 
-#[table(name = event_template,public)]
-pub struct EventTemplate {
+#[derive(Debug, SpacetimeType)]
+pub enum EventType {
+    Matches,
+    TimeAttack,
+}
+
+#[table(name = event_config,public)]
+pub struct EventConfig {
     #[auto_inc]
     #[primary_key]
     id: u128,
 
+    owner: String,
+    public: bool,
+    // Global identifier for the event config.
+    #[unique]
     name: String,
+
+    ///  Determines if the
+    registration: Option<TimeDuration>,
 }
 
 /// Adds a new Event to the specified Tournament.
@@ -58,8 +82,17 @@ pub fn add_event(ctx: &ReducerContext, name: String, to: u128, with: Option<u128
             id: 0,
             tournament: to,
             name,
-            status: EventStatus::Planning,
+            phase: EventPhase::Planning,
             stages: Vec::new(),
+            starting_at: None,
+            estimate: None,
+            /* config: EventConfig {
+                id: 0,
+                owner: (),
+                public: (),
+                name: (),
+                registration: (),
+            }, */
         });
 
         tournamet.add_event(event.id);

@@ -254,6 +254,8 @@ impl TrackmaniaServer {
                             }
                             registered_callbacks.send(&modescript_callback_name, event);
                         } else {
+                            //let params = callback.params();
+                            //for param in params {}
                             println!("Old callback: {:?}", callback);
                         }
                     }
