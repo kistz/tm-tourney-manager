@@ -12,13 +12,13 @@ use crate::{
 pub struct StageMatch {
     #[auto_inc]
     #[primary_key]
-    id: u128,
+    id: u64,
 
-    stage_id: u128,
+    stage_id: u64,
 
     server_id: Option<String>,
 
-    //template: u128,
+    //template: u64,
     status: MatchStatus,
     //leaderboard: Leaderboard,
 }
@@ -35,8 +35,8 @@ pub enum MatchStatus {
 #[reducer]
 pub fn provision_match(
     ctx: &ReducerContext,
-    to: u128,
-    with_config: Option<u128>,
+    to: u64,
+    with_config: Option<u64>,
     auto_provisioning_server: bool,
 ) {
     //TODO authorization
@@ -60,7 +60,7 @@ pub fn provision_match(
 
 /// Assigns a server to the selected match.
 #[reducer]
-pub fn assign_server(ctx: &ReducerContext, to: u128, server_id: String) {
+pub fn assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
     //TODO authorization
     if let Some(mut server) = ctx.db.tm_server().id().find(&server_id)
         && server.active_mactch().is_none()
@@ -79,7 +79,7 @@ pub fn assign_server(ctx: &ReducerContext, to: u128, server_id: String) {
 
 /// If the match is fully configured and ready start.
 #[reducer]
-pub fn try_start(ctx: &ReducerContext, match_id: u128) {
+pub fn try_start(ctx: &ReducerContext, match_id: u64) {
     //TODO authorization
     if let Some(stage_match) = ctx.db.stage_match().id().find(match_id)
         && let Some(server) = stage_match.server_id
@@ -93,7 +93,7 @@ pub fn try_start(ctx: &ReducerContext, match_id: u128) {
 pub struct MatchTemplate {
     #[auto_inc]
     #[primary_key]
-    id: u128,
+    id: u64,
 
     creator: String,
 }
@@ -102,9 +102,9 @@ pub struct MatchTemplate {
 pub struct TmServerEvent {
     #[auto_inc]
     #[primary_key]
-    id: u128,
+    id: u64,
 
-    match_id: u128,
+    match_id: u64,
 
     event: Event,
 }

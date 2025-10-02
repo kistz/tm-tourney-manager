@@ -48,8 +48,8 @@ export const StageMatch = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "stageId", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "stageId", algebraicType: __AlgebraicTypeValue.U64},
         { name: "serverId", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.String)},
         { name: "status", algebraicType: MatchStatus.getTypeScriptAlgebraicType()},
       ]

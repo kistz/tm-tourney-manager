@@ -50,12 +50,12 @@ export const Tournament = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
         { name: "creator", algebraicType: __AlgebraicTypeValue.String},
         { name: "owners", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
         { name: "status", algebraicType: TournamentStatus.getTypeScriptAlgebraicType()},
-        { name: "events", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U128)},
+        { name: "events", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
       ]
     });
   },

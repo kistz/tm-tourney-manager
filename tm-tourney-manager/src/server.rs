@@ -13,7 +13,7 @@ pub struct TmServer {
 
     online: bool,
 
-    active_match: Option<u128>,
+    active_match: Option<u64>,
 
     // TODO: Properly enfoce the protocol.
     /// On every update call this MUST be set to None EXCEPT you want to call a method.
@@ -27,11 +27,11 @@ pub enum ServerState {
 } */
 
 impl TmServer {
-    pub fn active_mactch(&self) -> Option<u128> {
+    pub fn active_mactch(&self) -> Option<u64> {
         self.active_match
     }
 
-    pub fn set_active_match(&mut self, match_id: u128) {
+    pub fn set_active_match(&mut self, match_id: u64) {
         if self.active_match.is_none() {
             self.active_match = Some(match_id)
         }

@@ -9,13 +9,13 @@ use super::event_phase_type::EventPhase;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct TournamentEvent {
-    pub id: u128,
-    pub tournament: u128,
+    pub id: u64,
+    pub tournament: u64,
     pub name: String,
     pub phase: EventPhase,
-    pub starting_at: Option<__sdk::Timestamp>,
+    pub starting_at: __sdk::Timestamp,
     pub estimate: Option<__sdk::TimeDuration>,
-    pub stages: Vec<u128>,
+    pub stages: Vec<u64>,
 }
 
 impl __sdk::InModule for TournamentEvent {

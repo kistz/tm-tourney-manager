@@ -44,8 +44,8 @@ export const AddStage = {
     return __AlgebraicTypeValue.Product({
       elements: [
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
-        { name: "to", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U128)},
+        { name: "to", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
       ]
     });
   },

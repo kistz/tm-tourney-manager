@@ -52,7 +52,7 @@ export const TmServer = {
         { name: "id", algebraicType: __AlgebraicTypeValue.String},
         { name: "ownerId", algebraicType: __AlgebraicTypeValue.String},
         { name: "online", algebraicType: __AlgebraicTypeValue.Bool},
-        { name: "activeMatch", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U128)},
+        { name: "activeMatch", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
         { name: "serverMethod", algebraicType: __AlgebraicTypeValue.createOptionType(Method.getTypeScriptAlgebraicType())},
       ]
     });

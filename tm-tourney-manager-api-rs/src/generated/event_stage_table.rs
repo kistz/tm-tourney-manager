@@ -81,7 +81,7 @@ impl<'ctx> __sdk::Table for EventStageTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<EventStage>("event_stage");
-    _table.add_unique_constraint::<u128>("id", |row| &row.id);
+    _table.add_unique_constraint::<u64>("id", |row| &row.id);
 }
 pub struct EventStageUpdateCallbackId(__sdk::CallbackId);
 
@@ -119,7 +119,7 @@ pub(super) fn parse_table_update(
 /// but to directly chain method calls,
 /// like `ctx.db.event_stage().id().find(...)`.
 pub struct EventStageIdUnique<'ctx> {
-    imp: __sdk::UniqueConstraintHandle<EventStage, u128>,
+    imp: __sdk::UniqueConstraintHandle<EventStage, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
@@ -127,7 +127,7 @@ impl<'ctx> EventStageTableHandle<'ctx> {
     /// Get a handle on the `id` unique index on the table `event_stage`.
     pub fn id(&self) -> EventStageIdUnique<'ctx> {
         EventStageIdUnique {
-            imp: self.imp.get_unique_constraint::<u128>("id"),
+            imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
@@ -136,7 +136,7 @@ impl<'ctx> EventStageTableHandle<'ctx> {
 impl<'ctx> EventStageIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
-    pub fn find(&self, col_val: &u128) -> Option<EventStage> {
+    pub fn find(&self, col_val: &u64) -> Option<EventStage> {
         self.imp.find(col_val)
     }
 }

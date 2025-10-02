@@ -6,7 +6,7 @@ use crate::leaderboard::Leaderboard;
 pub struct Tournament {
     #[auto_inc]
     #[primary_key]
-    pub id: u128,
+    pub id: u64,
 
     creator: String,
     owners: Vec<String>,
@@ -16,7 +16,7 @@ pub struct Tournament {
 
     status: TournamentStatus,
 
-    events: Vec<u128>,
+    events: Vec<u64>,
     //leaderboard: Option<Leaderboard>,
 
     //TODO: teams
@@ -24,7 +24,7 @@ pub struct Tournament {
 }
 
 impl Tournament {
-    pub fn add_event(&mut self, event: u128) {
+    pub fn add_event(&mut self, event: u64) {
         self.events.push(event);
     }
 }

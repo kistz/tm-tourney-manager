@@ -43,8 +43,8 @@ export const ProvisionMatch = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "to", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U128)},
+        { name: "to", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
         { name: "autoProvisioningServer", algebraicType: __AlgebraicTypeValue.Bool},
       ]
     });

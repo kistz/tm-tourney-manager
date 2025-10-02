@@ -9,8 +9,8 @@ use super::event_type::Event;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct TmServerEvent {
-    pub id: u128,
-    pub match_id: u128,
+    pub id: u64,
+    pub match_id: u64,
     pub event: Event,
 }
 

@@ -8,8 +8,8 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub(super) struct AddStageArgs {
     pub name: String,
-    pub to: u128,
-    pub with: Option<u128>,
+    pub to: u64,
+    pub with_config: Option<u64>,
 }
 
 impl From<AddStageArgs> for super::Reducer {
@@ -17,7 +17,7 @@ impl From<AddStageArgs> for super::Reducer {
         Self::AddStage {
             name: args.name,
             to: args.to,
-            with: args.with,
+            with_config: args.with_config,
         }
     }
 }
@@ -38,7 +38,7 @@ pub trait add_stage {
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed by listening for [`Self::on_add_stage`] callbacks.
-    fn add_stage(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()>;
+    fn add_stage(&self, name: String, to: u64, with_config: Option<u64>) -> __sdk::Result<()>;
     /// Register a callback to run whenever we are notified of an invocation of the reducer `add_stage`.
     ///
     /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
@@ -48,9 +48,7 @@ pub trait add_stage {
     /// to cancel the callback.
     fn on_add_stage(
         &self,
-        callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
-            + Send
-            + 'static,
+        callback: impl FnMut(&super::ReducerEventContext, &String, &u64, &Option<u64>) + Send + 'static,
     ) -> AddStageCallbackId;
     /// Cancel a callback previously registered by [`Self::on_add_stage`],
     /// causing it not to run in the future.
@@ -58,13 +56,19 @@ pub trait add_stage {
 }
 
 impl add_stage for super::RemoteReducers {
-    fn add_stage(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()> {
-        self.imp
-            .call_reducer("add_stage", AddStageArgs { name, to, with })
+    fn add_stage(&self, name: String, to: u64, with_config: Option<u64>) -> __sdk::Result<()> {
+        self.imp.call_reducer(
+            "add_stage",
+            AddStageArgs {
+                name,
+                to,
+                with_config,
+            },
+        )
     }
     fn on_add_stage(
         &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
+        mut callback: impl FnMut(&super::ReducerEventContext, &String, &u64, &Option<u64>)
             + Send
             + 'static,
     ) -> AddStageCallbackId {
@@ -74,7 +78,12 @@ impl add_stage for super::RemoteReducers {
                 let super::ReducerEventContext {
                     event:
                         __sdk::ReducerEvent {
-                            reducer: super::Reducer::AddStage { name, to, with },
+                            reducer:
+                                super::Reducer::AddStage {
+                                    name,
+                                    to,
+                                    with_config,
+                                },
                             ..
                         },
                     ..
@@ -82,7 +91,7 @@ impl add_stage for super::RemoteReducers {
                 else {
                     unreachable!()
                 };
-                callback(ctx, name, to, with)
+                callback(ctx, name, to, with_config)
             }),
         ))
     }

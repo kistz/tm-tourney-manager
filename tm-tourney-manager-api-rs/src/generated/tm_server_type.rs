@@ -12,7 +12,7 @@ pub struct TmServer {
     pub id: String,
     pub owner_id: String,
     pub online: bool,
-    pub active_match: Option<u128>,
+    pub active_match: Option<u64>,
     pub server_method: Option<Method>,
 }
 

@@ -51,13 +51,13 @@ export const TournamentEvent = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "tournament", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "tournament", algebraicType: __AlgebraicTypeValue.U64},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
         { name: "phase", algebraicType: EventPhase.getTypeScriptAlgebraicType()},
         { name: "startingAt", algebraicType: __AlgebraicTypeValue.createTimestampType()},
         { name: "estimate", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.createTimeDurationType())},
-        { name: "stages", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U128)},
+        { name: "stages", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
       ]
     });
   },

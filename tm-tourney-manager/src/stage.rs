@@ -9,27 +9,27 @@ use crate::{event::tournament_event, leaderboard::Leaderboard};
 pub struct EventStage {
     #[auto_inc]
     #[primary_key]
-    pub id: u128,
+    pub id: u64,
 
-    event_id: u128,
+    event_id: u64,
 
     // Unique for the Event
     name: String,
 
     /// Matches get executed in parallel
-    matches: Vec<u128>,
+    matches: Vec<u64>,
     //leaderboard: Leaderboard,
 }
 
 impl EventStage {
-    pub fn add_match(&mut self, stage_match: u128) {
+    pub fn add_match(&mut self, stage_match: u64) {
         self.matches.push(stage_match);
     }
 }
 
 /// Adds a new EventStage to the specified TournamentEvent.
 #[reducer]
-pub fn add_stage(ctx: &ReducerContext, name: String, to: u128, with_config: Option<u128>) {
+pub fn add_stage(ctx: &ReducerContext, name: String, to: u64, with_config: Option<u64>) {
     //TODO authorization
     if let Some(mut event) = ctx.db.tournament_event().id().find(to) {
         let stage = ctx.db.event_stage().insert(EventStage {

@@ -82,7 +82,7 @@ impl<'ctx> __sdk::Table for TmServerEventTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<TmServerEvent>("tm_server_event");
-    _table.add_unique_constraint::<u128>("id", |row| &row.id);
+    _table.add_unique_constraint::<u64>("id", |row| &row.id);
 }
 pub struct TmServerEventUpdateCallbackId(__sdk::CallbackId);
 
@@ -120,7 +120,7 @@ pub(super) fn parse_table_update(
 /// but to directly chain method calls,
 /// like `ctx.db.tm_server_event().id().find(...)`.
 pub struct TmServerEventIdUnique<'ctx> {
-    imp: __sdk::UniqueConstraintHandle<TmServerEvent, u128>,
+    imp: __sdk::UniqueConstraintHandle<TmServerEvent, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
@@ -128,7 +128,7 @@ impl<'ctx> TmServerEventTableHandle<'ctx> {
     /// Get a handle on the `id` unique index on the table `tm_server_event`.
     pub fn id(&self) -> TmServerEventIdUnique<'ctx> {
         TmServerEventIdUnique {
-            imp: self.imp.get_unique_constraint::<u128>("id"),
+            imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
@@ -137,7 +137,7 @@ impl<'ctx> TmServerEventTableHandle<'ctx> {
 impl<'ctx> TmServerEventIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
-    pub fn find(&self, col_val: &u128) -> Option<TmServerEvent> {
+    pub fn find(&self, col_val: &u64) -> Option<TmServerEvent> {
         self.imp.find(col_val)
     }
 }

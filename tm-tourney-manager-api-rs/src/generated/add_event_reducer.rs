@@ -8,16 +8,18 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub(super) struct AddEventArgs {
     pub name: String,
-    pub to: u128,
-    pub with: Option<u128>,
+    pub at: __sdk::Timestamp,
+    pub to: u64,
+    pub with_config: Option<u64>,
 }
 
 impl From<AddEventArgs> for super::Reducer {
     fn from(args: AddEventArgs) -> Self {
         Self::AddEvent {
             name: args.name,
+            at: args.at,
             to: args.to,
-            with: args.with,
+            with_config: args.with_config,
         }
     }
 }
@@ -38,7 +40,13 @@ pub trait add_event {
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed by listening for [`Self::on_add_event`] callbacks.
-    fn add_event(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()>;
+    fn add_event(
+        &self,
+        name: String,
+        at: __sdk::Timestamp,
+        to: u64,
+        with_config: Option<u64>,
+    ) -> __sdk::Result<()>;
     /// Register a callback to run whenever we are notified of an invocation of the reducer `add_event`.
     ///
     /// Callbacks should inspect the [`__sdk::ReducerEvent`] contained in the [`super::ReducerEventContext`]
@@ -48,7 +56,7 @@ pub trait add_event {
     /// to cancel the callback.
     fn on_add_event(
         &self,
-        callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
+        callback: impl FnMut(&super::ReducerEventContext, &String, &__sdk::Timestamp, &u64, &Option<u64>)
             + Send
             + 'static,
     ) -> AddEventCallbackId;
@@ -58,13 +66,26 @@ pub trait add_event {
 }
 
 impl add_event for super::RemoteReducers {
-    fn add_event(&self, name: String, to: u128, with: Option<u128>) -> __sdk::Result<()> {
-        self.imp
-            .call_reducer("add_event", AddEventArgs { name, to, with })
+    fn add_event(
+        &self,
+        name: String,
+        at: __sdk::Timestamp,
+        to: u64,
+        with_config: Option<u64>,
+    ) -> __sdk::Result<()> {
+        self.imp.call_reducer(
+            "add_event",
+            AddEventArgs {
+                name,
+                at,
+                to,
+                with_config,
+            },
+        )
     }
     fn on_add_event(
         &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &String, &u128, &Option<u128>)
+        mut callback: impl FnMut(&super::ReducerEventContext, &String, &__sdk::Timestamp, &u64, &Option<u64>)
             + Send
             + 'static,
     ) -> AddEventCallbackId {
@@ -74,7 +95,13 @@ impl add_event for super::RemoteReducers {
                 let super::ReducerEventContext {
                     event:
                         __sdk::ReducerEvent {
-                            reducer: super::Reducer::AddEvent { name, to, with },
+                            reducer:
+                                super::Reducer::AddEvent {
+                                    name,
+                                    at,
+                                    to,
+                                    with_config,
+                                },
                             ..
                         },
                     ..
@@ -82,7 +109,7 @@ impl add_event for super::RemoteReducers {
                 else {
                     unreachable!()
                 };
-                callback(ctx, name, to, with)
+                callback(ctx, name, at, to, with_config)
             }),
         ))
     }

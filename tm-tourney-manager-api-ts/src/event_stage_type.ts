@@ -44,10 +44,10 @@ export const EventStage = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "eventId", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "eventId", algebraicType: __AlgebraicTypeValue.U64},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
-        { name: "matches", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U128)},
+        { name: "matches", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
       ]
     });
   },

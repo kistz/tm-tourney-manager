@@ -81,7 +81,7 @@ impl<'ctx> __sdk::Table for EventConfigTableHandle<'ctx> {
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
     let _table = client_cache.get_or_make_table::<EventConfig>("event_config");
-    _table.add_unique_constraint::<u128>("id", |row| &row.id);
+    _table.add_unique_constraint::<u64>("id", |row| &row.id);
     _table.add_unique_constraint::<String>("name", |row| &row.name);
 }
 pub struct EventConfigUpdateCallbackId(__sdk::CallbackId);
@@ -120,7 +120,7 @@ pub(super) fn parse_table_update(
 /// but to directly chain method calls,
 /// like `ctx.db.event_config().id().find(...)`.
 pub struct EventConfigIdUnique<'ctx> {
-    imp: __sdk::UniqueConstraintHandle<EventConfig, u128>,
+    imp: __sdk::UniqueConstraintHandle<EventConfig, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
@@ -128,7 +128,7 @@ impl<'ctx> EventConfigTableHandle<'ctx> {
     /// Get a handle on the `id` unique index on the table `event_config`.
     pub fn id(&self) -> EventConfigIdUnique<'ctx> {
         EventConfigIdUnique {
-            imp: self.imp.get_unique_constraint::<u128>("id"),
+            imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
@@ -137,7 +137,7 @@ impl<'ctx> EventConfigTableHandle<'ctx> {
 impl<'ctx> EventConfigIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
-    pub fn find(&self, col_val: &u128) -> Option<EventConfig> {
+    pub fn find(&self, col_val: &u64) -> Option<EventConfig> {
         self.imp.find(col_val)
     }
 }

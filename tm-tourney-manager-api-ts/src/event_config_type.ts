@@ -45,7 +45,7 @@ export const EventConfig = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
         { name: "owner", algebraicType: __AlgebraicTypeValue.String},
         { name: "public", algebraicType: __AlgebraicTypeValue.Bool},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},

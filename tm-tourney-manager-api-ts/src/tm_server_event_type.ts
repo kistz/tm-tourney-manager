@@ -47,8 +47,8 @@ export const TmServerEvent = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U128},
-        { name: "matchId", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "matchId", algebraicType: __AlgebraicTypeValue.U64},
         { name: "event", algebraicType: Event.getTypeScriptAlgebraicType()},
       ]
     });

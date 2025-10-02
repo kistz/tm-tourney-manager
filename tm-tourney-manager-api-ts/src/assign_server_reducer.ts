@@ -42,7 +42,7 @@ export const AssignServer = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "to", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "to", algebraicType: __AlgebraicTypeValue.U64},
         { name: "serverId", algebraicType: __AlgebraicTypeValue.String},
       ]
     });

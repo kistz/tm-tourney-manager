@@ -9,8 +9,8 @@ use super::match_status_type::MatchStatus;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct StageMatch {
-    pub id: u128,
-    pub stage_id: u128,
+    pub id: u64,
+    pub stage_id: u64,
     pub server_id: Option<String>,
     pub status: MatchStatus,
 }

@@ -7,8 +7,8 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct ProvisionMatchArgs {
-    pub to: u128,
-    pub with: Option<u128>,
+    pub to: u64,
+    pub with_config: Option<u64>,
     pub auto_provisioning_server: bool,
 }
 
@@ -16,7 +16,7 @@ impl From<ProvisionMatchArgs> for super::Reducer {
     fn from(args: ProvisionMatchArgs) -> Self {
         Self::ProvisionMatch {
             to: args.to,
-            with: args.with,
+            with_config: args.with_config,
             auto_provisioning_server: args.auto_provisioning_server,
         }
     }
@@ -40,8 +40,8 @@ pub trait provision_match {
     ///  and its status can be observed by listening for [`Self::on_provision_match`] callbacks.
     fn provision_match(
         &self,
-        to: u128,
-        with: Option<u128>,
+        to: u64,
+        with_config: Option<u64>,
         auto_provisioning_server: bool,
     ) -> __sdk::Result<()>;
     /// Register a callback to run whenever we are notified of an invocation of the reducer `provision_match`.
@@ -53,7 +53,7 @@ pub trait provision_match {
     /// to cancel the callback.
     fn on_provision_match(
         &self,
-        callback: impl FnMut(&super::ReducerEventContext, &u128, &Option<u128>, &bool) + Send + 'static,
+        callback: impl FnMut(&super::ReducerEventContext, &u64, &Option<u64>, &bool) + Send + 'static,
     ) -> ProvisionMatchCallbackId;
     /// Cancel a callback previously registered by [`Self::on_provision_match`],
     /// causing it not to run in the future.
@@ -63,22 +63,22 @@ pub trait provision_match {
 impl provision_match for super::RemoteReducers {
     fn provision_match(
         &self,
-        to: u128,
-        with: Option<u128>,
+        to: u64,
+        with_config: Option<u64>,
         auto_provisioning_server: bool,
     ) -> __sdk::Result<()> {
         self.imp.call_reducer(
             "provision_match",
             ProvisionMatchArgs {
                 to,
-                with,
+                with_config,
                 auto_provisioning_server,
             },
         )
     }
     fn on_provision_match(
         &self,
-        mut callback: impl FnMut(&super::ReducerEventContext, &u128, &Option<u128>, &bool)
+        mut callback: impl FnMut(&super::ReducerEventContext, &u64, &Option<u64>, &bool)
             + Send
             + 'static,
     ) -> ProvisionMatchCallbackId {
@@ -91,7 +91,7 @@ impl provision_match for super::RemoteReducers {
                             reducer:
                                 super::Reducer::ProvisionMatch {
                                     to,
-                                    with,
+                                    with_config,
                                     auto_provisioning_server,
                                 },
                             ..
@@ -101,7 +101,7 @@ impl provision_match for super::RemoteReducers {
                 else {
                     unreachable!()
                 };
-                callback(ctx, to, with, auto_provisioning_server)
+                callback(ctx, to, with_config, auto_provisioning_server)
             }),
         ))
     }

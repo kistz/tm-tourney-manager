@@ -7,10 +7,10 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct EventStage {
-    pub id: u128,
-    pub event_id: u128,
+    pub id: u64,
+    pub event_id: u64,
     pub name: String,
-    pub matches: Vec<u128>,
+    pub matches: Vec<u64>,
 }
 
 impl __sdk::InModule for EventStage {

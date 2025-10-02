@@ -41,7 +41,7 @@ export const TryStart = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "matchId", algebraicType: __AlgebraicTypeValue.U128},
+        { name: "matchId", algebraicType: __AlgebraicTypeValue.U64},
       ]
     });
   },

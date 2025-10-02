@@ -8,9 +8,9 @@ mod scheduling;
 pub struct TournamentEvent {
     #[auto_inc]
     #[primary_key]
-    pub id: u128,
+    pub id: u64,
 
-    tournament: u128,
+    tournament: u64,
 
     // Unique event name for the tournament
     name: String,
@@ -25,12 +25,12 @@ pub struct TournamentEvent {
 
     //TODO registered players
     //config: EventConfig,
-    stages: Vec<u128>,
+    stages: Vec<u64>,
     //leaderboard: Leaderboard,
 }
 
 impl TournamentEvent {
-    pub fn add_stage(&mut self, stage: u128) {
+    pub fn add_stage(&mut self, stage: u64) {
         self.stages.push(stage);
     }
 }
@@ -61,7 +61,7 @@ pub enum EventType {
 pub struct EventConfig {
     #[auto_inc]
     #[primary_key]
-    id: u128,
+    id: u64,
 
     owner: String,
     public: bool,
@@ -79,8 +79,8 @@ pub fn add_event(
     ctx: &ReducerContext,
     name: String,
     at: Timestamp,
-    to: u128,
-    with_config: Option<u128>,
+    to: u64,
+    with_config: Option<u64>,
 ) {
     //TODO authorization
     if let Some(mut tournamet) = ctx.db.tournament().id().find(to) {
