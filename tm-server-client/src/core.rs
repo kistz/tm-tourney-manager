@@ -12,6 +12,7 @@ use dxr::{
 use tachyonix::Sender;
 use thiserror::Error;
 use tm_server_types::event::Event;
+use tm_server_types::method::Method;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter, ReadHalf, WriteHalf};
 use tokio::net::TcpStream;
 //use tokio::sync::mpsc::Sender;
@@ -254,9 +255,9 @@ impl TrackmaniaServer {
                             }
                             registered_callbacks.send(&modescript_callback_name, event);
                         } else {
-                            //let params = callback.params();
-                            //for param in params {}
-                            println!("Old callback: {:?}", callback);
+                            /* let params = callback.params();
+                            for param in params {}
+                            println!("Old callback: {:?}", callback); */
                         }
                     }
                 }
@@ -312,6 +313,17 @@ impl TrackmaniaServer {
             }
         });
     }
+
+    /*  /// Allows to call a method on the server through the Method enum.
+    /// Needs to be awaited in order to be executed and receive the response.
+    pub async fn method(&self, method: &Method) /* -> Result<R, ClientError>  */
+    {
+        let params = args.try_to_params()?;
+        let result = self.call_inner(Cow::Borrowed(method), params).await?;
+
+        // extract return value
+        Ok(R::try_from_value(&result)?)
+    } */
 
     /// Allows to call a method on the server.
     /// Needs to be awaited in order to be executed and receive the response.

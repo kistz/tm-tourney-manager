@@ -1,0 +1,15 @@
+[package]
+name = "tm-tourney-manager-api-rs"
+authors.workspace = true
+categories.workspace = true
+keywords.workspace = true
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+repository.workspace = true
+
+publish = true
+
+[dependencies]
+spacetimedb-sdk = "*"
+hex = "0.4"

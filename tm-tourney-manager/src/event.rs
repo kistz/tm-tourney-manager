@@ -19,7 +19,7 @@ pub struct TournamentEvent {
     phase: EventPhase,
     // The Timestamp at which the event starts.
     // If no starting time is selected it has to be started manually.
-    starting_at: Option<Timestamp>,
+    starting_at: Timestamp,
     // Estimated duration how long the tourney is gonna take.
     estimate: Option<TimeDuration>,
 
@@ -75,7 +75,13 @@ pub struct EventConfig {
 
 /// Adds a new Event to the specified Tournament.
 #[reducer]
-pub fn add_event(ctx: &ReducerContext, name: String, to: u128, with: Option<u128>) {
+pub fn add_event(
+    ctx: &ReducerContext,
+    name: String,
+    at: Timestamp,
+    to: u128,
+    with_config: Option<u128>,
+) {
     //TODO authorization
     if let Some(mut tournamet) = ctx.db.tournament().id().find(to) {
         let event = ctx.db.tournament_event().insert(TournamentEvent {
@@ -84,7 +90,7 @@ pub fn add_event(ctx: &ReducerContext, name: String, to: u128, with: Option<u128
             name,
             phase: EventPhase::Planning,
             stages: Vec::new(),
-            starting_at: None,
+            starting_at: at,
             estimate: None,
             /* config: EventConfig {
                 id: 0,

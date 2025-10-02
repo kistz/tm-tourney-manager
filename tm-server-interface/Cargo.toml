@@ -18,6 +18,6 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tm-server-client = { path = "../tm-server-client" }
 spacetimedb-sdk = "*"
 hex = "0.4"
-tm-tourney-manager-api = { path = "../tm-tourney-manager-api" }
+tm-tourney-manager-api-rs = { path = "../tm-tourney-manager-api-rs" }
 
 nadeo-api = "*"

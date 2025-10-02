@@ -29,7 +29,7 @@ impl EventStage {
 
 /// Adds a new EventStage to the specified TournamentEvent.
 #[reducer]
-pub fn add_stage(ctx: &ReducerContext, name: String, to: u128, with: Option<u128>) {
+pub fn add_stage(ctx: &ReducerContext, name: String, to: u128, with_config: Option<u128>) {
     //TODO authorization
     if let Some(mut event) = ctx.db.tournament_event().id().find(to) {
         let stage = ctx.db.event_stage().insert(EventStage {

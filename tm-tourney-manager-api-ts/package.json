@@ -1,0 +1,24 @@
+{
+  "name": "tm-tourney-manager-api-ts",
+  "version": "0.1.0",
+  "description": "API bindings for the tm-tounrey-manager project",
+  "module": "src/index.ts",
+  "license": "(MIT OR Apache-2.0)",
+  "repository": {
+    "url": "https://github.com/kistz/tm-tourney-manager"
+  },
+  "author": {
+    "name": "Kilian Strunz",
+    "url": "https://github.com/kistz"
+  },
+  "type": "module",
+  "dependencies": {
+    "spacetimedb": "^1.5.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

@@ -20,7 +20,6 @@ pub struct StageMatch {
 
     //template: u128,
     status: MatchStatus,
-
     //leaderboard: Leaderboard,
 }
 
@@ -37,7 +36,7 @@ pub enum MatchStatus {
 pub fn provision_match(
     ctx: &ReducerContext,
     to: u128,
-    with: Option<u128>,
+    with_config: Option<u128>,
     auto_provisioning_server: bool,
 ) {
     //TODO authorization
@@ -86,7 +85,6 @@ pub fn try_start(ctx: &ReducerContext, match_id: u128) {
         && let Some(server) = stage_match.server_id
         && let Some(mut server) = ctx.db.tm_server().id().find(server)
     {
-        server.set_command();
         ctx.db.tm_server().id().update(server);
     }
 }

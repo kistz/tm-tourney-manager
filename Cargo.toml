@@ -5,7 +5,7 @@ members = [
     "tm-server-interface",
     "tm-server-types",
     "tm-tourney-manager",
-    "tm-tourney-manager-api",
+    "tm-tourney-manager-api-rs",
 ]
 
 package.authors = ["kistz (Kilian Strunz)"]

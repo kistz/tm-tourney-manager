@@ -1,4 +1,5 @@
 use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
+use tm_server_types::method::Method;
 
 #[table(name=tm_server, public)]
 pub struct TmServer {
@@ -14,7 +15,9 @@ pub struct TmServer {
 
     active_match: Option<u128>,
 
-    server_command: ServerCommand,
+    // TODO: Properly enfoce the protocol.
+    /// On every update call this MUST be set to None EXCEPT you want to call a method.
+    server_method: Option<Method>,
 }
 
 /* #[derive(Debug, SpacetimeType)]
@@ -34,14 +37,9 @@ impl TmServer {
         }
     }
 
-    pub fn set_command(&mut self /* , command: ServerCommand */) {
-        self.server_command = ServerCommand { pause: false }
-    }
-}
-
-#[derive(Debug, SpacetimeType)]
-pub struct ServerCommand {
-    pause: bool,
+    /* pub fn set_command(&mut self, command: Method) {
+        self.server_method = command
+    } */
 }
 
 #[cfg(feature = "development")]
@@ -52,18 +50,16 @@ pub fn add_server(ctx: &ReducerContext, id: String) {
         id,
         active_match: None,
         owner_id: "test_user".into(),
-        server_command: ServerCommand { pause: false },
+        server_method: None,
     });
 }
 
 #[cfg(feature = "development")]
 #[reducer]
-pub fn call_server(ctx: &ReducerContext, id: String) {
+pub fn call_server(ctx: &ReducerContext, id: String, method: Method) {
     if let Some(server) = ctx.db.tm_server().id().find(id) {
         ctx.db.tm_server().id().update(TmServer {
-            server_command: ServerCommand {
-                pause: !server.server_command.pause,
-            },
+            server_method: Some(method),
             ..server
         });
     }

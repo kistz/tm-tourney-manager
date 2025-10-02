@@ -5,7 +5,7 @@ use spacetimedb_sdk::{
     DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
 };
 
-use tm_tourney_manager_api::*;
+use tm_tourney_manager_api_rs::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
@@ -132,7 +132,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 unsafe {
                     std::mem::transmute::<
                         tm_server_client::types::event::Event,
-                        tm_tourney_manager_api::Event,
+                        tm_tourney_manager_api_rs::Event,
                     >(event.clone())
                 },
             )
@@ -205,13 +205,13 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
 
 fn server_update(_: &EventContext, _: &TmServer, new: &TmServer) {
     let server = SERVER.wait();
-    let paused = new.server_command.pause;
+    if let Some(method) = new.server_method {
+        tokio::spawn(async move {
+            let _: Result<bool, ClientError> =
+                server.call("ChatSendServerMessage", "Method called").await;
 
-    tokio::spawn(async move {
-        let _: Result<bool, ClientError> =
-            server.call("ChatSendServerMessage", "Method called").await;
-
-        let _: Result<bool, ClientError> = server
+            //server.method(method)
+            /* let _: Result<bool, ClientError> = server
             .call(
                 "TriggerModeScriptEventArray",
                 (
@@ -219,6 +219,7 @@ fn server_update(_: &EventContext, _: &TmServer, new: &TmServer) {
                     [if paused { "true" } else { "false" }],
                 ),
             )
-            .await;
-    });
+            .await; */
+        });
+    }
 }
