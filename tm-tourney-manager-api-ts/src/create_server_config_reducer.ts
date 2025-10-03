@@ -27,19 +27,18 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 
-export type Rounds = {
-  delayBeforeNextMap: number,
-  finishTimeout: number,
-  mpasPerMatch: number,
-  pointsLimit: number,
-  useCustomPointsRepartition: boolean,
-  pointsRepartition: number[],
-  roundsPerMap: number,
+import { ServerConfig } from "./server_config_type";
+// Mark import as potentially unused
+declare type __keep_ServerConfig = ServerConfig;
+
+export type CreateServerConfig = {
+  id: string,
+  config: ServerConfig,
 };
 /**
  * An object for generated helper functions.
  */
-export const Rounds = {
+export const CreateServerConfig = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -47,27 +46,21 @@ export const Rounds = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "delayBeforeNextMap", algebraicType: __AlgebraicTypeValue.U32},
-        { name: "finishTimeout", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "mpasPerMatch", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "pointsLimit", algebraicType: __AlgebraicTypeValue.U32},
-        { name: "useCustomPointsRepartition", algebraicType: __AlgebraicTypeValue.Bool},
-        { name: "pointsRepartition", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U32)},
-        { name: "roundsPerMap", algebraicType: __AlgebraicTypeValue.I32},
+        { name: "id", algebraicType: __AlgebraicTypeValue.String},
+        { name: "config", algebraicType: ServerConfig.getTypeScriptAlgebraicType()},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: Rounds): void {
-    __AlgebraicTypeValue.serializeValue(writer, Rounds.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: CreateServerConfig): void {
+    __AlgebraicTypeValue.serializeValue(writer, CreateServerConfig.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): Rounds {
-    return __AlgebraicTypeValue.deserializeValue(reader, Rounds.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): CreateServerConfig {
+    return __AlgebraicTypeValue.deserializeValue(reader, CreateServerConfig.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default Rounds;
-
+export default CreateServerConfig;
 

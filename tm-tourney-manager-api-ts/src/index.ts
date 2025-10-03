@@ -44,6 +44,8 @@ import { ClientConnected } from "./client_connected_reducer.ts";
 export { ClientConnected };
 import { CreateEventTemplate } from "./create_event_template_reducer.ts";
 export { CreateEventTemplate };
+import { CreateServerConfig } from "./create_server_config_reducer.ts";
+export { CreateServerConfig };
 import { CreateTournament } from "./create_tournament_reducer.ts";
 export { CreateTournament };
 import { IdentityDisconnected } from "./identity_disconnected_reducer.ts";
@@ -322,6 +324,10 @@ const REMOTE_MODULE = {
       reducerName: "create_event_template",
       argsType: CreateEventTemplate.getTypeScriptAlgebraicType(),
     },
+    create_server_config: {
+      reducerName: "create_server_config",
+      argsType: CreateServerConfig.getTypeScriptAlgebraicType(),
+    },
     create_tournament: {
       reducerName: "create_tournament",
       argsType: CreateTournament.getTypeScriptAlgebraicType(),
@@ -387,6 +393,7 @@ export type Reducer = never
 | { name: "CallServer", args: CallServer }
 | { name: "ClientConnected", args: ClientConnected }
 | { name: "CreateEventTemplate", args: CreateEventTemplate }
+| { name: "CreateServerConfig", args: CreateServerConfig }
 | { name: "CreateTournament", args: CreateTournament }
 | { name: "IdentityDisconnected", args: IdentityDisconnected }
 | { name: "LoadServerConfig", args: LoadServerConfig }
@@ -501,6 +508,22 @@ export class RemoteReducers {
 
   removeOnCreateEventTemplate(callback: (ctx: ReducerEventContext, name: string) => void) {
     this.connection.offReducer("create_event_template", callback);
+  }
+
+  createServerConfig(id: string, config: ServerConfig) {
+    const __args = { id, config };
+    let __writer = new __BinaryWriter(1024);
+    CreateServerConfig.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("create_server_config", __argsBuffer, this.setCallReducerFlags.createServerConfigFlags);
+  }
+
+  onCreateServerConfig(callback: (ctx: ReducerEventContext, id: string, config: ServerConfig) => void) {
+    this.connection.onReducer("create_server_config", callback);
+  }
+
+  removeOnCreateServerConfig(callback: (ctx: ReducerEventContext, id: string, config: ServerConfig) => void) {
+    this.connection.offReducer("create_server_config", callback);
   }
 
   createTournament(name: string) {
@@ -638,6 +661,11 @@ export class SetReducerFlags {
   createEventTemplateFlags: __CallReducerFlags = 'FullUpdate';
   createEventTemplate(flags: __CallReducerFlags) {
     this.createEventTemplateFlags = flags;
+  }
+
+  createServerConfigFlags: __CallReducerFlags = 'FullUpdate';
+  createServerConfig(flags: __CallReducerFlags) {
+    this.createServerConfigFlags = flags;
   }
 
   createTournamentFlags: __CallReducerFlags = 'FullUpdate';

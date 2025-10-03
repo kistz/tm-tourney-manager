@@ -14,6 +14,7 @@ pub mod call_server_reducer;
 pub mod client_connected_reducer;
 pub mod common_type;
 pub mod create_event_template_reducer;
+pub mod create_server_config_reducer;
 pub mod create_tournament_reducer;
 pub mod custom_type;
 pub mod end_map_end_type;
@@ -96,6 +97,9 @@ pub use client_connected_reducer::{
 pub use common_type::Common;
 pub use create_event_template_reducer::{
     create_event_template, set_flags_for_create_event_template, CreateEventTemplateCallbackId,
+};
+pub use create_server_config_reducer::{
+    create_server_config, set_flags_for_create_server_config, CreateServerConfigCallbackId,
 };
 pub use create_tournament_reducer::{
     create_tournament, set_flags_for_create_tournament, CreateTournamentCallbackId,
@@ -211,6 +215,10 @@ pub enum Reducer {
     CreateEventTemplate {
         name: String,
     },
+    CreateServerConfig {
+        id: String,
+        config: ServerConfig,
+    },
     CreateTournament {
         name: String,
     },
@@ -250,6 +258,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::CallServer { .. } => "call_server",
             Reducer::ClientConnected => "client_connected",
             Reducer::CreateEventTemplate { .. } => "create_event_template",
+            Reducer::CreateServerConfig { .. } => "create_server_config",
             Reducer::CreateTournament { .. } => "create_tournament",
             Reducer::IdentityDisconnected => "identity_disconnected",
             Reducer::LoadServerConfig { .. } => "load_server_config",
@@ -303,6 +312,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "create_event_template" => Ok(__sdk::parse_reducer_args::<
                 create_event_template_reducer::CreateEventTemplateArgs,
             >("create_event_template", &value.args)?
+            .into()),
+            "create_server_config" => Ok(__sdk::parse_reducer_args::<
+                create_server_config_reducer::CreateServerConfigArgs,
+            >("create_server_config", &value.args)?
             .into()),
             "create_tournament" => Ok(__sdk::parse_reducer_args::<
                 create_tournament_reducer::CreateTournamentArgs,

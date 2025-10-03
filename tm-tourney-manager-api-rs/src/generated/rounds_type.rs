@@ -11,6 +11,7 @@ pub struct Rounds {
     pub finish_timeout: i32,
     pub mpas_per_match: i32,
     pub points_limit: u32,
+    pub use_custom_points_repartition: bool,
     pub points_repartition: Vec<u32>,
     pub rounds_per_map: i32,
 }

@@ -1,4 +1,4 @@
-use spacetimedb::table;
+use spacetimedb::{ReducerContext, Table, reducer, table};
 use tm_server_types::config::ServerConfig;
 
 #[table(name=tm_server_config, public)]
@@ -17,4 +17,13 @@ impl TmServerConfig {
     pub fn get_config(self) -> ServerConfig {
         self.config
     }
+}
+
+#[reducer]
+pub fn create_server_config(ctx: &ReducerContext, id: String, config: ServerConfig) {
+    ctx.db.tm_server_config().insert(TmServerConfig {
+        id: 0,
+        creator: id,
+        config,
+    });
 }
