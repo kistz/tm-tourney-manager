@@ -118,9 +118,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     _ = spacetime.reducers.add_server(TM_SERVER_ID.into());
 
+    spacetime.db.tm_server().on_insert(server_bootstrap);
     spacetime.db.tm_server().on_update(server_update);
 
-    server.configure().await;
+    //server.configure().await;
 
     server.event(move |event| {
         let spacetime = SPACETIME.wait();
@@ -203,23 +204,57 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
     ctx.reducers.on_send_message(on_message_sent);
 } */
 
-fn server_update(_: &EventContext, _: &TmServer, new: &TmServer) {
-    let server = SERVER.wait();
-    if let Some(method) = new.server_method {
-        tokio::spawn(async move {
-            let _: Result<bool, ClientError> =
-                server.call("ChatSendServerMessage", "Method called").await;
+fn server_update(_: &EventContext, old: &TmServer, new: &TmServer) {
+    let local_server = SERVER.wait();
 
-            //server.method(method)
-            /* let _: Result<bool, ClientError> = server
-            .call(
-                "TriggerModeScriptEventArray",
-                (
-                    "Maniaplanet.Pause.SetActive",
-                    [if paused { "true" } else { "false" }],
-                ),
-            )
-            .await; */
-        });
-    }
+    let new = new.clone();
+    let old = old.clone();
+
+    tokio::spawn(async move {
+        if let Some(method) = new.server_method {
+            let _: Result<bool, ClientError> = local_server
+                .call("ChatSendServerMessage", "Method called")
+                .await;
+        }
+        if old.config != new.config {
+            //SAFETY: Same type but rust cant know that.
+            let configuration = unsafe {
+                std::mem::transmute::<
+                    tm_tourney_manager_api_rs::ServerConfig,
+                    tm_server_client::types::config::ServerConfig,
+                >(new.config)
+            };
+            local_server.configure(configuration).await;
+        }
+
+        //server.method(method)
+        /* let _: Result<bool, ClientError> = server
+        .call(
+            "TriggerModeScriptEventArray",
+            (
+                "Maniaplanet.Pause.SetActive",
+                [if paused { "true" } else { "false" }],
+            ),
+        )
+        .await; */
+    });
+}
+
+fn server_bootstrap(_: &EventContext, new: &TmServer) {
+    let local_server = SERVER.wait();
+    let new = new.clone();
+    tokio::spawn(async move {
+        let _: Result<bool, ClientError> = local_server
+            .call("ChatSendServerMessage", "Bootstrapping the server!")
+            .await;
+
+        //SAFETY: Same type but rust cant know that.
+        let configuration = unsafe {
+            std::mem::transmute::<
+                tm_tourney_manager_api_rs::ServerConfig,
+                tm_server_client::types::config::ServerConfig,
+            >(new.config)
+        };
+        local_server.configure(configuration).await;
+    });
 }

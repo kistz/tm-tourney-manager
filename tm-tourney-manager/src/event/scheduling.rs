@@ -1,6 +1,6 @@
 use spacetimedb::{ReducerContext, ScheduleAt, reducer, table};
 
-#[table(name = tournament_event_schedule, scheduled(tournament_event_schedule_callback))]
+#[table(name = tournament_event_schedule, scheduled(on_tournament_event_schedule))]
 struct TournamentEventSchedule {
     // Mandatory fields:
     // ============================
@@ -19,7 +19,7 @@ struct TournamentEventSchedule {
 }
 
 #[reducer]
-fn tournament_event_schedule_callback(
+fn on_tournament_event_schedule(
     ctx: &ReducerContext,
     arg: TournamentEventSchedule,
 ) -> Result<(), String> {

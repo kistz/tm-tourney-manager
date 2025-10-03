@@ -12,6 +12,7 @@ pub mod add_stage_reducer;
 pub mod assign_server_reducer;
 pub mod call_server_reducer;
 pub mod client_connected_reducer;
+pub mod common_type;
 pub mod create_event_template_reducer;
 pub mod create_tournament_reducer;
 pub mod custom_type;
@@ -27,6 +28,7 @@ pub mod event_stage_type;
 pub mod event_type;
 pub mod give_up_type;
 pub mod identity_disconnected_reducer;
+pub mod load_server_config_reducer;
 pub mod loading_map_end_type;
 pub mod loading_map_start_type;
 pub mod map_type;
@@ -34,6 +36,8 @@ pub mod match_status_type;
 pub mod match_template_table;
 pub mod match_template_type;
 pub mod method_type;
+pub mod mode_config_type;
+pub mod on_tournament_event_schedule_reducer;
 pub mod play_loop_end_type;
 pub mod play_loop_start_type;
 pub mod player_chat_type;
@@ -43,9 +47,12 @@ pub mod player_type;
 pub mod podium_type;
 pub mod post_event_reducer;
 pub mod provision_match_reducer;
+pub mod respawn_bavaviour_type;
 pub mod respawn_type;
 pub mod round_time_type;
+pub mod rounds_type;
 pub mod scores_type;
+pub mod server_config_type;
 pub mod stage_match_table;
 pub mod stage_match_type;
 pub mod stage_template_table;
@@ -54,11 +61,12 @@ pub mod start_line_type;
 pub mod start_map_type;
 pub mod start_turn_type;
 pub mod team_type;
+pub mod tm_server_config_table;
+pub mod tm_server_config_type;
 pub mod tm_server_event_table;
 pub mod tm_server_event_type;
 pub mod tm_server_table;
 pub mod tm_server_type;
-pub mod tournament_event_schedule_callback_reducer;
 pub mod tournament_event_schedule_table;
 pub mod tournament_event_schedule_type;
 pub mod tournament_event_table;
@@ -72,6 +80,7 @@ pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
 pub mod user_table;
 pub mod user_type;
+pub mod warmup_duration_type;
 pub mod way_point_type;
 
 pub use add_event_reducer::{add_event, set_flags_for_add_event, AddEventCallbackId};
@@ -84,6 +93,7 @@ pub use call_server_reducer::{call_server, set_flags_for_call_server, CallServer
 pub use client_connected_reducer::{
     client_connected, set_flags_for_client_connected, ClientConnectedCallbackId,
 };
+pub use common_type::Common;
 pub use create_event_template_reducer::{
     create_event_template, set_flags_for_create_event_template, CreateEventTemplateCallbackId,
 };
@@ -105,6 +115,9 @@ pub use give_up_type::GiveUp;
 pub use identity_disconnected_reducer::{
     identity_disconnected, set_flags_for_identity_disconnected, IdentityDisconnectedCallbackId,
 };
+pub use load_server_config_reducer::{
+    load_server_config, set_flags_for_load_server_config, LoadServerConfigCallbackId,
+};
 pub use loading_map_end_type::LoadingMapEnd;
 pub use loading_map_start_type::LoadingMapStart;
 pub use map_type::Map;
@@ -112,6 +125,11 @@ pub use match_status_type::MatchStatus;
 pub use match_template_table::*;
 pub use match_template_type::MatchTemplate;
 pub use method_type::Method;
+pub use mode_config_type::ModeConfig;
+pub use on_tournament_event_schedule_reducer::{
+    on_tournament_event_schedule, set_flags_for_on_tournament_event_schedule,
+    OnTournamentEventScheduleCallbackId,
+};
 pub use play_loop_end_type::PlayLoopEnd;
 pub use play_loop_start_type::PlayLoopStart;
 pub use player_chat_type::PlayerChat;
@@ -123,9 +141,12 @@ pub use post_event_reducer::{post_event, set_flags_for_post_event, PostEventCall
 pub use provision_match_reducer::{
     provision_match, set_flags_for_provision_match, ProvisionMatchCallbackId,
 };
+pub use respawn_bavaviour_type::RespawnBavaviour;
 pub use respawn_type::Respawn;
 pub use round_time_type::RoundTime;
+pub use rounds_type::Rounds;
 pub use scores_type::Scores;
+pub use server_config_type::ServerConfig;
 pub use stage_match_table::*;
 pub use stage_match_type::StageMatch;
 pub use stage_template_table::*;
@@ -134,14 +155,12 @@ pub use start_line_type::StartLine;
 pub use start_map_type::StartMap;
 pub use start_turn_type::StartTurn;
 pub use team_type::Team;
+pub use tm_server_config_table::*;
+pub use tm_server_config_type::TmServerConfig;
 pub use tm_server_event_table::*;
 pub use tm_server_event_type::TmServerEvent;
 pub use tm_server_table::*;
 pub use tm_server_type::TmServer;
-pub use tournament_event_schedule_callback_reducer::{
-    set_flags_for_tournament_event_schedule_callback, tournament_event_schedule_callback,
-    TournamentEventScheduleCallbackCallbackId,
-};
 pub use tournament_event_schedule_table::*;
 pub use tournament_event_schedule_type::TournamentEventSchedule;
 pub use tournament_event_table::*;
@@ -155,6 +174,7 @@ pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
 pub use user_table::*;
 pub use user_type::User;
+pub use warmup_duration_type::WarmupDuration;
 pub use way_point_type::WayPoint;
 
 #[derive(Clone, PartialEq, Debug)]
@@ -195,6 +215,13 @@ pub enum Reducer {
         name: String,
     },
     IdentityDisconnected,
+    LoadServerConfig {
+        id: String,
+        with_config: u64,
+    },
+    OnTournamentEventSchedule {
+        arg: TournamentEventSchedule,
+    },
     PostEvent {
         id: String,
         event: Event,
@@ -203,9 +230,6 @@ pub enum Reducer {
         to: u64,
         with_config: Option<u64>,
         auto_provisioning_server: bool,
-    },
-    TournamentEventScheduleCallback {
-        arg: TournamentEventSchedule,
     },
     TryStart {
         match_id: u64,
@@ -228,9 +252,10 @@ impl __sdk::Reducer for Reducer {
             Reducer::CreateEventTemplate { .. } => "create_event_template",
             Reducer::CreateTournament { .. } => "create_tournament",
             Reducer::IdentityDisconnected => "identity_disconnected",
+            Reducer::LoadServerConfig { .. } => "load_server_config",
+            Reducer::OnTournamentEventSchedule { .. } => "on_tournament_event_schedule",
             Reducer::PostEvent { .. } => "post_event",
             Reducer::ProvisionMatch { .. } => "provision_match",
-            Reducer::TournamentEventScheduleCallback { .. } => "tournament_event_schedule_callback",
             Reducer::TryStart { .. } => "try_start",
         }
     }
@@ -287,6 +312,16 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 identity_disconnected_reducer::IdentityDisconnectedArgs,
             >("identity_disconnected", &value.args)?
             .into()),
+            "load_server_config" => Ok(__sdk::parse_reducer_args::<
+                load_server_config_reducer::LoadServerConfigArgs,
+            >("load_server_config", &value.args)?
+            .into()),
+            "on_tournament_event_schedule" => {
+                Ok(__sdk::parse_reducer_args::<
+                    on_tournament_event_schedule_reducer::OnTournamentEventScheduleArgs,
+                >("on_tournament_event_schedule", &value.args)?
+                .into())
+            }
             "post_event" => Ok(
                 __sdk::parse_reducer_args::<post_event_reducer::PostEventArgs>(
                     "post_event",
@@ -298,12 +333,6 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 provision_match_reducer::ProvisionMatchArgs,
             >("provision_match", &value.args)?
             .into()),
-            "tournament_event_schedule_callback" => {
-                Ok(__sdk::parse_reducer_args::<
-                    tournament_event_schedule_callback_reducer::TournamentEventScheduleCallbackArgs,
-                >("tournament_event_schedule_callback", &value.args)?
-                .into())
-            }
             "try_start" => Ok(
                 __sdk::parse_reducer_args::<try_start_reducer::TryStartArgs>(
                     "try_start",
@@ -331,6 +360,7 @@ pub struct DbUpdate {
     stage_match: __sdk::TableUpdate<StageMatch>,
     stage_template: __sdk::TableUpdate<StageTemplate>,
     tm_server: __sdk::TableUpdate<TmServer>,
+    tm_server_config: __sdk::TableUpdate<TmServerConfig>,
     tm_server_event: __sdk::TableUpdate<TmServerEvent>,
     tournament: __sdk::TableUpdate<Tournament>,
     tournament_event: __sdk::TableUpdate<TournamentEvent>,
@@ -362,6 +392,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "tm_server" => db_update
                     .tm_server
                     .append(tm_server_table::parse_table_update(table_update)?),
+                "tm_server_config" => db_update
+                    .tm_server_config
+                    .append(tm_server_config_table::parse_table_update(table_update)?),
                 "tm_server_event" => db_update
                     .tm_server_event
                     .append(tm_server_event_table::parse_table_update(table_update)?),
@@ -420,6 +453,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.tm_server = cache
             .apply_diff_to_table::<TmServer>("tm_server", &self.tm_server)
             .with_updates_by_pk(|row| &row.id);
+        diff.tm_server_config = cache
+            .apply_diff_to_table::<TmServerConfig>("tm_server_config", &self.tm_server_config)
+            .with_updates_by_pk(|row| &row.id);
         diff.tm_server_event = cache
             .apply_diff_to_table::<TmServerEvent>("tm_server_event", &self.tm_server_event)
             .with_updates_by_pk(|row| &row.id);
@@ -453,6 +489,7 @@ pub struct AppliedDiff<'r> {
     stage_match: __sdk::TableAppliedDiff<'r, StageMatch>,
     stage_template: __sdk::TableAppliedDiff<'r, StageTemplate>,
     tm_server: __sdk::TableAppliedDiff<'r, TmServer>,
+    tm_server_config: __sdk::TableAppliedDiff<'r, TmServerConfig>,
     tm_server_event: __sdk::TableAppliedDiff<'r, TmServerEvent>,
     tournament: __sdk::TableAppliedDiff<'r, Tournament>,
     tournament_event: __sdk::TableAppliedDiff<'r, TournamentEvent>,
@@ -488,6 +525,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<TmServer>("tm_server", &self.tm_server, event);
+        callbacks.invoke_table_row_callbacks::<TmServerConfig>(
+            "tm_server_config",
+            &self.tm_server_config,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<TmServerEvent>(
             "tm_server_event",
             &self.tm_server_event,
@@ -1101,6 +1143,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         stage_match_table::register_table(client_cache);
         stage_template_table::register_table(client_cache);
         tm_server_table::register_table(client_cache);
+        tm_server_config_table::register_table(client_cache);
         tm_server_event_table::register_table(client_cache);
         tournament_table::register_table(client_cache);
         tournament_event_table::register_table(client_cache);

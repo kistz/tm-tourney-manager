@@ -48,12 +48,14 @@ import { CreateTournament } from "./create_tournament_reducer.ts";
 export { CreateTournament };
 import { IdentityDisconnected } from "./identity_disconnected_reducer.ts";
 export { IdentityDisconnected };
+import { LoadServerConfig } from "./load_server_config_reducer.ts";
+export { LoadServerConfig };
+import { OnTournamentEventSchedule } from "./on_tournament_event_schedule_reducer.ts";
+export { OnTournamentEventSchedule };
 import { PostEvent } from "./post_event_reducer.ts";
 export { PostEvent };
 import { ProvisionMatch } from "./provision_match_reducer.ts";
 export { ProvisionMatch };
-import { TournamentEventScheduleCallback } from "./tournament_event_schedule_callback_reducer.ts";
-export { TournamentEventScheduleCallback };
 import { TryStart } from "./try_start_reducer.ts";
 export { TryStart };
 
@@ -70,6 +72,8 @@ import { StageTemplateTableHandle } from "./stage_template_table.ts";
 export { StageTemplateTableHandle };
 import { TmServerTableHandle } from "./tm_server_table.ts";
 export { TmServerTableHandle };
+import { TmServerConfigTableHandle } from "./tm_server_config_table.ts";
+export { TmServerConfigTableHandle };
 import { TmServerEventTableHandle } from "./tm_server_event_table.ts";
 export { TmServerEventTableHandle };
 import { TournamentTableHandle } from "./tournament_table.ts";
@@ -82,6 +86,8 @@ import { UserTableHandle } from "./user_table.ts";
 export { UserTableHandle };
 
 // Import and reexport all types
+import { Common } from "./common_type.ts";
+export { Common };
 import { Custom } from "./custom_type.ts";
 export { Custom };
 import { EndMapEnd } from "./end_map_end_type.ts";
@@ -114,6 +120,8 @@ import { MatchTemplate } from "./match_template_type.ts";
 export { MatchTemplate };
 import { Method } from "./method_type.ts";
 export { Method };
+import { ModeConfig } from "./mode_config_type.ts";
+export { ModeConfig };
 import { PlayLoopEnd } from "./play_loop_end_type.ts";
 export { PlayLoopEnd };
 import { PlayLoopStart } from "./play_loop_start_type.ts";
@@ -130,10 +138,16 @@ import { Podium } from "./podium_type.ts";
 export { Podium };
 import { Respawn } from "./respawn_type.ts";
 export { Respawn };
+import { RespawnBavaviour } from "./respawn_bavaviour_type.ts";
+export { RespawnBavaviour };
 import { RoundTime } from "./round_time_type.ts";
 export { RoundTime };
+import { Rounds } from "./rounds_type.ts";
+export { Rounds };
 import { Scores } from "./scores_type.ts";
 export { Scores };
+import { ServerConfig } from "./server_config_type.ts";
+export { ServerConfig };
 import { StageMatch } from "./stage_match_type.ts";
 export { StageMatch };
 import { StageTemplate } from "./stage_template_type.ts";
@@ -148,6 +162,8 @@ import { Team } from "./team_type.ts";
 export { Team };
 import { TmServer } from "./tm_server_type.ts";
 export { TmServer };
+import { TmServerConfig } from "./tm_server_config_type.ts";
+export { TmServerConfig };
 import { TmServerEvent } from "./tm_server_event_type.ts";
 export { TmServerEvent };
 import { Tournament } from "./tournament_type.ts";
@@ -166,6 +182,8 @@ import { UnloadingMapStart } from "./unloading_map_start_type.ts";
 export { UnloadingMapStart };
 import { User } from "./user_type.ts";
 export { User };
+import { WarmupDuration } from "./warmup_duration_type.ts";
+export { WarmupDuration };
 import { WayPoint } from "./way_point_type.ts";
 export { WayPoint };
 
@@ -218,6 +236,15 @@ const REMOTE_MODULE = {
       primaryKeyInfo: {
         colName: "id",
         colType: (TmServer.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
+      },
+    },
+    tm_server_config: {
+      tableName: "tm_server_config",
+      rowType: TmServerConfig.getTypeScriptAlgebraicType(),
+      primaryKey: "id",
+      primaryKeyInfo: {
+        colName: "id",
+        colType: (TmServerConfig.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
       },
     },
     tm_server_event: {
@@ -303,6 +330,14 @@ const REMOTE_MODULE = {
       reducerName: "identity_disconnected",
       argsType: IdentityDisconnected.getTypeScriptAlgebraicType(),
     },
+    load_server_config: {
+      reducerName: "load_server_config",
+      argsType: LoadServerConfig.getTypeScriptAlgebraicType(),
+    },
+    on_tournament_event_schedule: {
+      reducerName: "on_tournament_event_schedule",
+      argsType: OnTournamentEventSchedule.getTypeScriptAlgebraicType(),
+    },
     post_event: {
       reducerName: "post_event",
       argsType: PostEvent.getTypeScriptAlgebraicType(),
@@ -310,10 +345,6 @@ const REMOTE_MODULE = {
     provision_match: {
       reducerName: "provision_match",
       argsType: ProvisionMatch.getTypeScriptAlgebraicType(),
-    },
-    tournament_event_schedule_callback: {
-      reducerName: "tournament_event_schedule_callback",
-      argsType: TournamentEventScheduleCallback.getTypeScriptAlgebraicType(),
     },
     try_start: {
       reducerName: "try_start",
@@ -358,9 +389,10 @@ export type Reducer = never
 | { name: "CreateEventTemplate", args: CreateEventTemplate }
 | { name: "CreateTournament", args: CreateTournament }
 | { name: "IdentityDisconnected", args: IdentityDisconnected }
+| { name: "LoadServerConfig", args: LoadServerConfig }
+| { name: "OnTournamentEventSchedule", args: OnTournamentEventSchedule }
 | { name: "PostEvent", args: PostEvent }
 | { name: "ProvisionMatch", args: ProvisionMatch }
-| { name: "TournamentEventScheduleCallback", args: TournamentEventScheduleCallback }
 | { name: "TryStart", args: TryStart }
 ;
 
@@ -495,6 +527,38 @@ export class RemoteReducers {
     this.connection.offReducer("identity_disconnected", callback);
   }
 
+  loadServerConfig(id: string, withConfig: bigint) {
+    const __args = { id, withConfig };
+    let __writer = new __BinaryWriter(1024);
+    LoadServerConfig.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("load_server_config", __argsBuffer, this.setCallReducerFlags.loadServerConfigFlags);
+  }
+
+  onLoadServerConfig(callback: (ctx: ReducerEventContext, id: string, withConfig: bigint) => void) {
+    this.connection.onReducer("load_server_config", callback);
+  }
+
+  removeOnLoadServerConfig(callback: (ctx: ReducerEventContext, id: string, withConfig: bigint) => void) {
+    this.connection.offReducer("load_server_config", callback);
+  }
+
+  onTournamentEventSchedule(arg: TournamentEventSchedule) {
+    const __args = { arg };
+    let __writer = new __BinaryWriter(1024);
+    OnTournamentEventSchedule.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("on_tournament_event_schedule", __argsBuffer, this.setCallReducerFlags.onTournamentEventScheduleFlags);
+  }
+
+  onOnTournamentEventSchedule(callback: (ctx: ReducerEventContext, arg: TournamentEventSchedule) => void) {
+    this.connection.onReducer("on_tournament_event_schedule", callback);
+  }
+
+  removeOnOnTournamentEventSchedule(callback: (ctx: ReducerEventContext, arg: TournamentEventSchedule) => void) {
+    this.connection.offReducer("on_tournament_event_schedule", callback);
+  }
+
   postEvent(id: string, event: Event) {
     const __args = { id, event };
     let __writer = new __BinaryWriter(1024);
@@ -525,22 +589,6 @@ export class RemoteReducers {
 
   removeOnProvisionMatch(callback: (ctx: ReducerEventContext, to: bigint, withConfig: bigint | undefined, autoProvisioningServer: boolean) => void) {
     this.connection.offReducer("provision_match", callback);
-  }
-
-  tournamentEventScheduleCallback(arg: TournamentEventSchedule) {
-    const __args = { arg };
-    let __writer = new __BinaryWriter(1024);
-    TournamentEventScheduleCallback.serialize(__writer, __args);
-    let __argsBuffer = __writer.getBuffer();
-    this.connection.callReducer("tournament_event_schedule_callback", __argsBuffer, this.setCallReducerFlags.tournamentEventScheduleCallbackFlags);
-  }
-
-  onTournamentEventScheduleCallback(callback: (ctx: ReducerEventContext, arg: TournamentEventSchedule) => void) {
-    this.connection.onReducer("tournament_event_schedule_callback", callback);
-  }
-
-  removeOnTournamentEventScheduleCallback(callback: (ctx: ReducerEventContext, arg: TournamentEventSchedule) => void) {
-    this.connection.offReducer("tournament_event_schedule_callback", callback);
   }
 
   tryStart(matchId: bigint) {
@@ -597,6 +645,16 @@ export class SetReducerFlags {
     this.createTournamentFlags = flags;
   }
 
+  loadServerConfigFlags: __CallReducerFlags = 'FullUpdate';
+  loadServerConfig(flags: __CallReducerFlags) {
+    this.loadServerConfigFlags = flags;
+  }
+
+  onTournamentEventScheduleFlags: __CallReducerFlags = 'FullUpdate';
+  onTournamentEventSchedule(flags: __CallReducerFlags) {
+    this.onTournamentEventScheduleFlags = flags;
+  }
+
   postEventFlags: __CallReducerFlags = 'FullUpdate';
   postEvent(flags: __CallReducerFlags) {
     this.postEventFlags = flags;
@@ -605,11 +663,6 @@ export class SetReducerFlags {
   provisionMatchFlags: __CallReducerFlags = 'FullUpdate';
   provisionMatch(flags: __CallReducerFlags) {
     this.provisionMatchFlags = flags;
-  }
-
-  tournamentEventScheduleCallbackFlags: __CallReducerFlags = 'FullUpdate';
-  tournamentEventScheduleCallback(flags: __CallReducerFlags) {
-    this.tournamentEventScheduleCallbackFlags = flags;
   }
 
   tryStartFlags: __CallReducerFlags = 'FullUpdate';
@@ -650,6 +703,11 @@ export class RemoteTables {
   get tmServer(): TmServerTableHandle {
     // clientCache is a private property
     return new TmServerTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmServer>(REMOTE_MODULE.tables.tm_server));
+  }
+
+  get tmServerConfig(): TmServerConfigTableHandle {
+    // clientCache is a private property
+    return new TmServerConfigTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmServerConfig>(REMOTE_MODULE.tables.tm_server_config));
   }
 
   get tmServerEvent(): TmServerEventTableHandle {

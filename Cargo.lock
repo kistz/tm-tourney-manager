@@ -470,7 +470,7 @@ checksum = "2759631240ddab7237eddf931f632e5253108eb5a919b4fb0440652d6a381f62"
 dependencies = [
  "base64 0.22.1",
  "chrono",
- "quick-xml 0.37.5",
+ "quick-xml",
  "serde",
  "thiserror 1.0.69",
 ]
@@ -1492,16 +1492,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quick-xml"
-version = "0.38.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42a232e7487fc2ef313d96dde7948e7a3c05101870d8985e4fd8d26aedd27b89"
-dependencies = [
- "memchr",
- "serde",
-]
-
-[[package]]
 name = "quote"
 version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2397,24 +2387,24 @@ dependencies = [
 
 [[package]]
 name = "tm-server-client"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.21.7",
  "bytes",
  "dashmap",
  "dxr",
- "quick-xml 0.38.3",
+ "quick-xml",
  "serde",
  "serde_json",
  "tachyonix",
- "thiserror 2.0.17",
+ "thiserror 1.0.69",
  "tm-server-types",
  "tokio",
 ]
 
 [[package]]
 name = "tm-server-interface"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "hex",
  "nadeo-api",
@@ -2428,7 +2418,7 @@ dependencies = [
 
 [[package]]
 name = "tm-server-types"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "dxr",
  "serde",
@@ -2438,7 +2428,7 @@ dependencies = [
 
 [[package]]
 name = "tm-tourney-manager"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "log",
  "spacetimedb",
@@ -2447,7 +2437,7 @@ dependencies = [
 
 [[package]]
 name = "tm-tourney-manager-api-rs"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "hex",
  "spacetimedb-sdk",

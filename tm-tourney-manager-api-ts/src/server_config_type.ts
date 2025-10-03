@@ -26,26 +26,22 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { Method } from "./method_type";
+import { Common } from "./common_type";
 // Mark import as potentially unused
-declare type __keep_Method = Method;
-import { ServerConfig } from "./server_config_type";
+declare type __keep_Common = Common;
+import { ModeConfig } from "./mode_config_type";
 // Mark import as potentially unused
-declare type __keep_ServerConfig = ServerConfig;
+declare type __keep_ModeConfig = ModeConfig;
 
 
-export type TmServer = {
-  id: string,
-  ownerId: string,
-  online: boolean,
-  config: ServerConfig,
-  activeMatch: bigint | undefined,
-  serverMethod: Method | undefined,
+export type ServerConfig = {
+  common: Common,
+  mode: ModeConfig,
 };
 /**
  * An object for generated helper functions.
  */
-export const TmServer = {
+export const ServerConfig = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -53,26 +49,22 @@ export const TmServer = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.String},
-        { name: "ownerId", algebraicType: __AlgebraicTypeValue.String},
-        { name: "online", algebraicType: __AlgebraicTypeValue.Bool},
-        { name: "config", algebraicType: ServerConfig.getTypeScriptAlgebraicType()},
-        { name: "activeMatch", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
-        { name: "serverMethod", algebraicType: __AlgebraicTypeValue.createOptionType(Method.getTypeScriptAlgebraicType())},
+        { name: "common", algebraicType: Common.getTypeScriptAlgebraicType()},
+        { name: "mode", algebraicType: ModeConfig.getTypeScriptAlgebraicType()},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TmServer): void {
-    __AlgebraicTypeValue.serializeValue(writer, TmServer.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: ServerConfig): void {
+    __AlgebraicTypeValue.serializeValue(writer, ServerConfig.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TmServer {
-    return __AlgebraicTypeValue.deserializeValue(reader, TmServer.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): ServerConfig {
+    return __AlgebraicTypeValue.deserializeValue(reader, ServerConfig.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TmServer;
+export default ServerConfig;
 
 

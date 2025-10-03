@@ -26,10 +26,7 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { TmServer } from "./tm_server_type";
-import { Method } from "./method_type";
-// Mark import as potentially unused
-declare type __keep_Method = Method;
+import { TmServerConfig } from "./tm_server_config_type";
 import { ServerConfig } from "./server_config_type";
 // Mark import as potentially unused
 declare type __keep_ServerConfig = ServerConfig;
@@ -38,19 +35,19 @@ import { type EventContext, type Reducer, RemoteReducers, RemoteTables } from ".
 declare type __keep = [EventContext, Reducer, RemoteReducers, RemoteTables];
 
 /**
- * Table handle for the table `tm_server`.
+ * Table handle for the table `tm_server_config`.
  *
- * Obtain a handle from the [`tmServer`] property on [`RemoteTables`],
- * like `ctx.db.tmServer`.
+ * Obtain a handle from the [`tmServerConfig`] property on [`RemoteTables`],
+ * like `ctx.db.tmServerConfig`.
  *
  * Users are encouraged not to explicitly reference this type,
  * but to directly chain method calls,
- * like `ctx.db.tmServer.on_insert(...)`.
+ * like `ctx.db.tmServerConfig.on_insert(...)`.
  */
-export class TmServerTableHandle {
-  tableCache: __TableCache<TmServer>;
+export class TmServerConfigTableHandle {
+  tableCache: __TableCache<TmServerConfig>;
 
-  constructor(tableCache: __TableCache<TmServer>) {
+  constructor(tableCache: __TableCache<TmServerConfig>) {
     this.tableCache = tableCache;
   }
 
@@ -58,24 +55,24 @@ export class TmServerTableHandle {
     return this.tableCache.count();
   }
 
-  iter(): Iterable<TmServer> {
+  iter(): Iterable<TmServerConfig> {
     return this.tableCache.iter();
   }
   /**
-   * Access to the `id` unique index on the table `tm_server`,
+   * Access to the `id` unique index on the table `tm_server_config`,
    * which allows point queries on the field of the same name
-   * via the [`TmServerIdUnique.find`] method.
+   * via the [`TmServerConfigIdUnique.find`] method.
    *
    * Users are encouraged not to explicitly reference this type,
    * but to directly chain method calls,
-   * like `ctx.db.tmServer.id().find(...)`.
+   * like `ctx.db.tmServerConfig.id().find(...)`.
    *
-   * Get a handle on the `id` unique index on the table `tm_server`.
+   * Get a handle on the `id` unique index on the table `tm_server_config`.
    */
   id = {
     // Find the subscribed row whose `id` column value is equal to `col_val`,
     // if such a row is present in the client cache.
-    find: (col_val: string): TmServer | undefined => {
+    find: (col_val: bigint): TmServerConfig | undefined => {
       for (let row of this.tableCache.iter()) {
         if (__deepEqual(row.id, col_val)) {
           return row;
@@ -84,27 +81,27 @@ export class TmServerTableHandle {
     },
   };
 
-  onInsert = (cb: (ctx: EventContext, row: TmServer) => void) => {
+  onInsert = (cb: (ctx: EventContext, row: TmServerConfig) => void) => {
     return this.tableCache.onInsert(cb);
   }
 
-  removeOnInsert = (cb: (ctx: EventContext, row: TmServer) => void) => {
+  removeOnInsert = (cb: (ctx: EventContext, row: TmServerConfig) => void) => {
     return this.tableCache.removeOnInsert(cb);
   }
 
-  onDelete = (cb: (ctx: EventContext, row: TmServer) => void) => {
+  onDelete = (cb: (ctx: EventContext, row: TmServerConfig) => void) => {
     return this.tableCache.onDelete(cb);
   }
 
-  removeOnDelete = (cb: (ctx: EventContext, row: TmServer) => void) => {
+  removeOnDelete = (cb: (ctx: EventContext, row: TmServerConfig) => void) => {
     return this.tableCache.removeOnDelete(cb);
   }
 
   // Updates are only defined for tables with primary keys.
-  onUpdate = (cb: (ctx: EventContext, oldRow: TmServer, newRow: TmServer) => void) => {
+  onUpdate = (cb: (ctx: EventContext, oldRow: TmServerConfig, newRow: TmServerConfig) => void) => {
     return this.tableCache.onUpdate(cb);
   }
 
-  removeOnUpdate = (cb: (ctx: EventContext, onRow: TmServer, newRow: TmServer) => void) => {
+  removeOnUpdate = (cb: (ctx: EventContext, onRow: TmServerConfig, newRow: TmServerConfig) => void) => {
     return this.tableCache.removeOnUpdate(cb);
   }}

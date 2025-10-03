@@ -4,20 +4,17 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::method_type::Method;
-use super::server_config_type::ServerConfig;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct TmServer {
-    pub id: String,
-    pub owner_id: String,
-    pub online: bool,
-    pub config: ServerConfig,
-    pub active_match: Option<u64>,
-    pub server_method: Option<Method>,
+pub struct Rounds {
+    pub delay_before_next_map: u32,
+    pub finish_timeout: i32,
+    pub mpas_per_match: i32,
+    pub points_limit: u32,
+    pub points_repartition: Vec<u32>,
+    pub rounds_per_map: i32,
 }
 
-impl __sdk::InModule for TmServer {
+impl __sdk::InModule for Rounds {
     type Module = super::RemoteModule;
 }

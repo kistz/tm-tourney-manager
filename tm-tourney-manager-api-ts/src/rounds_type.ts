@@ -26,26 +26,19 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { Method } from "./method_type";
-// Mark import as potentially unused
-declare type __keep_Method = Method;
-import { ServerConfig } from "./server_config_type";
-// Mark import as potentially unused
-declare type __keep_ServerConfig = ServerConfig;
 
-
-export type TmServer = {
-  id: string,
-  ownerId: string,
-  online: boolean,
-  config: ServerConfig,
-  activeMatch: bigint | undefined,
-  serverMethod: Method | undefined,
+export type Rounds = {
+  delayBeforeNextMap: number,
+  finishTimeout: number,
+  mpasPerMatch: number,
+  pointsLimit: number,
+  pointsRepartition: number[],
+  roundsPerMap: number,
 };
 /**
  * An object for generated helper functions.
  */
-export const TmServer = {
+export const Rounds = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -53,26 +46,26 @@ export const TmServer = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.String},
-        { name: "ownerId", algebraicType: __AlgebraicTypeValue.String},
-        { name: "online", algebraicType: __AlgebraicTypeValue.Bool},
-        { name: "config", algebraicType: ServerConfig.getTypeScriptAlgebraicType()},
-        { name: "activeMatch", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
-        { name: "serverMethod", algebraicType: __AlgebraicTypeValue.createOptionType(Method.getTypeScriptAlgebraicType())},
+        { name: "delayBeforeNextMap", algebraicType: __AlgebraicTypeValue.U32},
+        { name: "finishTimeout", algebraicType: __AlgebraicTypeValue.I32},
+        { name: "mpasPerMatch", algebraicType: __AlgebraicTypeValue.I32},
+        { name: "pointsLimit", algebraicType: __AlgebraicTypeValue.U32},
+        { name: "pointsRepartition", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U32)},
+        { name: "roundsPerMap", algebraicType: __AlgebraicTypeValue.I32},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TmServer): void {
-    __AlgebraicTypeValue.serializeValue(writer, TmServer.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: Rounds): void {
+    __AlgebraicTypeValue.serializeValue(writer, Rounds.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TmServer {
-    return __AlgebraicTypeValue.deserializeValue(reader, TmServer.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): Rounds {
+    return __AlgebraicTypeValue.deserializeValue(reader, Rounds.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TmServer;
+export default Rounds;
 
 

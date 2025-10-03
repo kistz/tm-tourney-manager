@@ -1,21 +1,16 @@
 use serde::Serialize;
+use tm_server_types::config::ServerConfig;
 
 use crate::TrackmaniaServer;
 use crate::types::XmlRpcMethods;
 
-mod rounds;
-
 #[allow(async_fn_in_trait)]
 pub trait ServerConfiguration {
-    async fn configure(
-        &self, /* options: ExtraConfigOptions *//* , mode: &impl GameModeSettings */
-    );
+    async fn configure(&self, config: ServerConfig);
 }
 
-pub trait GameModeSettings: Serialize {}
-
 impl ServerConfiguration for TrackmaniaServer {
-    async fn configure(&self /* , mode: &impl GameModeSettings */) {
+    async fn configure(&self, config: ServerConfig) {
         //let xml_string = quick_xml::se::to_string(mode);
 
         //println!("Serialized Config: {:?}", xml_string);
@@ -28,7 +23,7 @@ impl ServerConfiguration for TrackmaniaServer {
 	</gameinfos>
 
   	<script_settings>
-    	<setting name="S_PointsLimit" value="1700" type="integer"/>
+    	<setting name="S_PointsLimit" value="1701" type="integer"/>
     	<setting name="S_RoundsPerMap" value="1" type="integer"/>
     	<setting name="S_MapsPerMatch" value="0" type="integer"/>
     	<setting name="S_UseTieBreak" value="" type="boolean"/>

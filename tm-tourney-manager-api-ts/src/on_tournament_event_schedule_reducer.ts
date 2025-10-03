@@ -31,13 +31,13 @@ import { TournamentEventSchedule } from "./tournament_event_schedule_type";
 // Mark import as potentially unused
 declare type __keep_TournamentEventSchedule = TournamentEventSchedule;
 
-export type TournamentEventScheduleCallback = {
+export type OnTournamentEventSchedule = {
   arg: TournamentEventSchedule,
 };
 /**
  * An object for generated helper functions.
  */
-export const TournamentEventScheduleCallback = {
+export const OnTournamentEventSchedule = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -50,15 +50,15 @@ export const TournamentEventScheduleCallback = {
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TournamentEventScheduleCallback): void {
-    __AlgebraicTypeValue.serializeValue(writer, TournamentEventScheduleCallback.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: OnTournamentEventSchedule): void {
+    __AlgebraicTypeValue.serializeValue(writer, OnTournamentEventSchedule.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TournamentEventScheduleCallback {
-    return __AlgebraicTypeValue.deserializeValue(reader, TournamentEventScheduleCallback.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): OnTournamentEventSchedule {
+    return __AlgebraicTypeValue.deserializeValue(reader, OnTournamentEventSchedule.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TournamentEventScheduleCallback;
+export default OnTournamentEventSchedule;
 
