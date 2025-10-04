@@ -1,10 +1,10 @@
 use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
-use tm_server_types::event::Event;
+use tm_server_types::{config::ServerConfig, event::Event};
 
 use crate::{
     leaderboard::Leaderboard,
     server::{TmServer, tm_server},
-    stage::event_stage,
+    stage::{self, event_stage},
 };
 
 // The table name needs to be plural since match is a rust keyword
@@ -14,11 +14,19 @@ pub struct StageMatch {
     #[primary_key]
     id: u64,
 
+    /// The stage this match is associated with.
     stage_id: u64,
-
+    /// The assigned server that will be used by this match.
     server_id: Option<String>,
 
-    //template: u64,
+    /// The moment the server is assigned to the match the pre_match_config gets loaded in.
+    /// Only if it is defined. Useful for hiding tournament maps till the actual start.
+    pre_match_config: Option<ServerConfig>,
+    /// If the match is started this config gets loaded.
+    /// Has to be specified before your able to advance into Upcoming.
+    match_config: Option<ServerConfig>,
+    post_match_config: Option<ServerConfig>,
+
     status: MatchStatus,
     //leaderboard: Leaderboard,
 }
@@ -27,7 +35,9 @@ pub struct StageMatch {
 pub enum MatchStatus {
     Configuring,
     Upcoming,
-    Live,
+    PreMatch,
+    Match,
+    PostMatch,
     Ended,
 }
 
@@ -35,22 +45,20 @@ pub enum MatchStatus {
 #[reducer]
 pub fn provision_match(
     ctx: &ReducerContext,
-    to: u64,
+    used_by: u64,
     with_config: Option<u64>,
     auto_provisioning_server: bool,
 ) {
     //TODO authorization
-    if let Some(mut stage) = ctx.db.event_stage().id().find(to) {
+    if let Some(mut stage) = ctx.db.event_stage().id().find(used_by) {
         let stage_match = ctx.db.stage_match().insert(StageMatch {
             id: 0,
-            stage_id: to,
+            stage_id: used_by,
             status: MatchStatus::Upcoming,
-            server_id: if auto_provisioning_server {
-                //TODO: make auto provisioning logic
-                None
-            } else {
-                None
-            },
+            server_id: if auto_provisioning_server { None } else { None },
+            pre_match_config: None,
+            match_config: None,
+            post_match_config: None,
         });
         stage.add_match(stage_match.id);
 
@@ -60,10 +68,10 @@ pub fn provision_match(
 
 /// Assigns a server to the selected match.
 #[reducer]
-pub fn assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
+pub fn match_assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
     //TODO authorization
     if let Some(mut server) = ctx.db.tm_server().id().find(&server_id)
-        && server.active_mactch().is_none()
+        //&& server.active_mactch().is_none() TODO
         && let Some(stage_match) = ctx.db.stage_match().id().find(to)
     {
         let stage_match = ctx.db.stage_match().id().update(StageMatch {
@@ -77,6 +85,15 @@ pub fn assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
     }
 }
 
+#[reducer]
+pub fn update_match_config(ctx: &ReducerContext, id: u64, config: ServerConfig) {
+    //TODO authorization
+    if let Some(mut stage_match) = ctx.db.stage_match().id().find(id) {
+        stage_match.match_config = Some(config);
+        ctx.db.stage_match().id().update(stage_match);
+    }
+}
+
 /// If the match is fully configured and ready start.
 #[reducer]
 pub fn try_start(ctx: &ReducerContext, match_id: u64) {
@@ -85,6 +102,9 @@ pub fn try_start(ctx: &ReducerContext, match_id: u64) {
         && let Some(server) = stage_match.server_id
         && let Some(mut server) = ctx.db.tm_server().id().find(server)
     {
+        if let Some(config) = stage_match.match_config {
+            server.set_config(config);
+        }
         ctx.db.tm_server().id().update(server);
     }
 }
@@ -98,8 +118,8 @@ pub struct MatchTemplate {
     creator: String,
 }
 
-#[table(name = tm_server_event,public)]
-pub struct TmServerEvent {
+#[table(name = tm_match_event,public)]
+pub struct TmMatchEvent {
     #[auto_inc]
     #[primary_key]
     id: u64,
@@ -115,7 +135,7 @@ pub fn post_event(ctx: &ReducerContext, id: String, event: Event) {
     if let Some(server) = ctx.db.tm_server().id().find(id)
         && let Some(match_id) = server.active_mactch()
     {
-        ctx.db.tm_server_event().insert(TmServerEvent {
+        ctx.db.tm_match_event().insert(TmMatchEvent {
             id: 0,
             match_id,
             event,

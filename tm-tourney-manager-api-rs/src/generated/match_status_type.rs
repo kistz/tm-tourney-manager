@@ -12,7 +12,11 @@ pub enum MatchStatus {
 
     Upcoming,
 
-    Live,
+    PreMatch,
+
+    Match,
+
+    PostMatch,
 
     Ended,
 }

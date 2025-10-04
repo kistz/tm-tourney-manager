@@ -27,14 +27,18 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 
-export type AssignServer = {
-  to: bigint,
-  serverId: string,
+import { ServerConfig } from "./server_config_type";
+// Mark import as potentially unused
+declare type __keep_ServerConfig = ServerConfig;
+
+export type UpdateMatchConfig = {
+  id: bigint,
+  config: ServerConfig,
 };
 /**
  * An object for generated helper functions.
  */
-export const AssignServer = {
+export const UpdateMatchConfig = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -42,21 +46,21 @@ export const AssignServer = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "to", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "serverId", algebraicType: __AlgebraicTypeValue.String},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "config", algebraicType: ServerConfig.getTypeScriptAlgebraicType()},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: AssignServer): void {
-    __AlgebraicTypeValue.serializeValue(writer, AssignServer.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: UpdateMatchConfig): void {
+    __AlgebraicTypeValue.serializeValue(writer, UpdateMatchConfig.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): AssignServer {
-    return __AlgebraicTypeValue.deserializeValue(reader, AssignServer.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): UpdateMatchConfig {
+    return __AlgebraicTypeValue.deserializeValue(reader, UpdateMatchConfig.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default AssignServer;
+export default UpdateMatchConfig;
 

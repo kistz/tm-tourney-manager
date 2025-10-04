@@ -8,12 +8,12 @@ use super::event_type::Event;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct TmServerEvent {
+pub struct TmMatchEvent {
     pub id: u64,
     pub match_id: u64,
     pub event: Event,
 }
 
-impl __sdk::InModule for TmServerEvent {
+impl __sdk::InModule for TmMatchEvent {
     type Module = super::RemoteModule;
 }

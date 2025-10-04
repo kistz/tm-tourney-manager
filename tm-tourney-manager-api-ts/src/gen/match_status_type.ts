@@ -31,7 +31,9 @@ import * as MatchStatusVariants from './match_status_variants'
 // The tagged union or sum type for the algebraic type `MatchStatus`.
 export type MatchStatus = MatchStatusVariants.Configuring |
   MatchStatusVariants.Upcoming |
-  MatchStatusVariants.Live |
+  MatchStatusVariants.PreMatch |
+  MatchStatusVariants.Match |
+  MatchStatusVariants.PostMatch |
   MatchStatusVariants.Ended;
 
 // A value with helper functions to construct the type.
@@ -44,7 +46,9 @@ export const MatchStatus = {
   // ```
   Configuring: { tag: "Configuring" } as const,
   Upcoming: { tag: "Upcoming" } as const,
-  Live: { tag: "Live" } as const,
+  PreMatch: { tag: "PreMatch" } as const,
+  Match: { tag: "Match" } as const,
+  PostMatch: { tag: "PostMatch" } as const,
   Ended: { tag: "Ended" } as const,
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
@@ -52,7 +56,9 @@ export const MatchStatus = {
       variants: [
         { name: "Configuring", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
         { name: "Upcoming", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Live", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+        { name: "PreMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+        { name: "Match", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+        { name: "PostMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
         { name: "Ended", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
       ]
     });

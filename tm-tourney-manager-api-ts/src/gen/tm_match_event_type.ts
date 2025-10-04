@@ -26,16 +26,20 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
+import { Event } from "./event_type";
+// Mark import as potentially unused
+declare type __keep_Event = Event;
 
-export type ProvisionMatch = {
-  usedBy: bigint,
-  withConfig: bigint | undefined,
-  autoProvisioningServer: boolean,
+
+export type TmMatchEvent = {
+  id: bigint,
+  matchId: bigint,
+  event: Event,
 };
 /**
  * An object for generated helper functions.
  */
-export const ProvisionMatch = {
+export const TmMatchEvent = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -43,22 +47,23 @@ export const ProvisionMatch = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "usedBy", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
-        { name: "autoProvisioningServer", algebraicType: __AlgebraicTypeValue.Bool},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "matchId", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "event", algebraicType: Event.getTypeScriptAlgebraicType()},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: ProvisionMatch): void {
-    __AlgebraicTypeValue.serializeValue(writer, ProvisionMatch.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: TmMatchEvent): void {
+    __AlgebraicTypeValue.serializeValue(writer, TmMatchEvent.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): ProvisionMatch {
-    return __AlgebraicTypeValue.deserializeValue(reader, ProvisionMatch.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): TmMatchEvent {
+    return __AlgebraicTypeValue.deserializeValue(reader, TmMatchEvent.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default ProvisionMatch;
+export default TmMatchEvent;
+
 

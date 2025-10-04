@@ -30,7 +30,7 @@ import {
 export type Rounds = {
   delayBeforeNextMap: number,
   finishTimeout: number,
-  mpasPerMatch: number,
+  mapsPerMatch: number,
   pointsLimit: number,
   useCustomPointsRepartition: boolean,
   pointsRepartition: number[],
@@ -49,7 +49,7 @@ export const Rounds = {
       elements: [
         { name: "delayBeforeNextMap", algebraicType: __AlgebraicTypeValue.U32},
         { name: "finishTimeout", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "mpasPerMatch", algebraicType: __AlgebraicTypeValue.I32},
+        { name: "mapsPerMatch", algebraicType: __AlgebraicTypeValue.I32},
         { name: "pointsLimit", algebraicType: __AlgebraicTypeValue.U32},
         { name: "useCustomPointsRepartition", algebraicType: __AlgebraicTypeValue.Bool},
         { name: "pointsRepartition", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U32)},

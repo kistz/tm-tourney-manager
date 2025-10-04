@@ -9,7 +9,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 pub struct Rounds {
     pub delay_before_next_map: u32,
     pub finish_timeout: i32,
-    pub mpas_per_match: i32,
+    pub maps_per_match: i32,
     pub points_limit: u32,
     pub use_custom_points_repartition: bool,
     pub points_repartition: Vec<u32>,

@@ -26,20 +26,15 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { Event } from "./event_type";
-// Mark import as potentially unused
-declare type __keep_Event = Event;
 
-
-export type TmServerEvent = {
-  id: bigint,
-  matchId: bigint,
-  event: Event,
+export type MatchAssignServer = {
+  to: bigint,
+  serverId: string,
 };
 /**
  * An object for generated helper functions.
  */
-export const TmServerEvent = {
+export const MatchAssignServer = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -47,23 +42,21 @@ export const TmServerEvent = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "matchId", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "event", algebraicType: Event.getTypeScriptAlgebraicType()},
+        { name: "to", algebraicType: __AlgebraicTypeValue.U64},
+        { name: "serverId", algebraicType: __AlgebraicTypeValue.String},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TmServerEvent): void {
-    __AlgebraicTypeValue.serializeValue(writer, TmServerEvent.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: MatchAssignServer): void {
+    __AlgebraicTypeValue.serializeValue(writer, MatchAssignServer.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TmServerEvent {
-    return __AlgebraicTypeValue.deserializeValue(reader, TmServerEvent.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): MatchAssignServer {
+    return __AlgebraicTypeValue.deserializeValue(reader, MatchAssignServer.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TmServerEvent;
-
+export default MatchAssignServer;
 

@@ -7,7 +7,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct ProvisionMatchArgs {
-    pub to: u64,
+    pub used_by: u64,
     pub with_config: Option<u64>,
     pub auto_provisioning_server: bool,
 }
@@ -15,7 +15,7 @@ pub(super) struct ProvisionMatchArgs {
 impl From<ProvisionMatchArgs> for super::Reducer {
     fn from(args: ProvisionMatchArgs) -> Self {
         Self::ProvisionMatch {
-            to: args.to,
+            used_by: args.used_by,
             with_config: args.with_config,
             auto_provisioning_server: args.auto_provisioning_server,
         }
@@ -40,7 +40,7 @@ pub trait provision_match {
     ///  and its status can be observed by listening for [`Self::on_provision_match`] callbacks.
     fn provision_match(
         &self,
-        to: u64,
+        used_by: u64,
         with_config: Option<u64>,
         auto_provisioning_server: bool,
     ) -> __sdk::Result<()>;
@@ -63,14 +63,14 @@ pub trait provision_match {
 impl provision_match for super::RemoteReducers {
     fn provision_match(
         &self,
-        to: u64,
+        used_by: u64,
         with_config: Option<u64>,
         auto_provisioning_server: bool,
     ) -> __sdk::Result<()> {
         self.imp.call_reducer(
             "provision_match",
             ProvisionMatchArgs {
-                to,
+                used_by,
                 with_config,
                 auto_provisioning_server,
             },
@@ -90,7 +90,7 @@ impl provision_match for super::RemoteReducers {
                         __sdk::ReducerEvent {
                             reducer:
                                 super::Reducer::ProvisionMatch {
-                                    to,
+                                    used_by,
                                     with_config,
                                     auto_provisioning_server,
                                 },
@@ -101,7 +101,7 @@ impl provision_match for super::RemoteReducers {
                 else {
                     unreachable!()
                 };
-                callback(ctx, to, with_config, auto_provisioning_server)
+                callback(ctx, used_by, with_config, auto_provisioning_server)
             }),
         ))
     }

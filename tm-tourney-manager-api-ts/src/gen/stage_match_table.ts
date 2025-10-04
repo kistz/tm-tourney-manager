@@ -27,6 +27,9 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 import { StageMatch } from "./stage_match_type";
+import { ServerConfig } from "./server_config_type";
+// Mark import as potentially unused
+declare type __keep_ServerConfig = ServerConfig;
 import { MatchStatus } from "./match_status_type";
 // Mark import as potentially unused
 declare type __keep_MatchStatus = MatchStatus;

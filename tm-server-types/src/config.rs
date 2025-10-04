@@ -1,5 +1,4 @@
 mod rounds;
-use std::fmt::format;
 
 pub use rounds::Rounds;
 
@@ -58,7 +57,7 @@ impl ModeConfig {
             "#,
                 rounds.points_limit,
                 rounds.rounds_per_map,
-                rounds.mpas_per_match,
+                rounds.maps_per_match,
                 rounds.points_repartition,
                 rounds.use_custom_points_repartition,
                 rounds.delay_before_next_map,

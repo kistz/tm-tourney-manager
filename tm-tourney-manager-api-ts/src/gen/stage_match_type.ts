@@ -26,6 +26,9 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
+import { ServerConfig } from "./server_config_type";
+// Mark import as potentially unused
+declare type __keep_ServerConfig = ServerConfig;
 import { MatchStatus } from "./match_status_type";
 // Mark import as potentially unused
 declare type __keep_MatchStatus = MatchStatus;
@@ -35,6 +38,9 @@ export type StageMatch = {
   id: bigint,
   stageId: bigint,
   serverId: string | undefined,
+  preMatchConfig: ServerConfig | undefined,
+  matchConfig: ServerConfig | undefined,
+  postMatchConfig: ServerConfig | undefined,
   status: MatchStatus,
 };
 /**
@@ -51,6 +57,9 @@ export const StageMatch = {
         { name: "id", algebraicType: __AlgebraicTypeValue.U64},
         { name: "stageId", algebraicType: __AlgebraicTypeValue.U64},
         { name: "serverId", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.String)},
+        { name: "preMatchConfig", algebraicType: __AlgebraicTypeValue.createOptionType(ServerConfig.getTypeScriptAlgebraicType())},
+        { name: "matchConfig", algebraicType: __AlgebraicTypeValue.createOptionType(ServerConfig.getTypeScriptAlgebraicType())},
+        { name: "postMatchConfig", algebraicType: __AlgebraicTypeValue.createOptionType(ServerConfig.getTypeScriptAlgebraicType())},
         { name: "status", algebraicType: MatchStatus.getTypeScriptAlgebraicType()},
       ]
     });

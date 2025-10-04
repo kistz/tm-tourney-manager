@@ -5,6 +5,7 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::match_status_type::MatchStatus;
+use super::server_config_type::ServerConfig;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
@@ -12,6 +13,9 @@ pub struct StageMatch {
     pub id: u64,
     pub stage_id: u64,
     pub server_id: Option<String>,
+    pub pre_match_config: Option<ServerConfig>,
+    pub match_config: Option<ServerConfig>,
+    pub post_match_config: Option<ServerConfig>,
     pub status: MatchStatus,
 }
 
