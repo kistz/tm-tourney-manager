@@ -19,6 +19,9 @@ log = "0.4"
 spacetimedb = { version = "*" }
 tm-server-types = { path = "../tm-server-types", features = ['spacetime'] }
 
+[dev-dependencies]
+testcontainers = { version = "0", features = ["blocking"] }
+
 [features]
 default = ["development"]
 development = []

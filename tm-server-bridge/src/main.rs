@@ -1,16 +1,18 @@
 use std::sync::OnceLock;
 
 use nadeo_api::NadeoClient;
-use spacetimedb_sdk::{
-    DbContext, Error, Event as StdbEvent, Identity, Status, Table, TableWithPrimaryKey,
-};
+use opentelemetry_jaeger_propagator::Propagator;
+use opentelemetry_otlp::{Protocol, WithExportConfig};
+use spacetimedb_sdk::{DbContext, Error, Identity, Table, TableWithPrimaryKey};
 
 use tm_tourney_manager_api_rs::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
 
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use opentelemetry::global::{self};
+use tracing::instrument;
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 /// The URI of the SpacetimeDB instance hosting our chat database and module.
 const HOST: &str = "http://localhost:1234";
@@ -25,6 +27,7 @@ static SERVER: OnceLock<TrackmaniaServer> = OnceLock::new();
 static SPACETIME: OnceLock<DbConnection> = OnceLock::new();
 
 /// Load credentials from a file and connect to the database.
+#[instrument(level = "debug")]
 fn connect_to_db() -> DbConnection {
     /* let nando_auth = NadeoClient::builder()
     .with_server_auth("joestestcellar", r#"O#2nvOW^6+Y,\*CS"#)
@@ -55,11 +58,26 @@ fn connect_to_db() -> DbConnection {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Allows you to pass along context (i.e., trace IDs) across services
+    //global::set_text_map_propagator(Propagator::new());
+    // Sets up the machinery needed to export data to Jaeger
+    // There are other OTel crates that provide pipelines for the vendors
+    // mentioned earlier.
+
+    /* let otlp_exporter = opentelemetry_otlp::SpanExporter::builder()
+        .with_http()
+        .with_protocol(Protocol::HttpBinary)
+        .build()?;
+
+    // Create a tracing layer with the configured tracer
+    let opentelemetry = tracing_opentelemetry::layer().with_tracer(otlp_exporter); */
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| format!("{}=trace", env!("CARGO_CRATE_NAME")).into()),
         )
+        //.with(opentelemetry)
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -258,3 +276,54 @@ fn server_bootstrap(_: &EventContext, new: &TmServer) {
         local_server.configure(configuration).await;
     });
 }
+
+#[test]
+fn test_test() {
+    use testcontainers::{
+        GenericImage,
+        core::{IntoContainerPort, WaitFor},
+        runners::SyncRunner,
+    };
+
+    /* let container = GenericImage::new("clockworklabs/spacetime", "latest")
+    .with_exposed_port(3000.tcp())
+    .with_wait_for(WaitFor::message_on_stdout(
+        "Starting SpacetimeDB listening on 0.0.0.0:3000",
+    ))
+    .start(); */
+
+    let container = GenericImage::new("evoesports/trackmania", "latest")
+        .with_exposed_port(2350.tcp())
+        .with_exposed_port(2350.udp())
+        .with_exposed_port(5000.tcp())
+        .with_wait_for(WaitFor::message_on_stdout(
+            "Listening for xml-rpc commands on port 5000.",
+        ))
+        .start();
+
+    println!("{container:?}")
+}
+
+/* struct SpacetimeDB {}
+
+#[cfg(test)]
+impl Image for SpacetimeDB {
+    fn name(&self) -> &str {
+        "clockworklabs/spacetime"
+    }
+
+    fn tag(&self) -> &str {
+        "latest"
+    }
+
+    fn ready_conditions(&self) -> Vec<testcontainers::core::WaitFor> {
+        todo!()
+    }
+
+    fn exec_before_ready(
+        &self,
+        cs: ContainerState,
+    ) -> Result<Vec<testcontainers::core::ExecCommand>> {
+        Ok(cs.host())
+    }
+} */

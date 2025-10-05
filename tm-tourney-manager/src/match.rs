@@ -87,6 +87,17 @@ pub fn match_assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
 }
 
 #[reducer]
+pub fn match_configured(ctx: &ReducerContext, id: u64) {
+    //TODO authorization
+    if let Some(mut stage_match) = ctx.db.stage_match().id().find(id)
+        && stage_match.status == MatchStatus::Configuring
+    {
+        stage_match.status = MatchStatus::Upcoming;
+        ctx.db.stage_match().id().update(stage_match);
+    }
+}
+
+#[reducer]
 pub fn update_match_config(ctx: &ReducerContext, id: u64, config: ServerConfig) {
     //TODO authorization
     if let Some(mut stage_match) = ctx.db.stage_match().id().find(id) {
@@ -146,3 +157,20 @@ pub fn post_event(ctx: &ReducerContext, id: String, event: Event) {
         });
     }
 }
+
+/* #[test]
+fn test_test() {
+    use testcontainers::{
+        GenericImage,
+        core::{IntoContainerPort, WaitFor},
+        runners::SyncRunner,
+    };
+
+    let container = GenericImage::new("clockworklabs/spacetime", "latest")
+        .with_exposed_port(3000.tcp())
+        .with_wait_for(WaitFor::message_on_stdout(
+            "Starting SpacetimeDB listening on 0.0.0.0:3000",
+        ))
+        .start()
+        .unwrap();
+} */
