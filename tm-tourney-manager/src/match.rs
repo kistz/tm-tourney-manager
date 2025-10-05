@@ -31,7 +31,7 @@ pub struct StageMatch {
     //leaderboard: Leaderboard,
 }
 
-#[derive(Debug, SpacetimeType)]
+#[derive(Debug, SpacetimeType, PartialEq, Eq)]
 pub enum MatchStatus {
     Configuring,
     Upcoming,
@@ -54,7 +54,7 @@ pub fn provision_match(
         let stage_match = ctx.db.stage_match().insert(StageMatch {
             id: 0,
             stage_id: used_by,
-            status: MatchStatus::Upcoming,
+            status: MatchStatus::Configuring,
             server_id: if auto_provisioning_server { None } else { None },
             pre_match_config: None,
             match_config: None,
@@ -71,8 +71,9 @@ pub fn provision_match(
 pub fn match_assign_server(ctx: &ReducerContext, to: u64, server_id: String) {
     //TODO authorization
     if let Some(mut server) = ctx.db.tm_server().id().find(&server_id)
-        //&& server.active_mactch().is_none() TODO
+        && server.active_mactch().is_none()
         && let Some(stage_match) = ctx.db.stage_match().id().find(to)
+        && stage_match.status == MatchStatus::Configuring
     {
         let stage_match = ctx.db.stage_match().id().update(StageMatch {
             server_id: Some(server_id),
@@ -101,10 +102,11 @@ pub fn try_start(ctx: &ReducerContext, match_id: u64) {
     if let Some(stage_match) = ctx.db.stage_match().id().find(match_id)
         && let Some(server) = stage_match.server_id
         && let Some(mut server) = ctx.db.tm_server().id().find(server)
+        && let Some(config) = stage_match.match_config
+        && stage_match.status == MatchStatus::Upcoming
     {
-        if let Some(config) = stage_match.match_config {
-            server.set_config(config);
-        }
+        server.set_config(config);
+
         ctx.db.tm_server().id().update(server);
     }
 }
@@ -134,6 +136,8 @@ pub struct TmMatchEvent {
 pub fn post_event(ctx: &ReducerContext, id: String, event: Event) {
     if let Some(server) = ctx.db.tm_server().id().find(id)
         && let Some(match_id) = server.active_mactch()
+        && let Some(stage_match) = ctx.db.stage_match().id().find(match_id)
+        && stage_match.status == MatchStatus::Match
     {
         ctx.db.tm_match_event().insert(TmMatchEvent {
             id: 0,

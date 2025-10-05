@@ -1,5 +1,5 @@
 [package]
-name = "tm-server-interface"
+name = "tm-server-bridge"
 publish = false
 
 version.workspace = true

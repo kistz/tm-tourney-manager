@@ -2,7 +2,7 @@
 resolver = "3"
 members = [
     "tm-server-client",
-    "tm-server-interface",
+    "tm-server-bridge",
     "tm-server-types",
     "tm-tourney-manager",
     "tm-tourney-manager-api-rs",

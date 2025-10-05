@@ -18,6 +18,6 @@ At the core the tourney-manager allows you to define 4 things:
 ## Project Structure
 - `tm-server-types`: Provides type abstractions over GBX Remote 2 for use by all other crates or standalone.
 - `tm-server-client`: Implements the GBX Remote 2 protocol to interact with a Trackmania server over xml-rpc.
-- `tm-server-interface`: Implements a so called "sidecar" for spacetimedb taking the role "trackmania server as a db client". That means it subscribes to events from the tourney manager instance to control the associated tm server.
+- `tm-server-bridge`: Implements a so called "sidecar" for spacetimedb taking the role "trackmania server as a db client". That means it subscribes to events from the tourney manager instance to control the associated tm server.
 - `tm-tourney-manager`: Implements a spacetimedb module to host and configure Trackmania tournaments in a flexible and as unopinionated interface as possible. 
-- `tm-tourney-manager-api`: Houses the generated types from spacetime in its own module to have a strong versioned dependency for the interface crate.
+- `tm-tourney-manager-api-{ts|rs}`: Houses the generated types from spacetime in its own module to have a strong versioned dependency for the interface crate.
