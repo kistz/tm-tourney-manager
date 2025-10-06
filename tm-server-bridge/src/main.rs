@@ -1,18 +1,18 @@
 use std::sync::OnceLock;
 
 use nadeo_api::NadeoClient;
-use opentelemetry_jaeger_propagator::Propagator;
-use opentelemetry_otlp::{Protocol, WithExportConfig};
+
 use spacetimedb_sdk::{DbContext, Error, Identity, Table, TableWithPrimaryKey};
 
 use tm_tourney_manager_api_rs::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
-
-use opentelemetry::global::{self};
 use tracing::instrument;
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+
+use crate::telemetry::init_tracing_subscriber;
+
+mod telemetry;
 
 /// The URI of the SpacetimeDB instance hosting our chat database and module.
 const HOST: &str = "http://localhost:1234";
@@ -72,14 +72,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // Create a tracing layer with the configured tracer
     let opentelemetry = tracing_opentelemetry::layer().with_tracer(otlp_exporter); */
 
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| format!("{}=trace", env!("CARGO_CRATE_NAME")).into()),
-        )
-        //.with(opentelemetry)
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    /* let provider = SdkTracerProvider::builder()
+        .with_simple_exporter(opentelemetry_stdout::SpanExporter::default())
+        .build();
+    let tracer = provider.tracer("readme_example");
+
+    // Create a tracing layer with the configured tracer
+    let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+
+    // Use the tracing subscriber `Registry`, or any other subscriber
+    // that impls `LookupSpan`
+    let subscriber = Registry::default().with(telemetry);
+
+    tracing::subscriber::with_default(subscriber, || {
+        // Spans will be sent to the configured OpenTelemetry exporter
+        let root = span!(tracing::Level::TRACE, "app_start", work_units = 2);
+        let _enter = root.enter();
+
+        error!("This event will be logged in the root span.");
+    }); */
+
+    /* tracing_subscriber::registry()
+    .with(
+        tracing_subscriber::EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| format!("{}=trace", env!("CARGO_CRATE_NAME")).into()),
+    )
+    //.with(opentelemetry)
+    .with(tracing_subscriber::fmt::layer())
+    .init(); */
+
+    // Tracing Guard.
+    let _ = init_tracing_subscriber();
+
+    foo().await;
 
     {
         //Initialize the Trackmania server
@@ -327,3 +352,14 @@ impl Image for SpacetimeDB {
         Ok(cs.host())
     }
 } */
+#[tracing::instrument]
+async fn foo() {
+    tracing::info!(
+        monotonic_counter.foo = 1_u64,
+        key_1 = "bar",
+        key_2 = 10,
+        "handle foo",
+    );
+
+    tracing::info!(histogram.baz = 10, "histogram example",);
+}

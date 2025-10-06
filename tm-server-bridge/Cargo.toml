@@ -23,10 +23,23 @@ tm-tourney-manager-api-rs = { path = "../tm-tourney-manager-api-rs" }
 nadeo-api = "*"
 
 # Implements the types defined in the Otel spec
-opentelemetry = "0.31"
+opentelemetry = { version = "0.31.0", default-features = false, features = [
+    "trace",
+] }
+opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
+    "trace",
+] }
+opentelemetry-stdout = { version = "0.31.0", features = ["trace", "metrics"] }
+opentelemetry-semantic-conventions = { version = "0.31.0", features = [
+    "semconv_experimental",
+] }
+opentelemetry-otlp = { version = "0.31.0", features = [
+    "metrics",
+    "grpc-tonic",
+] }
 # Integration between the tracing crate and the opentelemetry crate
 tracing-opentelemetry = "0.32"
-opentelemetry-otlp = "0.31"
+
 # Allows you to export data to Jaeger
 opentelemetry-jaeger-propagator = "0.31"
 
