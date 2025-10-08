@@ -18,6 +18,7 @@ crate-type = ["cdylib"]
 log = "0.4"
 spacetimedb = { version = "*" }
 tm-server-types = { path = "../tm-server-types", features = ['spacetime'] }
+gbx-header = "0"
 
 [dev-dependencies]
 testcontainers = { version = "0", features = ["blocking"] }

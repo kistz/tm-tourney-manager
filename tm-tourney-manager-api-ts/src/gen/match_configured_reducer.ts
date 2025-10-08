@@ -26,26 +26,14 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { Common } from "./common_type";
-// Mark import as potentially unused
-declare type __keep_Common = Common;
-import { ModeConfig } from "./mode_config_type";
-// Mark import as potentially unused
-declare type __keep_ModeConfig = ModeConfig;
-import { PlaylistConfig } from "./playlist_config_type";
-// Mark import as potentially unused
-declare type __keep_PlaylistConfig = PlaylistConfig;
 
-
-export type ServerConfig = {
-  common: Common,
-  mode: ModeConfig,
-  maps: PlaylistConfig,
+export type MatchConfigured = {
+  id: bigint,
 };
 /**
  * An object for generated helper functions.
  */
-export const ServerConfig = {
+export const MatchConfigured = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -53,23 +41,20 @@ export const ServerConfig = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "common", algebraicType: Common.getTypeScriptAlgebraicType()},
-        { name: "mode", algebraicType: ModeConfig.getTypeScriptAlgebraicType()},
-        { name: "maps", algebraicType: PlaylistConfig.getTypeScriptAlgebraicType()},
+        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: ServerConfig): void {
-    __AlgebraicTypeValue.serializeValue(writer, ServerConfig.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: MatchConfigured): void {
+    __AlgebraicTypeValue.serializeValue(writer, MatchConfigured.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): ServerConfig {
-    return __AlgebraicTypeValue.deserializeValue(reader, ServerConfig.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): MatchConfigured {
+    return __AlgebraicTypeValue.deserializeValue(reader, MatchConfigured.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default ServerConfig;
-
+export default MatchConfigured;
 

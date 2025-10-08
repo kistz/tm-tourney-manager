@@ -52,12 +52,16 @@ import { LoadServerConfig } from "./load_server_config_reducer.ts";
 export { LoadServerConfig };
 import { MatchAssignServer } from "./match_assign_server_reducer.ts";
 export { MatchAssignServer };
+import { MatchConfigured } from "./match_configured_reducer.ts";
+export { MatchConfigured };
 import { OnTournamentEventSchedule } from "./on_tournament_event_schedule_reducer.ts";
 export { OnTournamentEventSchedule };
 import { PostEvent } from "./post_event_reducer.ts";
 export { PostEvent };
 import { ProvisionMatch } from "./provision_match_reducer.ts";
 export { ProvisionMatch };
+import { RegistryAddMap } from "./registry_add_map_reducer.ts";
+export { RegistryAddMap };
 import { TryStart } from "./try_start_reducer.ts";
 export { TryStart };
 import { UpdateMatchConfig } from "./update_match_config_reducer.ts";
@@ -68,6 +72,8 @@ import { EventConfigTableHandle } from "./event_config_table.ts";
 export { EventConfigTableHandle };
 import { EventStageTableHandle } from "./event_stage_table.ts";
 export { EventStageTableHandle };
+import { MapRegistryTableHandle } from "./map_registry_table.ts";
+export { MapRegistryTableHandle };
 import { MatchTemplateTableHandle } from "./match_template_table.ts";
 export { MatchTemplateTableHandle };
 import { StageMatchTableHandle } from "./stage_match_table.ts";
@@ -118,6 +124,8 @@ import { LoadingMapStart } from "./loading_map_start_type.ts";
 export { LoadingMapStart };
 import { Map } from "./map_type.ts";
 export { Map };
+import { MapRegistry } from "./map_registry_type.ts";
+export { MapRegistry };
 import { MatchStatus } from "./match_status_type.ts";
 export { MatchStatus };
 import { MatchTemplate } from "./match_template_type.ts";
@@ -138,6 +146,8 @@ import { PlayerConnect } from "./player_connect_type.ts";
 export { PlayerConnect };
 import { PlayerDisconnect } from "./player_disconnect_type.ts";
 export { PlayerDisconnect };
+import { PlaylistConfig } from "./playlist_config_type.ts";
+export { PlaylistConfig };
 import { Podium } from "./podium_type.ts";
 export { Podium };
 import { Respawn } from "./respawn_type.ts";
@@ -209,6 +219,15 @@ const REMOTE_MODULE = {
       primaryKeyInfo: {
         colName: "id",
         colType: (EventStage.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
+      },
+    },
+    map_registry: {
+      tableName: "map_registry",
+      rowType: MapRegistry.getTypeScriptAlgebraicType(),
+      primaryKey: "id",
+      primaryKeyInfo: {
+        colName: "id",
+        colType: (MapRegistry.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
       },
     },
     match_template: {
@@ -342,6 +361,10 @@ const REMOTE_MODULE = {
       reducerName: "match_assign_server",
       argsType: MatchAssignServer.getTypeScriptAlgebraicType(),
     },
+    match_configured: {
+      reducerName: "match_configured",
+      argsType: MatchConfigured.getTypeScriptAlgebraicType(),
+    },
     on_tournament_event_schedule: {
       reducerName: "on_tournament_event_schedule",
       argsType: OnTournamentEventSchedule.getTypeScriptAlgebraicType(),
@@ -353,6 +376,10 @@ const REMOTE_MODULE = {
     provision_match: {
       reducerName: "provision_match",
       argsType: ProvisionMatch.getTypeScriptAlgebraicType(),
+    },
+    registry_add_map: {
+      reducerName: "registry_add_map",
+      argsType: RegistryAddMap.getTypeScriptAlgebraicType(),
     },
     try_start: {
       reducerName: "try_start",
@@ -403,9 +430,11 @@ export type Reducer = never
 | { name: "IdentityDisconnected", args: IdentityDisconnected }
 | { name: "LoadServerConfig", args: LoadServerConfig }
 | { name: "MatchAssignServer", args: MatchAssignServer }
+| { name: "MatchConfigured", args: MatchConfigured }
 | { name: "OnTournamentEventSchedule", args: OnTournamentEventSchedule }
 | { name: "PostEvent", args: PostEvent }
 | { name: "ProvisionMatch", args: ProvisionMatch }
+| { name: "RegistryAddMap", args: RegistryAddMap }
 | { name: "TryStart", args: TryStart }
 | { name: "UpdateMatchConfig", args: UpdateMatchConfig }
 ;
@@ -573,6 +602,22 @@ export class RemoteReducers {
     this.connection.offReducer("match_assign_server", callback);
   }
 
+  matchConfigured(id: bigint) {
+    const __args = { id };
+    let __writer = new __BinaryWriter(1024);
+    MatchConfigured.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("match_configured", __argsBuffer, this.setCallReducerFlags.matchConfiguredFlags);
+  }
+
+  onMatchConfigured(callback: (ctx: ReducerEventContext, id: bigint) => void) {
+    this.connection.onReducer("match_configured", callback);
+  }
+
+  removeOnMatchConfigured(callback: (ctx: ReducerEventContext, id: bigint) => void) {
+    this.connection.offReducer("match_configured", callback);
+  }
+
   onTournamentEventSchedule(arg: TournamentEventSchedule) {
     const __args = { arg };
     let __writer = new __BinaryWriter(1024);
@@ -619,6 +664,22 @@ export class RemoteReducers {
 
   removeOnProvisionMatch(callback: (ctx: ReducerEventContext, usedBy: bigint, withConfig: bigint | undefined, autoProvisioningServer: boolean) => void) {
     this.connection.offReducer("provision_match", callback);
+  }
+
+  registryAddMap(uploader: bigint) {
+    const __args = { uploader };
+    let __writer = new __BinaryWriter(1024);
+    RegistryAddMap.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("registry_add_map", __argsBuffer, this.setCallReducerFlags.registryAddMapFlags);
+  }
+
+  onRegistryAddMap(callback: (ctx: ReducerEventContext, uploader: bigint) => void) {
+    this.connection.onReducer("registry_add_map", callback);
+  }
+
+  removeOnRegistryAddMap(callback: (ctx: ReducerEventContext, uploader: bigint) => void) {
+    this.connection.offReducer("registry_add_map", callback);
   }
 
   tryStart(matchId: bigint) {
@@ -701,6 +762,11 @@ export class SetReducerFlags {
     this.matchAssignServerFlags = flags;
   }
 
+  matchConfiguredFlags: __CallReducerFlags = 'FullUpdate';
+  matchConfigured(flags: __CallReducerFlags) {
+    this.matchConfiguredFlags = flags;
+  }
+
   onTournamentEventScheduleFlags: __CallReducerFlags = 'FullUpdate';
   onTournamentEventSchedule(flags: __CallReducerFlags) {
     this.onTournamentEventScheduleFlags = flags;
@@ -714,6 +780,11 @@ export class SetReducerFlags {
   provisionMatchFlags: __CallReducerFlags = 'FullUpdate';
   provisionMatch(flags: __CallReducerFlags) {
     this.provisionMatchFlags = flags;
+  }
+
+  registryAddMapFlags: __CallReducerFlags = 'FullUpdate';
+  registryAddMap(flags: __CallReducerFlags) {
+    this.registryAddMapFlags = flags;
   }
 
   tryStartFlags: __CallReducerFlags = 'FullUpdate';
@@ -739,6 +810,11 @@ export class RemoteTables {
   get eventStage(): EventStageTableHandle {
     // clientCache is a private property
     return new EventStageTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<EventStage>(REMOTE_MODULE.tables.event_stage));
+  }
+
+  get mapRegistry(): MapRegistryTableHandle {
+    // clientCache is a private property
+    return new MapRegistryTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<MapRegistry>(REMOTE_MODULE.tables.map_registry));
   }
 
   get matchTemplate(): MatchTemplateTableHandle {

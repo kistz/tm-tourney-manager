@@ -1,4 +1,5 @@
-use tm_server_types::config::ServerConfig;
+use tm_server_types::config::{MapPoolConfig, ServerConfig};
+use tracing::info;
 
 use crate::TrackmaniaServer;
 use crate::types::XmlRpcMethods;
@@ -10,7 +11,8 @@ pub trait ServerConfiguration {
 
 impl ServerConfiguration for TrackmaniaServer {
     async fn configure(&self, config: ServerConfig) {
-        let mode_settings = config.get_mode().get_settings();
+        let mode_settings = config.get_mode().into_xml();
+        let map_pool = config.get_maps().into_xml();
 
         let content = r#"<?xml version="1.0" encoding="utf-8" ?>
 <playlist>
@@ -40,24 +42,24 @@ impl ServerConfiguration for TrackmaniaServer {
             + &mode_settings
             + r#"
 	</script_settings>
-
-	<startindex>0</startindex>
-	<map><file>DW25 - Diagram.Map.Gbx</file></map>
-    <map><file>DW25 - Acchitchi.Map.Gbx</file></map>
-</playlist>"#;
-        _ = self
-            .write_file("MatchSettings/format.txt", content.to_string())
+	"# + &map_pool
+            + "
+</playlist>";
+        let written = self
+            .write_file("MatchSettings/manager.txt", content.to_string())
             .await;
-        let loaded = self.load_match_settings("MatchSettings/format.txt").await;
+        info!("{written:?}");
 
-        if loaded.is_ok_and(|l| l == 2) {
+        let loaded = self.load_match_settings("MatchSettings/manager.txt").await;
+
+        //TODO figure out what the returned integer means.
+        //if loaded.is_ok_and(|l| l == 2) {
+        if loaded.is_ok() {
             _ = self
-                .chat_send_server_massage("Tournament mode successfully loaded!")
+                .chat_send_server_massage("[tm-tourney-manager] New Mode successfully loaded!")
                 .await;
 
-            _ = self.chat_send_server_massage("Starting... GLHF").await;
-
-            _ = self.restart_map().await;
+            _ = self.next_map().await;
         }
     }
 }

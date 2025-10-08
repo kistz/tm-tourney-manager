@@ -17,6 +17,7 @@ use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter, ReadHalf, WriteHal
 use tokio::net::TcpStream;
 //use tokio::sync::mpsc::Sender;
 use tokio::sync::{broadcast, oneshot};
+use tracing::{debug, info};
 
 #[derive(Debug)]
 struct GbxPacket {
@@ -60,7 +61,7 @@ enum GbxMethodCall {
 }
 
 /// Associates all events to a channel.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct RegisiteredCallbacks(
     #[allow(clippy::type_complexity)]
     Arc<
@@ -105,6 +106,7 @@ impl RegisiteredCallbacks {
 /// Implemented with separate read and write threads.
 /// Events will also execute as separate tokio tasks.
 /// Interaction should be fully typed and can be achieved by importing trait from the types module.
+#[derive(Debug)]
 pub struct TrackmaniaServer {
     /// Handler to reach the write thread and pass a message to the server.
     message_sender: Sender<GbxMethodCall>,
@@ -327,14 +329,14 @@ impl TrackmaniaServer {
 
     /// Allows to call a method on the server.
     /// Needs to be awaited in order to be executed and receive the response.
-    pub async fn call<P: TryToParams, R: TryFromValue>(
-        &self,
-        method: &str,
-        args: P,
-    ) -> Result<R, ClientError> {
+    #[tracing::instrument(name = "TrackmaniaServer::call", level = "info")]
+    pub async fn call<P, R: TryFromValue>(&self, method: &str, args: P) -> Result<R, ClientError>
+    where
+        P: TryToParams + std::fmt::Debug,
+    {
         let params = args.try_to_params()?;
         let result = self.call_inner(Cow::Borrowed(method), params).await?;
-
+        info!("{result:?}");
         // extract return value
         Ok(R::try_from_value(&result)?)
     }

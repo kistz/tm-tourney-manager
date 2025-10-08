@@ -136,13 +136,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         )
         .await;
 
-    let _: Result<bool, ClientError> = server
-        .call(
-            "ChatSendServerMessage",
-            "Server Interface connected successfully :>",
-        )
-        .await;
-
     // Connect to the database
     {
         let spacetime = connect_to_db();
@@ -288,7 +281,10 @@ fn server_bootstrap(_: &EventContext, new: &TmServer) {
     let new = new.clone();
     tokio::spawn(async move {
         let _: Result<bool, ClientError> = local_server
-            .call("ChatSendServerMessage", "Bootstrapping the server!")
+            .call(
+                "ChatSendServerMessage",
+                "[tm-tourney-manager] Bootstrapping the server!",
+            )
             .await;
 
         //SAFETY: Same type but rust cant know that.
@@ -299,6 +295,12 @@ fn server_bootstrap(_: &EventContext, new: &TmServer) {
             >(new.config)
         };
         local_server.configure(configuration).await;
+        let _: Result<bool, ClientError> = local_server
+            .call(
+                "ChatSendServerMessage",
+                "[tm-tourney-manager] Bootstrapping successfull!",
+            )
+            .await;
     });
 }
 

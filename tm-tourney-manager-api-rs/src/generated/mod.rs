@@ -31,8 +31,11 @@ pub mod identity_disconnected_reducer;
 pub mod load_server_config_reducer;
 pub mod loading_map_end_type;
 pub mod loading_map_start_type;
+pub mod map_registry_table;
+pub mod map_registry_type;
 pub mod map_type;
 pub mod match_assign_server_reducer;
+pub mod match_configured_reducer;
 pub mod match_status_type;
 pub mod match_template_table;
 pub mod match_template_type;
@@ -45,9 +48,11 @@ pub mod player_chat_type;
 pub mod player_connect_type;
 pub mod player_disconnect_type;
 pub mod player_type;
+pub mod playlist_config_type;
 pub mod podium_type;
 pub mod post_event_reducer;
 pub mod provision_match_reducer;
+pub mod registry_add_map_reducer;
 pub mod respawn_bavaviour_type;
 pub mod respawn_type;
 pub mod round_time_type;
@@ -122,9 +127,14 @@ pub use load_server_config_reducer::{
 };
 pub use loading_map_end_type::LoadingMapEnd;
 pub use loading_map_start_type::LoadingMapStart;
+pub use map_registry_table::*;
+pub use map_registry_type::MapRegistry;
 pub use map_type::Map;
 pub use match_assign_server_reducer::{
     match_assign_server, set_flags_for_match_assign_server, MatchAssignServerCallbackId,
+};
+pub use match_configured_reducer::{
+    match_configured, set_flags_for_match_configured, MatchConfiguredCallbackId,
 };
 pub use match_status_type::MatchStatus;
 pub use match_template_table::*;
@@ -141,10 +151,14 @@ pub use player_chat_type::PlayerChat;
 pub use player_connect_type::PlayerConnect;
 pub use player_disconnect_type::PlayerDisconnect;
 pub use player_type::Player;
+pub use playlist_config_type::PlaylistConfig;
 pub use podium_type::Podium;
 pub use post_event_reducer::{post_event, set_flags_for_post_event, PostEventCallbackId};
 pub use provision_match_reducer::{
     provision_match, set_flags_for_provision_match, ProvisionMatchCallbackId,
+};
+pub use registry_add_map_reducer::{
+    registry_add_map, set_flags_for_registry_add_map, RegistryAddMapCallbackId,
 };
 pub use respawn_bavaviour_type::RespawnBavaviour;
 pub use respawn_type::Respawn;
@@ -231,6 +245,9 @@ pub enum Reducer {
         to: u64,
         server_id: String,
     },
+    MatchConfigured {
+        id: u64,
+    },
     OnTournamentEventSchedule {
         arg: TournamentEventSchedule,
     },
@@ -242,6 +259,9 @@ pub enum Reducer {
         used_by: u64,
         with_config: Option<u64>,
         auto_provisioning_server: bool,
+    },
+    RegistryAddMap {
+        uploader: u64,
     },
     TryStart {
         match_id: u64,
@@ -270,9 +290,11 @@ impl __sdk::Reducer for Reducer {
             Reducer::IdentityDisconnected => "identity_disconnected",
             Reducer::LoadServerConfig { .. } => "load_server_config",
             Reducer::MatchAssignServer { .. } => "match_assign_server",
+            Reducer::MatchConfigured { .. } => "match_configured",
             Reducer::OnTournamentEventSchedule { .. } => "on_tournament_event_schedule",
             Reducer::PostEvent { .. } => "post_event",
             Reducer::ProvisionMatch { .. } => "provision_match",
+            Reducer::RegistryAddMap { .. } => "registry_add_map",
             Reducer::TryStart { .. } => "try_start",
             Reducer::UpdateMatchConfig { .. } => "update_match_config",
         }
@@ -338,6 +360,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 match_assign_server_reducer::MatchAssignServerArgs,
             >("match_assign_server", &value.args)?
             .into()),
+            "match_configured" => Ok(__sdk::parse_reducer_args::<
+                match_configured_reducer::MatchConfiguredArgs,
+            >("match_configured", &value.args)?
+            .into()),
             "on_tournament_event_schedule" => {
                 Ok(__sdk::parse_reducer_args::<
                     on_tournament_event_schedule_reducer::OnTournamentEventScheduleArgs,
@@ -354,6 +380,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "provision_match" => Ok(__sdk::parse_reducer_args::<
                 provision_match_reducer::ProvisionMatchArgs,
             >("provision_match", &value.args)?
+            .into()),
+            "registry_add_map" => Ok(__sdk::parse_reducer_args::<
+                registry_add_map_reducer::RegistryAddMapArgs,
+            >("registry_add_map", &value.args)?
             .into()),
             "try_start" => Ok(
                 __sdk::parse_reducer_args::<try_start_reducer::TryStartArgs>(
@@ -382,6 +412,7 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 pub struct DbUpdate {
     event_config: __sdk::TableUpdate<EventConfig>,
     event_stage: __sdk::TableUpdate<EventStage>,
+    map_registry: __sdk::TableUpdate<MapRegistry>,
     match_template: __sdk::TableUpdate<MatchTemplate>,
     stage_match: __sdk::TableUpdate<StageMatch>,
     stage_template: __sdk::TableUpdate<StageTemplate>,
@@ -406,6 +437,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "event_stage" => db_update
                     .event_stage
                     .append(event_stage_table::parse_table_update(table_update)?),
+                "map_registry" => db_update
+                    .map_registry
+                    .append(map_registry_table::parse_table_update(table_update)?),
                 "match_template" => db_update
                     .match_template
                     .append(match_template_table::parse_table_update(table_update)?),
@@ -468,6 +502,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.event_stage = cache
             .apply_diff_to_table::<EventStage>("event_stage", &self.event_stage)
             .with_updates_by_pk(|row| &row.id);
+        diff.map_registry = cache
+            .apply_diff_to_table::<MapRegistry>("map_registry", &self.map_registry)
+            .with_updates_by_pk(|row| &row.id);
         diff.match_template = cache
             .apply_diff_to_table::<MatchTemplate>("match_template", &self.match_template)
             .with_updates_by_pk(|row| &row.id);
@@ -511,6 +548,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     event_config: __sdk::TableAppliedDiff<'r, EventConfig>,
     event_stage: __sdk::TableAppliedDiff<'r, EventStage>,
+    map_registry: __sdk::TableAppliedDiff<'r, MapRegistry>,
     match_template: __sdk::TableAppliedDiff<'r, MatchTemplate>,
     stage_match: __sdk::TableAppliedDiff<'r, StageMatch>,
     stage_template: __sdk::TableAppliedDiff<'r, StageTemplate>,
@@ -539,6 +577,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<EventStage>("event_stage", &self.event_stage, event);
+        callbacks.invoke_table_row_callbacks::<MapRegistry>(
+            "map_registry",
+            &self.map_registry,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<MatchTemplate>(
             "match_template",
             &self.match_template,
@@ -1165,6 +1208,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         event_config_table::register_table(client_cache);
         event_stage_table::register_table(client_cache);
+        map_registry_table::register_table(client_cache);
         match_template_table::register_table(client_cache);
         stage_match_table::register_table(client_cache);
         stage_template_table::register_table(client_cache);

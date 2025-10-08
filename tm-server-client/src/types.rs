@@ -114,6 +114,8 @@ pub trait XmlRpcMethods {
     async fn chat_send_server_massage(&self, message: &str) -> Result<bool, ClientError>;
 
     async fn restart_map(&self) -> Result<bool, ClientError>;
+
+    async fn next_map(&self) -> Result<bool, ClientError>;
 }
 
 impl XmlRpcMethods for TrackmaniaServer {
@@ -151,5 +153,9 @@ impl XmlRpcMethods for TrackmaniaServer {
 
     async fn restart_map(&self) -> Result<bool, ClientError> {
         self.call("RestartMap", ()).await
+    }
+
+    async fn next_map(&self) -> Result<bool, ClientError> {
+        self.call("NextMap", ()).await
     }
 }

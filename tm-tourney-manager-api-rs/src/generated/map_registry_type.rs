@@ -4,18 +4,16 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::common_type::Common;
-use super::mode_config_type::ModeConfig;
-use super::playlist_config_type::PlaylistConfig;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct ServerConfig {
-    pub common: Common,
-    pub mode: ModeConfig,
-    pub maps: PlaylistConfig,
+pub struct MapRegistry {
+    pub id: String,
+    pub uploader: String,
+    pub author: String,
+    pub public: bool,
+    pub file: Vec<u8>,
 }
 
-impl __sdk::InModule for ServerConfig {
+impl __sdk::InModule for MapRegistry {
     type Module = super::RemoteModule;
 }
