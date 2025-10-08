@@ -1,6 +1,6 @@
 use std::sync::OnceLock;
 
-use nadeo_api::NadeoClient;
+use nadeo_api::{NadeoClient, NadeoRequest, request::Method};
 
 use spacetimedb_sdk::{DbContext, Error, Identity, Table, TableWithPrimaryKey};
 
@@ -8,7 +8,7 @@ use tm_tourney_manager_api_rs::*;
 
 use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
 use tokio::signal;
-use tracing::instrument;
+use tracing::{info, instrument};
 
 use crate::telemetry::init_tracing_subscriber;
 
@@ -54,6 +54,10 @@ fn connect_to_db() -> DbConnection {
         // Finalize configuration and connect!
         .build()
         .expect("Failed to connect")
+}
+
+struct State {
+    nadeo: NadeoClient,
 }
 
 #[tokio::main]
@@ -105,6 +109,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _ = init_tracing_subscriber();
 
     foo().await;
+
+    let tm_user = std::env::var("TM_MASTERSERVER_LOGIN")
+        .expect("Environment variable: TM_MASTERSERVER_LOGIN MUST be set");
+    let tm_password = std::env::var("TM_MASTERSERVER_PASSWORD")
+        .expect("Environment variable: TM_MASTERSERVER_password MUST be set");
+
+    let nadeo = NadeoClient::builder()
+        .with_server_auth(&tm_user, &tm_password)
+        .user_agent("tm-server-bride")
+        .build()
+        .await
+        .unwrap();
+
+    let mut state = State { nadeo };
+
+    let req = NadeoRequest::builder()
+        .method(Method::GET)
+        .auth_type(nadeo_api::auth::AuthType::NadeoServices)
+        .url("https://prod.trackmania.core.nadeo.online/maps/?mapUidList=vjyNNUu997cC5PW8e3x7Y9RsAF0,cmJJhEUYqesM6Tqpeds0lQudvOb")
+        .build()
+        .unwrap();
+    let resp = state.nadeo.execute(req).await;
+    info!("{resp:?}");
+    let json = resp.unwrap().text().await.unwrap();
+
+    info!("{json}");
 
     {
         //Initialize the Trackmania server
