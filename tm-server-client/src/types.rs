@@ -116,6 +116,8 @@ pub trait XmlRpcMethods {
     async fn restart_map(&self) -> Result<bool, ClientError>;
 
     async fn next_map(&self) -> Result<bool, ClientError>;
+
+    async fn connect_fake_player(&self) -> Result<String, ClientError>;
 }
 
 impl XmlRpcMethods for TrackmaniaServer {
@@ -157,5 +159,9 @@ impl XmlRpcMethods for TrackmaniaServer {
 
     async fn next_map(&self) -> Result<bool, ClientError> {
         self.call("NextMap", ()).await
+    }
+
+    async fn connect_fake_player(&self) -> Result<String, ClientError> {
+        self.call("ConnectFakePlayer", ()).await
     }
 }

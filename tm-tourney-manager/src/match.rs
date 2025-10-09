@@ -97,6 +97,15 @@ pub fn match_configured(ctx: &ReducerContext, id: u64) {
     }
 }
 
+/* #[reducer]
+pub fn update_pre_match_config(ctx: &ReducerContext, id: u64, config: ServerConfig) {
+    //TODO authorization
+    if let Some(mut stage_match) = ctx.db.stage_match().id().find(id) {
+        stage_match.match_config = Some(config);
+        ctx.db.stage_match().id().update(stage_match);
+    }
+} */
+
 #[reducer]
 pub fn update_match_config(ctx: &ReducerContext, id: u64, config: ServerConfig) {
     //TODO authorization
