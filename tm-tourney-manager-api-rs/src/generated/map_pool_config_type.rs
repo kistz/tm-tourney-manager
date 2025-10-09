@@ -6,11 +6,11 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct PlaylistConfig {
+pub struct MapPoolConfig {
     pub start: u32,
     pub map_uids: Vec<String>,
 }
 
-impl __sdk::InModule for PlaylistConfig {
+impl __sdk::InModule for MapPoolConfig {
     type Module = super::RemoteModule;
 }

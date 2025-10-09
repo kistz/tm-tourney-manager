@@ -16,6 +16,40 @@ pub struct ServerConfig {
 }
 
 impl ServerConfig {
+    pub fn into_xml(&self) -> String {
+        r#"<?xml version="1.0" encoding="utf-8" ?>
+<playlist>
+	<gameinfos>
+		<game_mode>0</game_mode>
+		<script_name>Trackmania/TM_Rounds_Online</script_name>
+	</gameinfos>
+
+  	<script_settings>
+    	<setting name="S_UseTieBreak" value="" type="boolean"/>
+    	<setting name="S_WarmUpNb" value="0" type="integer"/>
+    	<setting name="S_WarmUpDuration" value="60" type="integer"/>
+    	<setting name="S_ChatTime" value="10" type="integer"/>
+    	<setting name="S_UseClublinks" value="" type="boolean"/>
+    	<setting name="S_UseClublinksSponsors" value="" type="boolean"/>
+    	<setting name="S_NeutralEmblemUrl" value="" type="text"/>
+    	<setting name="S_ScriptEnvironment" value="production" type="text"/>
+    	<setting name="S_IsChannelServer" value="" type="boolean"/>
+    	<setting name="S_RespawnBehaviour" value="-1" type="integer"/>
+    	<setting name="S_HideOpponents" value="" type="boolean"/>
+    	<setting name="S_UseLegacyXmlRpcCallbacks" value="1" type="boolean"/>
+    	<setting name="S_UseAlternateRules" value="" type="boolean"/>
+    	<setting name="S_ForceLapsNb" value="-1" type="integer"/>
+    	<setting name="S_DisplayTimeDiff" value="" type="boolean"/>
+		"#
+        .to_string()
+            + &self.mode.into_xml()
+            + r#"
+	</script_settings>
+	"# + &self.maps.into_xml()
+            + "
+</playlist>"
+    }
+
     pub fn get_common(&self) -> &Common {
         &self.common
     }
@@ -26,6 +60,10 @@ impl ServerConfig {
 
     pub fn get_maps(&self) -> &MapPoolConfig {
         &self.maps
+    }
+
+    pub fn iter_maps(&self) -> impl Iterator<Item = &String> {
+        self.maps.map_uids.iter()
     }
 }
 
@@ -102,8 +140,7 @@ impl Default for MapPoolConfig {
     fn default() -> Self {
         Self {
             start: 0,
-            //map_uids: vec!["olsKnq_qAghcVAnEkoeUnVHFZei".into()],
-            map_uids: vec!["vjyNNUu997cC5PW8e3x7Y9RsAF0".into()],
+            map_uids: vec!["olsKnq_qAghcVAnEkoeUnVHFZei".into()],
         }
     }
 }

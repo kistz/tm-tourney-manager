@@ -32,15 +32,15 @@ declare type __keep_Common = Common;
 import { ModeConfig } from "./mode_config_type";
 // Mark import as potentially unused
 declare type __keep_ModeConfig = ModeConfig;
-import { PlaylistConfig } from "./playlist_config_type";
+import { MapPoolConfig } from "./map_pool_config_type";
 // Mark import as potentially unused
-declare type __keep_PlaylistConfig = PlaylistConfig;
+declare type __keep_MapPoolConfig = MapPoolConfig;
 
 
 export type ServerConfig = {
   common: Common,
   mode: ModeConfig,
-  maps: PlaylistConfig,
+  maps: MapPoolConfig,
 };
 /**
  * An object for generated helper functions.
@@ -55,7 +55,7 @@ export const ServerConfig = {
       elements: [
         { name: "common", algebraicType: Common.getTypeScriptAlgebraicType()},
         { name: "mode", algebraicType: ModeConfig.getTypeScriptAlgebraicType()},
-        { name: "maps", algebraicType: PlaylistConfig.getTypeScriptAlgebraicType()},
+        { name: "maps", algebraicType: MapPoolConfig.getTypeScriptAlgebraicType()},
       ]
     });
   },

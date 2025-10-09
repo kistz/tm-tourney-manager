@@ -22,6 +22,8 @@ tm-tourney-manager-api-rs = { path = "../tm-tourney-manager-api-rs" }
 
 nadeo-api = "*"
 
+serde = { version = "*", features = ['derive'] }
+
 # Implements the types defined in the Otel spec
 opentelemetry = { version = "0.31.0", default-features = false, features = [
     "trace",

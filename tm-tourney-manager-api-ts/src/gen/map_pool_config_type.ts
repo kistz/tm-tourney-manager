@@ -27,14 +27,14 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 
-export type PlaylistConfig = {
+export type MapPoolConfig = {
   start: number,
   mapUids: string[],
 };
 /**
  * An object for generated helper functions.
  */
-export const PlaylistConfig = {
+export const MapPoolConfig = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -48,16 +48,16 @@ export const PlaylistConfig = {
     });
   },
 
-  serialize(writer: __BinaryWriter, value: PlaylistConfig): void {
-    __AlgebraicTypeValue.serializeValue(writer, PlaylistConfig.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: MapPoolConfig): void {
+    __AlgebraicTypeValue.serializeValue(writer, MapPoolConfig.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): PlaylistConfig {
-    return __AlgebraicTypeValue.deserializeValue(reader, PlaylistConfig.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): MapPoolConfig {
+    return __AlgebraicTypeValue.deserializeValue(reader, MapPoolConfig.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default PlaylistConfig;
+export default MapPoolConfig;
 
 

@@ -1,4 +1,4 @@
-use tm_server_types::config::{MapPoolConfig, ServerConfig};
+/* use tm_server_types::config::{MapPoolConfig, ServerConfig};
 use tracing::info;
 
 use crate::TrackmaniaServer;
@@ -63,3 +63,4 @@ impl ServerConfiguration for TrackmaniaServer {
         }
     }
 }
+ */

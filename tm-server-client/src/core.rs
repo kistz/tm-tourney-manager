@@ -17,7 +17,7 @@ use tokio::io::{self, AsyncReadExt, AsyncWriteExt, BufWriter, ReadHalf, WriteHal
 use tokio::net::TcpStream;
 //use tokio::sync::mpsc::Sender;
 use tokio::sync::{broadcast, oneshot};
-use tracing::{debug, info};
+use tracing::{debug, error, info, warn};
 
 #[derive(Debug)]
 struct GbxPacket {
@@ -240,7 +240,7 @@ impl TrackmaniaServer {
                             let modescript_callback_body =
                                 String::try_from_value(&value[0]).unwrap();
 
-                            println!(
+                            info!(
                                 "Name: {modescript_callback_name}, JSON: {modescript_callback_body:?}"
                             );
 
@@ -253,7 +253,7 @@ impl TrackmaniaServer {
                             // Send the parsed event to all subscribed event handlers.
                             let event = Arc::new(event);
                             if let Err(error) = global_callback_sender.send(event.clone()) {
-                                println!("Global Events Listener failed: {:?}", error);
+                                error!("Global Events Listener failed: {:?}", error);
                             }
                             registered_callbacks.send(&modescript_callback_name, event);
                         } else {
@@ -274,7 +274,7 @@ impl TrackmaniaServer {
                     // there is, this means that the peer closed the socket while
                     // sending a frame.
                     if buffer.is_empty() {
-                        println!("The Trackmania server ended the connection.");
+                        warn!("The Trackmania server ended the connection.");
                         break;
                     } else {
                         panic!("connection reset by peer");

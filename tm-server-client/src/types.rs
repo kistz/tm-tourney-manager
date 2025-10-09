@@ -107,7 +107,7 @@ pub trait XmlRpcMethods {
 
     async fn save_current_replay(&self, path: &str) -> Result<bool, ClientError>;
 
-    async fn write_file(&self, path: &str, content: String) -> Result<bool, ClientError>;
+    async fn write_file(&self, path: &str, content: Vec<u8>) -> Result<bool, ClientError>;
 
     async fn load_match_settings(&self, path: &str) -> Result<i32, ClientError>;
 
@@ -139,8 +139,8 @@ impl XmlRpcMethods for TrackmaniaServer {
         self.call("IsAutoSaveReplaysEnabled", path).await
     }
 
-    async fn write_file(&self, path: &str, content: String) -> Result<bool, ClientError> {
-        self.call("WriteFile", (path, content.into_bytes())).await
+    async fn write_file(&self, path: &str, content: Vec<u8>) -> Result<bool, ClientError> {
+        self.call("WriteFile", (path, content)).await
     }
 
     async fn load_match_settings(&self, path: &str) -> Result<i32, ClientError> {

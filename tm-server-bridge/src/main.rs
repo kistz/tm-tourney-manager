@@ -6,12 +6,13 @@ use spacetimedb_sdk::{DbContext, Error, Identity, Table, TableWithPrimaryKey};
 
 use tm_tourney_manager_api_rs::*;
 
-use tm_server_client::{ClientError, TrackmaniaServer, configurator::ServerConfiguration};
-use tokio::signal;
+use tm_server_client::{ClientError, TrackmaniaServer};
+use tokio::{signal, sync::Mutex};
 use tracing::{info, instrument};
 
-use crate::telemetry::init_tracing_subscriber;
+use crate::{config::configure, telemetry::init_tracing_subscriber};
 
+mod config;
 mod telemetry;
 
 /// The URI of the SpacetimeDB instance hosting our chat database and module.
@@ -23,19 +24,13 @@ const DB_NAME: &str = "tourney-manager";
 const TM_SERVER_ID: &str = "test";
 
 /// Exposes the associated trackmania server globally.
-static SERVER: OnceLock<TrackmaniaServer> = OnceLock::new();
+static TRACKMANIA: OnceLock<TrackmaniaServer> = OnceLock::new();
 static SPACETIME: OnceLock<DbConnection> = OnceLock::new();
+static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
 
 /// Load credentials from a file and connect to the database.
 #[instrument(level = "debug")]
 fn connect_to_db() -> DbConnection {
-    /* let nando_auth = NadeoClient::builder()
-    .with_server_auth("joestestcellar", r#"O#2nvOW^6+Y,\*CS"#)
-    .build()
-    .await
-    .unwrap(); */
-    //let TOKEN = "eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIwMDAwZWQ0MS1iODc1LTQ5NGMtYmMxOS02MTc4YWVjMWFhNzYifQ.eyJleHAiOjE3NTkwMDM1MTcsImlhdCI6MTc1ODk2NzUxNywianRpIjoiNDg3MWYwYzctODkzZi1jYTE5LTNmZWItM2NmMWQyM2ExZTliIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo1Njc4L3JlYWxtcy9tYXN0ZXIiLCJzdWIiOiI2MjRkMWFmNC1iMTY2LTQ1MmYtYjdjYi0wZGM2YmY5NzZlNTAiLCJ0eXAiOiJTZXJpYWxpemVkLUlEIiwic2lkIjoiZWNhYjdkNTUtOTMwMC00YjlhLTkxNmQtMjE2ZWQxNjRmMWM3Iiwic3RhdGVfY2hlY2tlciI6Ik5WTC1KRWFKb0Z2YlF6eVpSdHJQc18xSHY0WGp6Vk1qbldxQUF1ZXF1OG8ifQ.kgOwfQqPfYKDZMZTn0VYhAGl8Jm68TZGcCDErvNKYZni6cBEP3Cy6Ukly7uxq_omzrVOhBFoher1szDFZ6aL_A";
-
     DbConnection::builder()
         // Register our `on_connect` callback, which will save our auth token.
         .on_connect(on_connected)
@@ -115,34 +110,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let tm_password = std::env::var("TM_MASTERSERVER_PASSWORD")
         .expect("Environment variable: TM_MASTERSERVER_password MUST be set");
 
-    let nadeo = NadeoClient::builder()
-        .with_server_auth(&tm_user, &tm_password)
-        .user_agent("tm-server-bride")
-        .build()
-        .await
-        .unwrap();
-
-    let mut state = State { nadeo };
-
-    let req = NadeoRequest::builder()
-        .method(Method::GET)
-        .auth_type(nadeo_api::auth::AuthType::NadeoServices)
-        .url("https://prod.trackmania.core.nadeo.online/maps/?mapUidList=vjyNNUu997cC5PW8e3x7Y9RsAF0,cmJJhEUYqesM6Tqpeds0lQudvOb")
-        .build()
-        .unwrap();
-    let resp = state.nadeo.execute(req).await;
-    info!("{resp:?}");
-    let json = resp.unwrap().text().await.unwrap();
-
-    info!("{json}");
+    {
+        //Initialize the NadeoClient
+        let nadeo = NadeoClient::builder()
+            .with_server_auth(&tm_user, &tm_password)
+            .user_agent("tm-server-bridge")
+            .build()
+            .await
+            .unwrap();
+        _ = NADEO.set(nadeo.into());
+    }
 
     {
         //Initialize the Trackmania server
         let server = TrackmaniaServer::new("127.0.0.1:5001").await;
-        _ = SERVER.set(server);
+        _ = TRACKMANIA.set(server);
     }
 
-    let server = SERVER.wait();
+    let server = TRACKMANIA.wait();
 
     let _: Result<bool, ClientError> = server.call("SetApiVersion", "2025-07-04").await;
 
@@ -271,7 +256,7 @@ fn on_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
 } */
 
 fn server_update(_: &EventContext, old: &TmServer, new: &TmServer) {
-    let local_server = SERVER.wait();
+    let local_server = TRACKMANIA.wait();
 
     let new = new.clone();
     let old = old.clone();
@@ -283,14 +268,7 @@ fn server_update(_: &EventContext, old: &TmServer, new: &TmServer) {
                 .await;
         }
         if old.config != new.config {
-            //SAFETY: Same type but rust cant know that.
-            let configuration = unsafe {
-                std::mem::transmute::<
-                    tm_tourney_manager_api_rs::ServerConfig,
-                    tm_server_client::types::config::ServerConfig,
-                >(new.config)
-            };
-            local_server.configure(configuration).await;
+            configure(new).await;
         }
 
         //server.method(method)
@@ -307,28 +285,22 @@ fn server_update(_: &EventContext, old: &TmServer, new: &TmServer) {
 }
 
 fn server_bootstrap(_: &EventContext, new: &TmServer) {
-    let local_server = SERVER.wait();
+    let local_server = TRACKMANIA.wait();
     let new = new.clone();
     tokio::spawn(async move {
         let _: Result<bool, ClientError> = local_server
             .call(
                 "ChatSendServerMessage",
-                "[tm-tourney-manager] Bootstrapping the server!",
+                "[tm-server-bridge] Bootstrapping the server!",
             )
             .await;
 
-        //SAFETY: Same type but rust cant know that.
-        let configuration = unsafe {
-            std::mem::transmute::<
-                tm_tourney_manager_api_rs::ServerConfig,
-                tm_server_client::types::config::ServerConfig,
-            >(new.config)
-        };
-        local_server.configure(configuration).await;
+        configure(new).await;
+
         let _: Result<bool, ClientError> = local_server
             .call(
                 "ChatSendServerMessage",
-                "[tm-tourney-manager] Bootstrapping successfull!",
+                "[tm-server-bridge] Bootstrapping successfull :>",
             )
             .await;
     });
