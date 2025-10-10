@@ -32,6 +32,9 @@ declare type __keep_Method = Method;
 import { ServerConfig } from "./server_config_type";
 // Mark import as potentially unused
 declare type __keep_ServerConfig = ServerConfig;
+import { ServerState } from "./server_state_type";
+// Mark import as potentially unused
+declare type __keep_ServerState = ServerState;
 
 
 export type TmServer = {
@@ -39,6 +42,7 @@ export type TmServer = {
   ownerId: string,
   online: boolean,
   config: ServerConfig,
+  state: ServerState,
   activeMatch: bigint | undefined,
   serverMethod: Method | undefined,
 };
@@ -57,6 +61,7 @@ export const TmServer = {
         { name: "ownerId", algebraicType: __AlgebraicTypeValue.String},
         { name: "online", algebraicType: __AlgebraicTypeValue.Bool},
         { name: "config", algebraicType: ServerConfig.getTypeScriptAlgebraicType()},
+        { name: "state", algebraicType: ServerState.getTypeScriptAlgebraicType()},
         { name: "activeMatch", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
         { name: "serverMethod", algebraicType: __AlgebraicTypeValue.createOptionType(Method.getTypeScriptAlgebraicType())},
       ]

@@ -134,7 +134,7 @@ impl TrackmaniaServer {
         let size = u32::from_le_bytes([buf[0], buf[1], buf[2], buf[3]]);
         let call = String::from_utf8(buf[4..((size + 4) as usize)].to_vec()).unwrap();
 
-        println!("Connected to: {call}");
+        info!("Connected to: {call}");
 
         let (sender, rx) = tachyonix::channel::<GbxMethodCall>(32);
 
@@ -230,37 +230,31 @@ impl TrackmaniaServer {
                     } else {
                         // if its not a method response it must be an event.
                         let callback = dxr::deserialize_xml::<MethodCall>(&packet.body).unwrap();
+                        let mut callback_name = callback.name().into();
                         // Event from the ModeScript extension which is the newer counterpart to the legacy events.
-                        if callback.name() == "ManiaPlanet.ModeScriptCallbackArray" {
+                        let event = if callback_name == "ManiaPlanet.ModeScriptCallbackArray" {
                             let params = callback.params();
-                            let modescript_callback_name =
-                                String::try_from_value(&params[0]).unwrap();
+                            callback_name = String::try_from_value(&params[0]).unwrap();
 
                             let value = Vec::<Value>::try_from_value(&params[1]).unwrap();
                             let modescript_callback_body =
                                 String::try_from_value(&value[0]).unwrap();
 
-                            info!(
-                                "Name: {modescript_callback_name}, JSON: {modescript_callback_body:?}"
-                            );
+                            info!("Name: {callback_name}, JSON: {modescript_callback_body:?}");
 
                             // Parse the event to make it fully typed.
-                            let event = Event::new(
-                                modescript_callback_name.clone(),
-                                modescript_callback_body,
-                            );
-
-                            // Send the parsed event to all subscribed event handlers.
-                            let event = Arc::new(event);
-                            if let Err(error) = global_callback_sender.send(event.clone()) {
-                                error!("Global Events Listener failed: {:?}", error);
-                            }
-                            registered_callbacks.send(&modescript_callback_name, event);
+                            Event::from_modescript(&callback_name, modescript_callback_body)
                         } else {
-                            /* let params = callback.params();
-                            for param in params {}
-                            println!("Old callback: {:?}", callback); */
+                            println!("Old callback: {:?}", callback);
+                            let params = callback.params();
+                            Event::from_legacy(&callback_name, params)
+                        };
+                        // Send the parsed event to all subscribed event handlers.
+                        let event = Arc::new(event);
+                        if let Err(error) = global_callback_sender.send(event.clone()) {
+                            error!("Global Events Listener failed: {:?}", error);
                         }
+                        registered_callbacks.send(&callback_name, event);
                     }
                 }
 
@@ -329,14 +323,14 @@ impl TrackmaniaServer {
 
     /// Allows to call a method on the server.
     /// Needs to be awaited in order to be executed and receive the response.
-    #[tracing::instrument(name = "TrackmaniaServer::call", level = "info")]
+    //#[tracing::instrument(name = "TrackmaniaServer::call", level = "info")]
     pub async fn call<P, R: TryFromValue>(&self, method: &str, args: P) -> Result<R, ClientError>
     where
         P: TryToParams + std::fmt::Debug,
     {
         let params = args.try_to_params()?;
         let result = self.call_inner(Cow::Borrowed(method), params).await?;
-        info!("{result:?}");
+        //info!("{method:?}");
         // extract return value
         Ok(R::try_from_value(&result)?)
     }

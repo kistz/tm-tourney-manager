@@ -4,12 +4,16 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::event_type::Event;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct UbisoftId {
-    pub account_id: String,
+pub struct TmServerEvent {
+    pub id: u64,
+    pub match_id: u64,
+    pub event: Event,
 }
 
-impl __sdk::InModule for UbisoftId {
+impl __sdk::InModule for TmServerEvent {
     type Module = super::RemoteModule;
 }

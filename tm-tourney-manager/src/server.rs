@@ -1,9 +1,14 @@
 use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::{config::ServerConfig, method::Method};
 
-use crate::server::config::{TmServerConfig, tm_server_config};
+use crate::server::{
+    config::{TmServerConfig, tm_server_config},
+    state::ServerState,
+};
 
 pub mod config;
+pub mod event;
+pub mod state;
 
 #[table(name=tm_server, public)]
 pub struct TmServer {
@@ -18,6 +23,8 @@ pub struct TmServer {
     online: bool,
 
     config: ServerConfig,
+
+    state: ServerState,
 
     active_match: Option<u64>,
 
@@ -47,6 +54,10 @@ impl TmServer {
         self.config = config
     }
 
+    pub fn set_state(&mut self, state: ServerState) {
+        self.state = state
+    }
+
     /* pub fn set_command(&mut self, command: Method) {
         self.server_method = command
     } */
@@ -62,6 +73,7 @@ pub fn add_server(ctx: &ReducerContext, id: String) {
         owner_id: "test_user".into(),
         server_method: None,
         config: ServerConfig::default(),
+        state: ServerState::default(),
     });
 }
 
@@ -82,6 +94,14 @@ pub fn load_server_config(ctx: &ReducerContext, id: String, with_config: u64) {
         && let Some(config) = ctx.db.tm_server_config().id().find(with_config)
     {
         server.set_config(config.get_config());
+        ctx.db.tm_server().id().update(server);
+    }
+}
+
+#[reducer]
+pub fn set_tm_server_state(ctx: &ReducerContext, id: String, state: ServerState) {
+    if let Some(mut server) = ctx.db.tm_server().id().find(id) {
+        server.set_state(state);
         ctx.db.tm_server().id().update(server);
     }
 }

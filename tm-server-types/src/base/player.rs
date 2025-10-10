@@ -1,3 +1,5 @@
+use dxr::TryFromValue;
+
 use crate::base::RoundTime;
 
 #[derive(Debug, Clone)]
@@ -35,4 +37,20 @@ pub struct Player {
     previous_racetime: RoundTime,
     #[cfg_attr(feature = "serde", serde(rename = "prevracecheckpoints"))]
     previous_race_checkpoints: Vec<u32>,
+}
+
+#[derive(Debug, Clone, TryFromValue)]
+//#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+//#[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
+//#[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
+pub struct PlayerInfo {
+    pub Login: String,
+
+    pub NickName: String,
+
+    pub PlayerId: i32,
+    pub TeamId: i32,
+    pub SpectatorStatus: i32,
+    pub LadderRanking: i32,
+    pub Flags: i32,
 }

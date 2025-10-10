@@ -26,20 +26,15 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { Event } from "./event_type";
-// Mark import as potentially unused
-declare type __keep_Event = Event;
 
-
-export type TmMatchEvent = {
-  id: bigint,
-  matchId: bigint,
-  event: Event,
+export type ServerState = {
+  players: string[],
+  paused: boolean,
 };
 /**
  * An object for generated helper functions.
  */
-export const TmMatchEvent = {
+export const ServerState = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -47,23 +42,22 @@ export const TmMatchEvent = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "matchId", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "event", algebraicType: Event.getTypeScriptAlgebraicType()},
+        { name: "players", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
+        { name: "paused", algebraicType: __AlgebraicTypeValue.Bool},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TmMatchEvent): void {
-    __AlgebraicTypeValue.serializeValue(writer, TmMatchEvent.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: ServerState): void {
+    __AlgebraicTypeValue.serializeValue(writer, ServerState.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TmMatchEvent {
-    return __AlgebraicTypeValue.deserializeValue(reader, TmMatchEvent.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): ServerState {
+    return __AlgebraicTypeValue.deserializeValue(reader, ServerState.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TmMatchEvent;
+export default ServerState;
 
 

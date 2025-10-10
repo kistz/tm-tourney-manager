@@ -120,7 +120,8 @@ export type Event = EventVariants.WayPoint |
   EventVariants.EndRoundEnd |
   EventVariants.PodiumStart |
   EventVariants.PodiumEnd |
-  EventVariants.Custom;
+  EventVariants.Custom |
+  EventVariants.Legacy;
 
 // A value with helper functions to construct the type.
 export const Event = {
@@ -155,6 +156,7 @@ export const Event = {
   PodiumStart: (value: Podium): Event => ({ tag: "PodiumStart", value }),
   PodiumEnd: (value: Podium): Event => ({ tag: "PodiumEnd", value }),
   Custom: (value: Custom): Event => ({ tag: "Custom", value }),
+  Legacy: (value: Custom): Event => ({ tag: "Legacy", value }),
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Sum({
@@ -184,6 +186,7 @@ export const Event = {
         { name: "PodiumStart", algebraicType: Podium.getTypeScriptAlgebraicType() },
         { name: "PodiumEnd", algebraicType: Podium.getTypeScriptAlgebraicType() },
         { name: "Custom", algebraicType: Custom.getTypeScriptAlgebraicType() },
+        { name: "Legacy", algebraicType: Custom.getTypeScriptAlgebraicType() },
       ]
     });
   },

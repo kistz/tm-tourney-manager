@@ -4,12 +4,10 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::ubisoft_id_type::UbisoftId;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct PlayerDisconnect {
-    pub login: UbisoftId,
+    pub login: String,
     pub disconnect_reason: String,
 }
 

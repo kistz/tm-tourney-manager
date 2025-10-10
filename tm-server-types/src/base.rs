@@ -1,5 +1,5 @@
 mod player;
-pub use player::Player;
+pub use player::*;
 
 mod team;
 pub use team::Team;

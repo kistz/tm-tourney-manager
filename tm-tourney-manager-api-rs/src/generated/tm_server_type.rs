@@ -6,6 +6,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::method_type::Method;
 use super::server_config_type::ServerConfig;
+use super::server_state_type::ServerState;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
@@ -14,6 +15,7 @@ pub struct TmServer {
     pub owner_id: String,
     pub online: bool,
     pub config: ServerConfig,
+    pub state: ServerState,
     pub active_match: Option<u64>,
     pub server_method: Option<Method>,
 }

@@ -59,6 +59,8 @@ pub mod round_time_type;
 pub mod rounds_type;
 pub mod scores_type;
 pub mod server_config_type;
+pub mod server_state_type;
+pub mod set_tm_server_state_reducer;
 pub mod stage_match_table;
 pub mod stage_match_type;
 pub mod stage_template_table;
@@ -67,10 +69,10 @@ pub mod start_line_type;
 pub mod start_map_type;
 pub mod start_turn_type;
 pub mod team_type;
-pub mod tm_match_event_table;
-pub mod tm_match_event_type;
 pub mod tm_server_config_table;
 pub mod tm_server_config_type;
+pub mod tm_server_event_table;
+pub mod tm_server_event_type;
 pub mod tm_server_table;
 pub mod tm_server_type;
 pub mod tournament_event_schedule_table;
@@ -81,7 +83,6 @@ pub mod tournament_status_type;
 pub mod tournament_table;
 pub mod tournament_type;
 pub mod try_start_reducer;
-pub mod ubisoft_id_type;
 pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
 pub mod update_match_config_reducer;
@@ -166,6 +167,10 @@ pub use round_time_type::RoundTime;
 pub use rounds_type::Rounds;
 pub use scores_type::Scores;
 pub use server_config_type::ServerConfig;
+pub use server_state_type::ServerState;
+pub use set_tm_server_state_reducer::{
+    set_flags_for_set_tm_server_state, set_tm_server_state, SetTmServerStateCallbackId,
+};
 pub use stage_match_table::*;
 pub use stage_match_type::StageMatch;
 pub use stage_template_table::*;
@@ -174,10 +179,10 @@ pub use start_line_type::StartLine;
 pub use start_map_type::StartMap;
 pub use start_turn_type::StartTurn;
 pub use team_type::Team;
-pub use tm_match_event_table::*;
-pub use tm_match_event_type::TmMatchEvent;
 pub use tm_server_config_table::*;
 pub use tm_server_config_type::TmServerConfig;
+pub use tm_server_event_table::*;
+pub use tm_server_event_type::TmServerEvent;
 pub use tm_server_table::*;
 pub use tm_server_type::TmServer;
 pub use tournament_event_schedule_table::*;
@@ -188,7 +193,6 @@ pub use tournament_status_type::TournamentStatus;
 pub use tournament_table::*;
 pub use tournament_type::Tournament;
 pub use try_start_reducer::{set_flags_for_try_start, try_start, TryStartCallbackId};
-pub use ubisoft_id_type::UbisoftId;
 pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
 pub use update_match_config_reducer::{
@@ -263,6 +267,10 @@ pub enum Reducer {
     RegistryAddMap {
         uploader: u64,
     },
+    SetTmServerState {
+        id: String,
+        state: ServerState,
+    },
     TryStart {
         match_id: u64,
     },
@@ -295,6 +303,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::PostEvent { .. } => "post_event",
             Reducer::ProvisionMatch { .. } => "provision_match",
             Reducer::RegistryAddMap { .. } => "registry_add_map",
+            Reducer::SetTmServerState { .. } => "set_tm_server_state",
             Reducer::TryStart { .. } => "try_start",
             Reducer::UpdateMatchConfig { .. } => "update_match_config",
         }
@@ -385,6 +394,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 registry_add_map_reducer::RegistryAddMapArgs,
             >("registry_add_map", &value.args)?
             .into()),
+            "set_tm_server_state" => Ok(__sdk::parse_reducer_args::<
+                set_tm_server_state_reducer::SetTmServerStateArgs,
+            >("set_tm_server_state", &value.args)?
+            .into()),
             "try_start" => Ok(
                 __sdk::parse_reducer_args::<try_start_reducer::TryStartArgs>(
                     "try_start",
@@ -416,9 +429,9 @@ pub struct DbUpdate {
     match_template: __sdk::TableUpdate<MatchTemplate>,
     stage_match: __sdk::TableUpdate<StageMatch>,
     stage_template: __sdk::TableUpdate<StageTemplate>,
-    tm_match_event: __sdk::TableUpdate<TmMatchEvent>,
     tm_server: __sdk::TableUpdate<TmServer>,
     tm_server_config: __sdk::TableUpdate<TmServerConfig>,
+    tm_server_event: __sdk::TableUpdate<TmServerEvent>,
     tournament: __sdk::TableUpdate<Tournament>,
     tournament_event: __sdk::TableUpdate<TournamentEvent>,
     tournament_event_schedule: __sdk::TableUpdate<TournamentEventSchedule>,
@@ -449,15 +462,15 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "stage_template" => db_update
                     .stage_template
                     .append(stage_template_table::parse_table_update(table_update)?),
-                "tm_match_event" => db_update
-                    .tm_match_event
-                    .append(tm_match_event_table::parse_table_update(table_update)?),
                 "tm_server" => db_update
                     .tm_server
                     .append(tm_server_table::parse_table_update(table_update)?),
                 "tm_server_config" => db_update
                     .tm_server_config
                     .append(tm_server_config_table::parse_table_update(table_update)?),
+                "tm_server_event" => db_update
+                    .tm_server_event
+                    .append(tm_server_event_table::parse_table_update(table_update)?),
                 "tournament" => db_update
                     .tournament
                     .append(tournament_table::parse_table_update(table_update)?),
@@ -513,14 +526,14 @@ impl __sdk::DbUpdate for DbUpdate {
             .with_updates_by_pk(|row| &row.id);
         diff.stage_template =
             cache.apply_diff_to_table::<StageTemplate>("stage_template", &self.stage_template);
-        diff.tm_match_event = cache
-            .apply_diff_to_table::<TmMatchEvent>("tm_match_event", &self.tm_match_event)
-            .with_updates_by_pk(|row| &row.id);
         diff.tm_server = cache
             .apply_diff_to_table::<TmServer>("tm_server", &self.tm_server)
             .with_updates_by_pk(|row| &row.id);
         diff.tm_server_config = cache
             .apply_diff_to_table::<TmServerConfig>("tm_server_config", &self.tm_server_config)
+            .with_updates_by_pk(|row| &row.id);
+        diff.tm_server_event = cache
+            .apply_diff_to_table::<TmServerEvent>("tm_server_event", &self.tm_server_event)
             .with_updates_by_pk(|row| &row.id);
         diff.tournament = cache
             .apply_diff_to_table::<Tournament>("tournament", &self.tournament)
@@ -552,9 +565,9 @@ pub struct AppliedDiff<'r> {
     match_template: __sdk::TableAppliedDiff<'r, MatchTemplate>,
     stage_match: __sdk::TableAppliedDiff<'r, StageMatch>,
     stage_template: __sdk::TableAppliedDiff<'r, StageTemplate>,
-    tm_match_event: __sdk::TableAppliedDiff<'r, TmMatchEvent>,
     tm_server: __sdk::TableAppliedDiff<'r, TmServer>,
     tm_server_config: __sdk::TableAppliedDiff<'r, TmServerConfig>,
+    tm_server_event: __sdk::TableAppliedDiff<'r, TmServerEvent>,
     tournament: __sdk::TableAppliedDiff<'r, Tournament>,
     tournament_event: __sdk::TableAppliedDiff<'r, TournamentEvent>,
     tournament_event_schedule: __sdk::TableAppliedDiff<'r, TournamentEventSchedule>,
@@ -593,15 +606,15 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.stage_template,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<TmMatchEvent>(
-            "tm_match_event",
-            &self.tm_match_event,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<TmServer>("tm_server", &self.tm_server, event);
         callbacks.invoke_table_row_callbacks::<TmServerConfig>(
             "tm_server_config",
             &self.tm_server_config,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<TmServerEvent>(
+            "tm_server_event",
+            &self.tm_server_event,
             event,
         );
         callbacks.invoke_table_row_callbacks::<Tournament>("tournament", &self.tournament, event);
@@ -1212,9 +1225,9 @@ impl __sdk::SpacetimeModule for RemoteModule {
         match_template_table::register_table(client_cache);
         stage_match_table::register_table(client_cache);
         stage_template_table::register_table(client_cache);
-        tm_match_event_table::register_table(client_cache);
         tm_server_table::register_table(client_cache);
         tm_server_config_table::register_table(client_cache);
+        tm_server_event_table::register_table(client_cache);
         tournament_table::register_table(client_cache);
         tournament_event_table::register_table(client_cache);
         tournament_event_schedule_table::register_table(client_cache);

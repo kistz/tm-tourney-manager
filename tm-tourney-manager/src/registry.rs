@@ -22,7 +22,7 @@ pub fn registry_add_map(
     uploader: u64,
     //map_file: Vec<u8>,
 ) {
-    let map_file = include_bytes!("../../DW25 - Acchitchi.Map.Gbx");
+    /* let map_file = include_bytes!("../../DW25 - Acchitchi.Map.Gbx");
     let map_header = parse_from_buffer(&map_file.as_slice());
     log::info!("{map_header:?}");
     let header = map_header.unwrap().header_xml;
@@ -33,5 +33,5 @@ pub fn registry_add_map(
         author: "iyOlLqb7TMmlOwxGwIdo-g".into(),
         public: true,
         file: map_file.into(),
-    });
+    }); */
 }

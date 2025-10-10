@@ -62,6 +62,8 @@ import { ProvisionMatch } from "./provision_match_reducer.ts";
 export { ProvisionMatch };
 import { RegistryAddMap } from "./registry_add_map_reducer.ts";
 export { RegistryAddMap };
+import { SetTmServerState } from "./set_tm_server_state_reducer.ts";
+export { SetTmServerState };
 import { TryStart } from "./try_start_reducer.ts";
 export { TryStart };
 import { UpdateMatchConfig } from "./update_match_config_reducer.ts";
@@ -80,12 +82,12 @@ import { StageMatchTableHandle } from "./stage_match_table.ts";
 export { StageMatchTableHandle };
 import { StageTemplateTableHandle } from "./stage_template_table.ts";
 export { StageTemplateTableHandle };
-import { TmMatchEventTableHandle } from "./tm_match_event_table.ts";
-export { TmMatchEventTableHandle };
 import { TmServerTableHandle } from "./tm_server_table.ts";
 export { TmServerTableHandle };
 import { TmServerConfigTableHandle } from "./tm_server_config_table.ts";
 export { TmServerConfigTableHandle };
+import { TmServerEventTableHandle } from "./tm_server_event_table.ts";
+export { TmServerEventTableHandle };
 import { TournamentTableHandle } from "./tournament_table.ts";
 export { TournamentTableHandle };
 import { TournamentEventTableHandle } from "./tournament_event_table.ts";
@@ -162,6 +164,8 @@ import { Scores } from "./scores_type.ts";
 export { Scores };
 import { ServerConfig } from "./server_config_type.ts";
 export { ServerConfig };
+import { ServerState } from "./server_state_type.ts";
+export { ServerState };
 import { StageMatch } from "./stage_match_type.ts";
 export { StageMatch };
 import { StageTemplate } from "./stage_template_type.ts";
@@ -174,12 +178,12 @@ import { StartTurn } from "./start_turn_type.ts";
 export { StartTurn };
 import { Team } from "./team_type.ts";
 export { Team };
-import { TmMatchEvent } from "./tm_match_event_type.ts";
-export { TmMatchEvent };
 import { TmServer } from "./tm_server_type.ts";
 export { TmServer };
 import { TmServerConfig } from "./tm_server_config_type.ts";
 export { TmServerConfig };
+import { TmServerEvent } from "./tm_server_event_type.ts";
+export { TmServerEvent };
 import { Tournament } from "./tournament_type.ts";
 export { Tournament };
 import { TournamentEvent } from "./tournament_event_type.ts";
@@ -188,8 +192,6 @@ import { TournamentEventSchedule } from "./tournament_event_schedule_type.ts";
 export { TournamentEventSchedule };
 import { TournamentStatus } from "./tournament_status_type.ts";
 export { TournamentStatus };
-import { UbisoftId } from "./ubisoft_id_type.ts";
-export { UbisoftId };
 import { UnloadingMapEnd } from "./unloading_map_end_type.ts";
 export { UnloadingMapEnd };
 import { UnloadingMapStart } from "./unloading_map_start_type.ts";
@@ -252,15 +254,6 @@ const REMOTE_MODULE = {
       tableName: "stage_template",
       rowType: StageTemplate.getTypeScriptAlgebraicType(),
     },
-    tm_match_event: {
-      tableName: "tm_match_event",
-      rowType: TmMatchEvent.getTypeScriptAlgebraicType(),
-      primaryKey: "id",
-      primaryKeyInfo: {
-        colName: "id",
-        colType: (TmMatchEvent.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
-      },
-    },
     tm_server: {
       tableName: "tm_server",
       rowType: TmServer.getTypeScriptAlgebraicType(),
@@ -277,6 +270,15 @@ const REMOTE_MODULE = {
       primaryKeyInfo: {
         colName: "id",
         colType: (TmServerConfig.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
+      },
+    },
+    tm_server_event: {
+      tableName: "tm_server_event",
+      rowType: TmServerEvent.getTypeScriptAlgebraicType(),
+      primaryKey: "id",
+      primaryKeyInfo: {
+        colName: "id",
+        colType: (TmServerEvent.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
       },
     },
     tournament: {
@@ -381,6 +383,10 @@ const REMOTE_MODULE = {
       reducerName: "registry_add_map",
       argsType: RegistryAddMap.getTypeScriptAlgebraicType(),
     },
+    set_tm_server_state: {
+      reducerName: "set_tm_server_state",
+      argsType: SetTmServerState.getTypeScriptAlgebraicType(),
+    },
     try_start: {
       reducerName: "try_start",
       argsType: TryStart.getTypeScriptAlgebraicType(),
@@ -435,6 +441,7 @@ export type Reducer = never
 | { name: "PostEvent", args: PostEvent }
 | { name: "ProvisionMatch", args: ProvisionMatch }
 | { name: "RegistryAddMap", args: RegistryAddMap }
+| { name: "SetTmServerState", args: SetTmServerState }
 | { name: "TryStart", args: TryStart }
 | { name: "UpdateMatchConfig", args: UpdateMatchConfig }
 ;
@@ -682,6 +689,22 @@ export class RemoteReducers {
     this.connection.offReducer("registry_add_map", callback);
   }
 
+  setTmServerState(id: string, state: ServerState) {
+    const __args = { id, state };
+    let __writer = new __BinaryWriter(1024);
+    SetTmServerState.serialize(__writer, __args);
+    let __argsBuffer = __writer.getBuffer();
+    this.connection.callReducer("set_tm_server_state", __argsBuffer, this.setCallReducerFlags.setTmServerStateFlags);
+  }
+
+  onSetTmServerState(callback: (ctx: ReducerEventContext, id: string, state: ServerState) => void) {
+    this.connection.onReducer("set_tm_server_state", callback);
+  }
+
+  removeOnSetTmServerState(callback: (ctx: ReducerEventContext, id: string, state: ServerState) => void) {
+    this.connection.offReducer("set_tm_server_state", callback);
+  }
+
   tryStart(matchId: bigint) {
     const __args = { matchId };
     let __writer = new __BinaryWriter(1024);
@@ -787,6 +810,11 @@ export class SetReducerFlags {
     this.registryAddMapFlags = flags;
   }
 
+  setTmServerStateFlags: __CallReducerFlags = 'FullUpdate';
+  setTmServerState(flags: __CallReducerFlags) {
+    this.setTmServerStateFlags = flags;
+  }
+
   tryStartFlags: __CallReducerFlags = 'FullUpdate';
   tryStart(flags: __CallReducerFlags) {
     this.tryStartFlags = flags;
@@ -832,11 +860,6 @@ export class RemoteTables {
     return new StageTemplateTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<StageTemplate>(REMOTE_MODULE.tables.stage_template));
   }
 
-  get tmMatchEvent(): TmMatchEventTableHandle {
-    // clientCache is a private property
-    return new TmMatchEventTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmMatchEvent>(REMOTE_MODULE.tables.tm_match_event));
-  }
-
   get tmServer(): TmServerTableHandle {
     // clientCache is a private property
     return new TmServerTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmServer>(REMOTE_MODULE.tables.tm_server));
@@ -845,6 +868,11 @@ export class RemoteTables {
   get tmServerConfig(): TmServerConfigTableHandle {
     // clientCache is a private property
     return new TmServerConfigTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmServerConfig>(REMOTE_MODULE.tables.tm_server_config));
+  }
+
+  get tmServerEvent(): TmServerEventTableHandle {
+    // clientCache is a private property
+    return new TmServerEventTableHandle((this.connection as unknown as { clientCache: __ClientCache }).clientCache.getOrCreateTable<TmServerEvent>(REMOTE_MODULE.tables.tm_server_event));
   }
 
   get tournament(): TournamentTableHandle {

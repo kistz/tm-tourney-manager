@@ -27,14 +27,18 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 
-export type PlayerDisconnect = {
-  login: string,
-  disconnectReason: string,
+import { ServerState } from "./server_state_type";
+// Mark import as potentially unused
+declare type __keep_ServerState = ServerState;
+
+export type SetTmServerState = {
+  id: string,
+  state: ServerState,
 };
 /**
  * An object for generated helper functions.
  */
-export const PlayerDisconnect = {
+export const SetTmServerState = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -42,22 +46,21 @@ export const PlayerDisconnect = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "login", algebraicType: __AlgebraicTypeValue.String},
-        { name: "disconnectReason", algebraicType: __AlgebraicTypeValue.String},
+        { name: "id", algebraicType: __AlgebraicTypeValue.String},
+        { name: "state", algebraicType: ServerState.getTypeScriptAlgebraicType()},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: PlayerDisconnect): void {
-    __AlgebraicTypeValue.serializeValue(writer, PlayerDisconnect.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: SetTmServerState): void {
+    __AlgebraicTypeValue.serializeValue(writer, SetTmServerState.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): PlayerDisconnect {
-    return __AlgebraicTypeValue.deserializeValue(reader, PlayerDisconnect.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): SetTmServerState {
+    return __AlgebraicTypeValue.deserializeValue(reader, SetTmServerState.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default PlayerDisconnect;
-
+export default SetTmServerState;
 

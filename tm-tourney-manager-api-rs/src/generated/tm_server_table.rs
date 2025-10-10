@@ -4,6 +4,7 @@
 #![allow(unused, clippy::all)]
 use super::method_type::Method;
 use super::server_config_type::ServerConfig;
+use super::server_state_type::ServerState;
 use super::tm_server_type::TmServer;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 

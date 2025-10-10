@@ -9,7 +9,7 @@ use tracing::info;
 
 use crate::{NADEO, TRACKMANIA};
 
-pub async fn configure(server_state: TmServer) {
+pub async fn configure(tm_server: TmServer) {
     let local_server = TRACKMANIA.wait();
 
     //SAFETY: Same type but rust cant know that.
@@ -17,7 +17,7 @@ pub async fn configure(server_state: TmServer) {
         std::mem::transmute::<
             tm_tourney_manager_api_rs::ServerConfig,
             tm_server_client::types::config::ServerConfig,
-        >(server_state.config)
+        >(tm_server.config)
     };
 
     let config = configuration.into_xml();
@@ -40,7 +40,7 @@ pub async fn configure(server_state: TmServer) {
     //if loaded.is_ok_and(|l| l == 2) {
     if loaded.is_ok() {
         _ = local_server
-            .chat_send_server_massage("[tm-server-bridge]   Server state synchronized.")
+            .chat_send_server_massage("[tm-server-bridge]   Server configuration synchronized.")
             .await;
 
         _ = local_server.next_map().await;

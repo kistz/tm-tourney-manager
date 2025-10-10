@@ -33,6 +33,9 @@ declare type __keep_Method = Method;
 import { ServerConfig } from "./server_config_type";
 // Mark import as potentially unused
 declare type __keep_ServerConfig = ServerConfig;
+import { ServerState } from "./server_state_type";
+// Mark import as potentially unused
+declare type __keep_ServerState = ServerState;
 
 import { type EventContext, type Reducer, RemoteReducers, RemoteTables } from ".";
 declare type __keep = [EventContext, Reducer, RemoteReducers, RemoteTables];

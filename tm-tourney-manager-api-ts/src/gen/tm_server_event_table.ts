@@ -26,7 +26,7 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { TmMatchEvent } from "./tm_match_event_type";
+import { TmServerEvent } from "./tm_server_event_type";
 import { Event } from "./event_type";
 // Mark import as potentially unused
 declare type __keep_Event = Event;
@@ -35,19 +35,19 @@ import { type EventContext, type Reducer, RemoteReducers, RemoteTables } from ".
 declare type __keep = [EventContext, Reducer, RemoteReducers, RemoteTables];
 
 /**
- * Table handle for the table `tm_match_event`.
+ * Table handle for the table `tm_server_event`.
  *
- * Obtain a handle from the [`tmMatchEvent`] property on [`RemoteTables`],
- * like `ctx.db.tmMatchEvent`.
+ * Obtain a handle from the [`tmServerEvent`] property on [`RemoteTables`],
+ * like `ctx.db.tmServerEvent`.
  *
  * Users are encouraged not to explicitly reference this type,
  * but to directly chain method calls,
- * like `ctx.db.tmMatchEvent.on_insert(...)`.
+ * like `ctx.db.tmServerEvent.on_insert(...)`.
  */
-export class TmMatchEventTableHandle {
-  tableCache: __TableCache<TmMatchEvent>;
+export class TmServerEventTableHandle {
+  tableCache: __TableCache<TmServerEvent>;
 
-  constructor(tableCache: __TableCache<TmMatchEvent>) {
+  constructor(tableCache: __TableCache<TmServerEvent>) {
     this.tableCache = tableCache;
   }
 
@@ -55,24 +55,24 @@ export class TmMatchEventTableHandle {
     return this.tableCache.count();
   }
 
-  iter(): Iterable<TmMatchEvent> {
+  iter(): Iterable<TmServerEvent> {
     return this.tableCache.iter();
   }
   /**
-   * Access to the `id` unique index on the table `tm_match_event`,
+   * Access to the `id` unique index on the table `tm_server_event`,
    * which allows point queries on the field of the same name
-   * via the [`TmMatchEventIdUnique.find`] method.
+   * via the [`TmServerEventIdUnique.find`] method.
    *
    * Users are encouraged not to explicitly reference this type,
    * but to directly chain method calls,
-   * like `ctx.db.tmMatchEvent.id().find(...)`.
+   * like `ctx.db.tmServerEvent.id().find(...)`.
    *
-   * Get a handle on the `id` unique index on the table `tm_match_event`.
+   * Get a handle on the `id` unique index on the table `tm_server_event`.
    */
   id = {
     // Find the subscribed row whose `id` column value is equal to `col_val`,
     // if such a row is present in the client cache.
-    find: (col_val: bigint): TmMatchEvent | undefined => {
+    find: (col_val: bigint): TmServerEvent | undefined => {
       for (let row of this.tableCache.iter()) {
         if (__deepEqual(row.id, col_val)) {
           return row;
@@ -81,27 +81,27 @@ export class TmMatchEventTableHandle {
     },
   };
 
-  onInsert = (cb: (ctx: EventContext, row: TmMatchEvent) => void) => {
+  onInsert = (cb: (ctx: EventContext, row: TmServerEvent) => void) => {
     return this.tableCache.onInsert(cb);
   }
 
-  removeOnInsert = (cb: (ctx: EventContext, row: TmMatchEvent) => void) => {
+  removeOnInsert = (cb: (ctx: EventContext, row: TmServerEvent) => void) => {
     return this.tableCache.removeOnInsert(cb);
   }
 
-  onDelete = (cb: (ctx: EventContext, row: TmMatchEvent) => void) => {
+  onDelete = (cb: (ctx: EventContext, row: TmServerEvent) => void) => {
     return this.tableCache.onDelete(cb);
   }
 
-  removeOnDelete = (cb: (ctx: EventContext, row: TmMatchEvent) => void) => {
+  removeOnDelete = (cb: (ctx: EventContext, row: TmServerEvent) => void) => {
     return this.tableCache.removeOnDelete(cb);
   }
 
   // Updates are only defined for tables with primary keys.
-  onUpdate = (cb: (ctx: EventContext, oldRow: TmMatchEvent, newRow: TmMatchEvent) => void) => {
+  onUpdate = (cb: (ctx: EventContext, oldRow: TmServerEvent, newRow: TmServerEvent) => void) => {
     return this.tableCache.onUpdate(cb);
   }
 
-  removeOnUpdate = (cb: (ctx: EventContext, onRow: TmMatchEvent, newRow: TmMatchEvent) => void) => {
+  removeOnUpdate = (cb: (ctx: EventContext, onRow: TmServerEvent, newRow: TmServerEvent) => void) => {
     return this.tableCache.removeOnUpdate(cb);
   }}

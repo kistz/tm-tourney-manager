@@ -26,13 +26,9 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { UbisoftId } from "./ubisoft_id_type";
-// Mark import as potentially unused
-declare type __keep_UbisoftId = UbisoftId;
-
 
 export type PlayerConnect = {
-  login: UbisoftId,
+  login: string,
   isSpectator: boolean,
 };
 /**
@@ -46,7 +42,7 @@ export const PlayerConnect = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "login", algebraicType: UbisoftId.getTypeScriptAlgebraicType()},
+        { name: "login", algebraicType: __AlgebraicTypeValue.String},
         { name: "isSpectator", algebraicType: __AlgebraicTypeValue.Bool},
       ]
     });

@@ -10,9 +10,10 @@ use tm_server_client::{ClientError, TrackmaniaServer, types::XmlRpcMethods};
 use tokio::{signal, sync::Mutex};
 use tracing::{info, instrument};
 
-use crate::{config::configure, telemetry::init_tracing_subscriber};
+use crate::{config::configure, state::sync, telemetry::init_tracing_subscriber};
 
 mod config;
+mod state;
 mod telemetry;
 #[cfg(test)]
 mod test;
@@ -24,6 +25,8 @@ const TM_SERVER_ID: &str = "test";
 static TRACKMANIA: OnceLock<TrackmaniaServer> = OnceLock::new();
 static SPACETIME: OnceLock<DbConnection> = OnceLock::new();
 static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
+
+//static STATE: OnceLock<Mutex<State>> = OnceLock::new();
 
 /// Load credentials from a file and connect to the database.
 #[instrument(level = "debug")]
@@ -95,8 +98,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 ("XmlRpc.EnableCallbacks", ["true"]),
             )
             .await;
-
-        _ = server.connect_fake_player().await;
 
         // Emit all events
         server.event(move |event| {
@@ -207,7 +208,7 @@ fn server_update(_: &EventContext, old: &TmServer, new: &TmServer) {
     });
 }
 
-fn server_bootstrap(_: &EventContext, new: &TmServer) {
+fn server_bootstrap(ctx: &EventContext, new: &TmServer) {
     let local_server = TRACKMANIA.wait();
     let new = new.clone();
     tokio::spawn(async move {
@@ -219,6 +220,7 @@ fn server_bootstrap(_: &EventContext, new: &TmServer) {
             .await;
 
         configure(new).await;
+        sync().await;
 
         let _: Result<bool, ClientError> = local_server
             .call(

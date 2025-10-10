@@ -1,4 +1,7 @@
-use tm_server_types::event::{Scores, WayPoint};
+use tm_server_types::{
+    base::PlayerInfo,
+    event::{Scores, WayPoint},
+};
 
 use crate::{ClientError, TrackmaniaServer};
 
@@ -34,6 +37,7 @@ pub trait ModeScriptMethodsXmlRpc {
     async fn set_api_version(&self, enable: bool) -> Result<bool, ClientError>;
     async fn get_api_version(&self, enable: bool) -> Result<bool, ClientError>;
     async fn get_all_api_versions(&self, enable: bool) -> Result<bool, ClientError>;
+    async fn get_player_list(&self) -> Result<Vec<PlayerInfo>, ClientError>;
 }
 
 impl ModeScriptMethodsXmlRpc for TrackmaniaServer {
@@ -92,6 +96,10 @@ impl ModeScriptMethodsXmlRpc for TrackmaniaServer {
 
     async fn get_all_api_versions(&self, enable: bool) -> Result<bool, ClientError> {
         todo!()
+    }
+
+    async fn get_player_list(&self) -> Result<Vec<PlayerInfo>, ClientError> {
+        self.call("GetPlayerList", (1000, 0)).await
     }
 }
 

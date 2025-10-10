@@ -12,7 +12,7 @@ use crate::{
 pub struct StageMatch {
     #[auto_inc]
     #[primary_key]
-    id: u64,
+    pub id: u64,
 
     /// The stage this match is associated with.
     stage_id: u64,
@@ -29,6 +29,13 @@ pub struct StageMatch {
 
     status: MatchStatus,
     //leaderboard: Leaderboard,
+}
+
+impl StageMatch {
+    /// Evaluates is the Match is in the "Match" state of its lifecycle.
+    pub fn is_match(&self) -> bool {
+        self.status == MatchStatus::Match
+    }
 }
 
 #[derive(Debug, SpacetimeType, PartialEq, Eq)]
@@ -139,47 +146,3 @@ pub struct MatchTemplate {
 
     creator: String,
 }
-
-#[table(name = tm_match_event,public)]
-pub struct TmMatchEvent {
-    #[auto_inc]
-    #[primary_key]
-    id: u64,
-
-    match_id: u64,
-
-    event: Event,
-}
-
-// TODO: remove the id argument and get it from calling entity.
-#[reducer]
-pub fn post_event(ctx: &ReducerContext, id: String, event: Event) {
-    if let Some(server) = ctx.db.tm_server().id().find(id)
-        && let Some(match_id) = server.active_mactch()
-        && let Some(stage_match) = ctx.db.stage_match().id().find(match_id)
-        && stage_match.status == MatchStatus::Match
-    {
-        ctx.db.tm_match_event().insert(TmMatchEvent {
-            id: 0,
-            match_id,
-            event,
-        });
-    }
-}
-
-/* #[test]
-fn test_test() {
-    use testcontainers::{
-        GenericImage,
-        core::{IntoContainerPort, WaitFor},
-        runners::SyncRunner,
-    };
-
-    let container = GenericImage::new("clockworklabs/spacetime", "latest")
-        .with_exposed_port(3000.tcp())
-        .with_wait_for(WaitFor::message_on_stdout(
-            "Starting SpacetimeDB listening on 0.0.0.0:3000",
-        ))
-        .start()
-        .unwrap();
-} */
