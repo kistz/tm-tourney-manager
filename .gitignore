@@ -1,2 +1,3 @@
 /target
 /tm-tourney-manager/.env
+/tm-server-bridge/.env
