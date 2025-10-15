@@ -2,9 +2,16 @@ use spacetimedb::{Identity, SpacetimeType, table};
 
 #[table(name = user, public)]
 pub struct User {
-    #[primary_key]
+    #[unique]
     identity: Identity,
+    //ubisoft if of the user
+    #[primary_key]
+    pub id: String,
+
     name: String,
+
+    //raw version of the club tag.
+    club_tag: String,
     online: bool,
 }
 

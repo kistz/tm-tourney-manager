@@ -1,6 +1,7 @@
 use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
 
-use crate::leaderboard::Leaderboard;
+use crate::{leaderboard::Leaderboard, tournament::registration::Registration, user::user};
+mod registration;
 
 #[table(name = tournament,public)]
 pub struct Tournament {
@@ -14,13 +15,13 @@ pub struct Tournament {
     #[unique]
     name: String,
 
+    description: String,
+
     status: TournamentStatus,
 
     events: Vec<u64>,
-    //leaderboard: Option<Leaderboard>,
 
-    //TODO: teams
-    // they could be configured on a per tournament basis.
+    registration: Option<Registration>,
 }
 
 impl Tournament {
@@ -35,6 +36,9 @@ pub enum TournamentStatus {
     Planning,
     // API is public
     Announced,
+    //Optional stage entered after Announced.
+    //TODO maybe this should be called registration closed and be scheduled
+    Registration,
     // Events have started
     Ongoing,
     // Whole Tournament finshed
@@ -43,17 +47,17 @@ pub enum TournamentStatus {
 
 #[reducer]
 fn create_tournament(ctx: &ReducerContext, name: String) {
+    //if let Some(user)=ctx.db.user().id ctx.identity()
+    //ctx.
     //TODO authorization
     ctx.db.tournament().insert(Tournament {
-        //Extracted from request
         name,
         creator: "yomama".into(),
-
-        //Default values inserted on creation
         id: 0,
         status: TournamentStatus::Planning,
         owners: Vec::new(),
         events: Vec::new(),
-        //leaderboard: None,
+        registration: None,
+        description: "".into(),
     });
 }
