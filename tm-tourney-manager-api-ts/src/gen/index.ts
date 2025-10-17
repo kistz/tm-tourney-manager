@@ -150,8 +150,12 @@ import { PlayerConnect } from "./player_connect_type.ts";
 export { PlayerConnect };
 import { PlayerDisconnect } from "./player_disconnect_type.ts";
 export { PlayerDisconnect };
+import { PlayerRegistration } from "./player_registration_type.ts";
+export { PlayerRegistration };
 import { Podium } from "./podium_type.ts";
 export { Podium };
+import { Registration } from "./registration_type.ts";
+export { Registration };
 import { Respawn } from "./respawn_type.ts";
 export { Respawn };
 import { RespawnBavaviour } from "./respawn_bavaviour_type.ts";
@@ -178,6 +182,10 @@ import { StartTurn } from "./start_turn_type.ts";
 export { StartTurn };
 import { Team } from "./team_type.ts";
 export { Team };
+import { TeamInfo } from "./team_info_type.ts";
+export { TeamInfo };
+import { TeamRegistration } from "./team_registration_type.ts";
+export { TeamRegistration };
 import { TmServer } from "./tm_server_type.ts";
 export { TmServer };
 import { TmServerConfig } from "./tm_server_config_type.ts";
@@ -311,10 +319,10 @@ const REMOTE_MODULE = {
     user: {
       tableName: "user",
       rowType: User.getTypeScriptAlgebraicType(),
-      primaryKey: "identity",
+      primaryKey: "id",
       primaryKeyInfo: {
-        colName: "identity",
-        colType: (User.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[0].algebraicType,
+        colName: "id",
+        colType: (User.getTypeScriptAlgebraicType() as __AlgebraicTypeVariants.Product).value.elements[1].algebraicType,
       },
     },
   },

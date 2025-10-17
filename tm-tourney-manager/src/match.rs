@@ -126,14 +126,15 @@ pub fn update_match_config(ctx: &ReducerContext, id: u64, config: ServerConfig) 
 #[reducer]
 pub fn try_start(ctx: &ReducerContext, match_id: u64) {
     //TODO authorization
-    if let Some(stage_match) = ctx.db.stage_match().id().find(match_id)
-        && let Some(server) = stage_match.server_id
+    if let Some(mut stage_match) = ctx.db.stage_match().id().find(match_id)
+        && let Some(server) = &stage_match.server_id
         && let Some(mut server) = ctx.db.tm_server().id().find(server)
-        && let Some(config) = stage_match.match_config
+        && let Some(config) = &stage_match.match_config
         && stage_match.status == MatchStatus::Upcoming
     {
-        server.set_config(config);
-
+        server.set_config(config.clone());
+        stage_match.status = MatchStatus::Match;
+        ctx.db.stage_match().id().update(stage_match);
         ctx.db.tm_server().id().update(server);
     }
 }

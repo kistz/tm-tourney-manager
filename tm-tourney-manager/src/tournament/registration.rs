@@ -17,11 +17,11 @@ pub struct TeamRegistration {
     team_limit: Option<u32>,
     team_size_min: u8,
     team_size_max: u8,
-    teams: Vec<Team>,
+    teams: Vec<TeamInfo>,
 }
 
 #[derive(Debug, SpacetimeType)]
-pub struct Team {
+pub struct TeamInfo {
     registered_at: Timestamp,
     name: String,
     members: Vec<String>,

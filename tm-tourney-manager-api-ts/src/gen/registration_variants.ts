@@ -26,10 +26,14 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
+import { PlayerRegistration as PlayerRegistrationType } from "./player_registration_type";
+// Mark import as potentially unused
+declare type __keep_PlayerRegistrationType = PlayerRegistrationType;
+import { TeamRegistration as TeamRegistrationType } from "./team_registration_type";
+// Mark import as potentially unused
+declare type __keep_TeamRegistrationType = TeamRegistrationType;
 
-export type Planning = { tag: "Planning" };
-export type Announced = { tag: "Announced" };
-export type Registration = { tag: "Registration" };
-export type Ongoing = { tag: "Ongoing" };
-export type Ended = { tag: "Ended" };
+
+export type Players = { tag: "Players", value: PlayerRegistrationType };
+export type Team = { tag: "Team", value: TeamRegistrationType };
 

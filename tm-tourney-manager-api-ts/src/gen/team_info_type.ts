@@ -26,28 +26,16 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import { TournamentStatus } from "./tournament_status_type";
-// Mark import as potentially unused
-declare type __keep_TournamentStatus = TournamentStatus;
-import { Registration } from "./registration_type";
-// Mark import as potentially unused
-declare type __keep_Registration = Registration;
 
-
-export type Tournament = {
-  id: bigint,
-  creator: string,
-  owners: string[],
+export type TeamInfo = {
+  registeredAt: __Timestamp,
   name: string,
-  description: string,
-  status: TournamentStatus,
-  events: bigint[],
-  registration: Registration | undefined,
+  members: string[],
 };
 /**
  * An object for generated helper functions.
  */
-export const Tournament = {
+export const TeamInfo = {
   /**
   * A function which returns this type represented as an AlgebraicType.
   * This function is derived from the AlgebraicType used to generate this type.
@@ -55,28 +43,23 @@ export const Tournament = {
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Product({
       elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "creator", algebraicType: __AlgebraicTypeValue.String},
-        { name: "owners", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
+        { name: "registeredAt", algebraicType: __AlgebraicTypeValue.createTimestampType()},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
-        { name: "description", algebraicType: __AlgebraicTypeValue.String},
-        { name: "status", algebraicType: TournamentStatus.getTypeScriptAlgebraicType()},
-        { name: "events", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
-        { name: "registration", algebraicType: __AlgebraicTypeValue.createOptionType(Registration.getTypeScriptAlgebraicType())},
+        { name: "members", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: Tournament): void {
-    __AlgebraicTypeValue.serializeValue(writer, Tournament.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: TeamInfo): void {
+    __AlgebraicTypeValue.serializeValue(writer, TeamInfo.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): Tournament {
-    return __AlgebraicTypeValue.deserializeValue(reader, Tournament.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): TeamInfo {
+    return __AlgebraicTypeValue.deserializeValue(reader, TeamInfo.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default Tournament;
+export default TeamInfo;
 
 

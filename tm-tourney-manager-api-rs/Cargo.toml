@@ -12,4 +12,4 @@ publish = true
 
 [dependencies]
 spacetimedb-sdk = "*"
-hex = "0.4"
+#hex = "0.4"

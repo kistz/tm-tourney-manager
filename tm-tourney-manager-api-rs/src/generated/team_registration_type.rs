@@ -4,16 +4,17 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::team_info_type::TeamInfo;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct User {
-    pub identity: __sdk::Identity,
-    pub id: String,
-    pub name: String,
-    pub club_tag: String,
-    pub online: bool,
+pub struct TeamRegistration {
+    pub team_limit: Option<u32>,
+    pub team_size_min: u8,
+    pub team_size_max: u8,
+    pub teams: Vec<TeamInfo>,
 }
 
-impl __sdk::InModule for User {
+impl __sdk::InModule for TeamRegistration {
     type Module = super::RemoteModule;
 }

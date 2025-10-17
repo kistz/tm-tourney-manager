@@ -3287,7 +3287,6 @@ dependencies = [
 name = "tm-tourney-manager-api-rs"
 version = "0.0.1"
 dependencies = [
- "hex",
  "spacetimedb-sdk",
 ]
 

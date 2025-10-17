@@ -12,6 +12,8 @@ pub enum TournamentStatus {
 
     Announced,
 
+    Registration,
+
     Ongoing,
 
     Ended,

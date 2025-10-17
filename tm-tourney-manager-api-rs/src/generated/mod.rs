@@ -48,10 +48,12 @@ pub mod play_loop_start_type;
 pub mod player_chat_type;
 pub mod player_connect_type;
 pub mod player_disconnect_type;
+pub mod player_registration_type;
 pub mod player_type;
 pub mod podium_type;
 pub mod post_event_reducer;
 pub mod provision_match_reducer;
+pub mod registration_type;
 pub mod registry_add_map_reducer;
 pub mod respawn_bavaviour_type;
 pub mod respawn_type;
@@ -68,6 +70,8 @@ pub mod stage_template_type;
 pub mod start_line_type;
 pub mod start_map_type;
 pub mod start_turn_type;
+pub mod team_info_type;
+pub mod team_registration_type;
 pub mod team_type;
 pub mod tm_server_config_table;
 pub mod tm_server_config_type;
@@ -152,12 +156,14 @@ pub use play_loop_start_type::PlayLoopStart;
 pub use player_chat_type::PlayerChat;
 pub use player_connect_type::PlayerConnect;
 pub use player_disconnect_type::PlayerDisconnect;
+pub use player_registration_type::PlayerRegistration;
 pub use player_type::Player;
 pub use podium_type::Podium;
 pub use post_event_reducer::{post_event, set_flags_for_post_event, PostEventCallbackId};
 pub use provision_match_reducer::{
     provision_match, set_flags_for_provision_match, ProvisionMatchCallbackId,
 };
+pub use registration_type::Registration;
 pub use registry_add_map_reducer::{
     registry_add_map, set_flags_for_registry_add_map, RegistryAddMapCallbackId,
 };
@@ -178,6 +184,8 @@ pub use stage_template_type::StageTemplate;
 pub use start_line_type::StartLine;
 pub use start_map_type::StartMap;
 pub use start_turn_type::StartTurn;
+pub use team_info_type::TeamInfo;
+pub use team_registration_type::TeamRegistration;
 pub use team_type::Team;
 pub use tm_server_config_table::*;
 pub use tm_server_config_type::TmServerConfig;
@@ -549,7 +557,7 @@ impl __sdk::DbUpdate for DbUpdate {
             .with_updates_by_pk(|row| &row.scheduled_id);
         diff.user = cache
             .apply_diff_to_table::<User>("user", &self.user)
-            .with_updates_by_pk(|row| &row.identity);
+            .with_updates_by_pk(|row| &row.id);
 
         diff
     }

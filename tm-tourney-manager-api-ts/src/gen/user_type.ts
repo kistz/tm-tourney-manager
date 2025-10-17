@@ -29,7 +29,9 @@ import {
 
 export type User = {
   identity: __Identity,
+  id: string,
   name: string,
+  clubTag: string,
   online: boolean,
 };
 /**
@@ -44,7 +46,9 @@ export const User = {
     return __AlgebraicTypeValue.Product({
       elements: [
         { name: "identity", algebraicType: __AlgebraicTypeValue.createIdentityType()},
+        { name: "id", algebraicType: __AlgebraicTypeValue.String},
         { name: "name", algebraicType: __AlgebraicTypeValue.String},
+        { name: "clubTag", algebraicType: __AlgebraicTypeValue.String},
         { name: "online", algebraicType: __AlgebraicTypeValue.Bool},
       ]
     });

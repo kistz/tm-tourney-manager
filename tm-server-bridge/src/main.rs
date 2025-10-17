@@ -6,9 +6,12 @@ use spacetimedb_sdk::{DbContext, Error, Identity, Table, TableWithPrimaryKey};
 
 use tm_tourney_manager_api_rs::*;
 
-use tm_server_client::{ClientError, TrackmaniaServer, types::XmlRpcMethods};
+use tm_server_client::{
+    ClientError, TrackmaniaServer,
+    types::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
+};
 use tokio::{signal, sync::Mutex};
-use tracing::{info, instrument};
+use tracing::{info, instrument, warn};
 
 use crate::{config::configure, state::sync, telemetry::init_tracing_subscriber};
 
@@ -230,5 +233,19 @@ fn server_bootstrap(ctx: &EventContext, new: &TmServer) {
                 "[tm-server-bridge] Bootstrapping successfull :>",
             )
             .await;
+
+        /* local_server
+           .send_display_manialink_page(
+               r#"<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3">
+    <label text="Custom UI! owo" />
+    <quad image="https://www.waddensea-worldheritage.org/sites/default/files/styles/main_image_landscape_crop/public/20-11-09_habour%20seals%20report_TTF_5200_0.JPG?itok=W1eZAlLm" autoscale="1" size="80 45" keepration="Fit"/>
+</manialink>"#,
+               20000,
+               false,
+           )
+           .await;
+        */
+        //local_server.ui_modules_get_properties().await
     });
 }

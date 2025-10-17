@@ -27,9 +27,37 @@ import {
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
 
-export type Planning = { tag: "Planning" };
-export type Announced = { tag: "Announced" };
-export type Registration = { tag: "Registration" };
-export type Ongoing = { tag: "Ongoing" };
-export type Ended = { tag: "Ended" };
+export type PlayerRegistration = {
+  playerLimit: number | undefined,
+  players: string[],
+};
+/**
+ * An object for generated helper functions.
+ */
+export const PlayerRegistration = {
+  /**
+  * A function which returns this type represented as an AlgebraicType.
+  * This function is derived from the AlgebraicType used to generate this type.
+  */
+  getTypeScriptAlgebraicType(): __AlgebraicTypeType {
+    return __AlgebraicTypeValue.Product({
+      elements: [
+        { name: "playerLimit", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U32)},
+        { name: "players", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
+      ]
+    });
+  },
+
+  serialize(writer: __BinaryWriter, value: PlayerRegistration): void {
+    __AlgebraicTypeValue.serializeValue(writer, PlayerRegistration.getTypeScriptAlgebraicType(), value);
+  },
+
+  deserialize(reader: __BinaryReader): PlayerRegistration {
+    return __AlgebraicTypeValue.deserializeValue(reader, PlayerRegistration.getTypeScriptAlgebraicType());
+  },
+
+}
+
+export default PlayerRegistration;
+
 

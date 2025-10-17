@@ -26,51 +26,49 @@ import {
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
 } from "spacetimedb";
-import * as TournamentStatusVariants from './tournament_status_variants'
+import { PlayerRegistration } from "./player_registration_type";
+// Mark import as potentially unused
+declare type __keep_PlayerRegistration = PlayerRegistration;
+import { TeamRegistration } from "./team_registration_type";
+// Mark import as potentially unused
+declare type __keep_TeamRegistration = TeamRegistration;
 
-// The tagged union or sum type for the algebraic type `TournamentStatus`.
-export type TournamentStatus = TournamentStatusVariants.Planning |
-  TournamentStatusVariants.Announced |
-  TournamentStatusVariants.Registration |
-  TournamentStatusVariants.Ongoing |
-  TournamentStatusVariants.Ended;
+import * as RegistrationVariants from './registration_variants'
+
+// The tagged union or sum type for the algebraic type `Registration`.
+export type Registration = RegistrationVariants.Players |
+  RegistrationVariants.Team;
 
 // A value with helper functions to construct the type.
-export const TournamentStatus = {
+export const Registration = {
   // Helper functions for constructing each variant of the tagged union.
   // ```
   // const foo = Foo.A(42);
   // assert!(foo.tag === "A");
   // assert!(foo.value === 42);
   // ```
-  Planning: { tag: "Planning" } as const,
-  Announced: { tag: "Announced" } as const,
-  Registration: { tag: "Registration" } as const,
-  Ongoing: { tag: "Ongoing" } as const,
-  Ended: { tag: "Ended" } as const,
+  Players: (value: PlayerRegistration): Registration => ({ tag: "Players", value }),
+  Team: (value: TeamRegistration): Registration => ({ tag: "Team", value }),
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
     return __AlgebraicTypeValue.Sum({
       variants: [
-        { name: "Planning", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Announced", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Registration", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Ongoing", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Ended", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+        { name: "Players", algebraicType: PlayerRegistration.getTypeScriptAlgebraicType() },
+        { name: "Team", algebraicType: TeamRegistration.getTypeScriptAlgebraicType() },
       ]
     });
   },
 
-  serialize(writer: __BinaryWriter, value: TournamentStatus): void {
-      __AlgebraicTypeValue.serializeValue(writer, TournamentStatus.getTypeScriptAlgebraicType(), value);
+  serialize(writer: __BinaryWriter, value: Registration): void {
+      __AlgebraicTypeValue.serializeValue(writer, Registration.getTypeScriptAlgebraicType(), value);
   },
 
-  deserialize(reader: __BinaryReader): TournamentStatus {
-      return __AlgebraicTypeValue.deserializeValue(reader, TournamentStatus.getTypeScriptAlgebraicType());
+  deserialize(reader: __BinaryReader): Registration {
+      return __AlgebraicTypeValue.deserializeValue(reader, Registration.getTypeScriptAlgebraicType());
   },
 
 }
 
-export default TournamentStatus;
+export default Registration;
 
 
