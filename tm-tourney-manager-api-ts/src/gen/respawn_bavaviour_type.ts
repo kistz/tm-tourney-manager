@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import * as RespawnBavaviourVariants from './respawn_bavaviour_variants'
 
@@ -35,6 +36,8 @@ export type RespawnBavaviour = RespawnBavaviourVariants.Default |
   RespawnBavaviourVariants.GiveUpAtStart |
   RespawnBavaviourVariants.GiveUpAlways |
   RespawnBavaviourVariants.GiveUpNever;
+
+let _cached_RespawnBavaviour_type_value: __AlgebraicTypeType | null = null;
 
 // A value with helper functions to construct the type.
 export const RespawnBavaviour = {
@@ -52,16 +55,17 @@ export const RespawnBavaviour = {
   GiveUpNever: { tag: "GiveUpNever" } as const,
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Sum({
-      variants: [
-        { name: "Default", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "TimeAttack", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Ignore", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "GiveUpAtStart", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "GiveUpAlways", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "GiveUpNever", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-      ]
-    });
+    if (_cached_RespawnBavaviour_type_value) return _cached_RespawnBavaviour_type_value;
+    _cached_RespawnBavaviour_type_value = __AlgebraicTypeValue.Sum({ variants: [] });
+    _cached_RespawnBavaviour_type_value.value.variants.push(
+      { name: "Default", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "TimeAttack", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "Ignore", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "GiveUpAtStart", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "GiveUpAlways", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "GiveUpNever", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+    );
+    return _cached_RespawnBavaviour_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: RespawnBavaviour): void {

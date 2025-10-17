@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import { Rounds } from "./rounds_type";
 // Mark import as potentially unused
@@ -35,6 +36,8 @@ import * as ModeConfigVariants from './mode_config_variants'
 // The tagged union or sum type for the algebraic type `ModeConfig`.
 export type ModeConfig = ModeConfigVariants.Rounds;
 
+let _cached_ModeConfig_type_value: __AlgebraicTypeType | null = null;
+
 // A value with helper functions to construct the type.
 export const ModeConfig = {
   // Helper functions for constructing each variant of the tagged union.
@@ -43,14 +46,15 @@ export const ModeConfig = {
   // assert!(foo.tag === "A");
   // assert!(foo.value === 42);
   // ```
-  Rounds: (value: Rounds): ModeConfig => ({ tag: "Rounds", value }),
+  Rounds: (value: Rounds): ModeConfigVariants.Rounds => ({ tag: "Rounds", value }),
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Sum({
-      variants: [
-        { name: "Rounds", algebraicType: Rounds.getTypeScriptAlgebraicType() },
-      ]
-    });
+    if (_cached_ModeConfig_type_value) return _cached_ModeConfig_type_value;
+    _cached_ModeConfig_type_value = __AlgebraicTypeValue.Sum({ variants: [] });
+    _cached_ModeConfig_type_value.value.variants.push(
+      { name: "Rounds", algebraicType: Rounds.getTypeScriptAlgebraicType() },
+    );
+    return _cached_ModeConfig_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: ModeConfig): void {

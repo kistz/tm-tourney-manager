@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import { EventPhase } from "./event_phase_type";
 // Mark import as potentially unused
@@ -40,6 +41,8 @@ export type TournamentEvent = {
   estimate: __TimeDuration | undefined,
   stages: bigint[],
 };
+let _cached_TournamentEvent_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -49,17 +52,18 @@ export const TournamentEvent = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "tournament", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "name", algebraicType: __AlgebraicTypeValue.String},
-        { name: "phase", algebraicType: EventPhase.getTypeScriptAlgebraicType()},
-        { name: "startingAt", algebraicType: __AlgebraicTypeValue.createTimestampType()},
-        { name: "estimate", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.createTimeDurationType())},
-        { name: "stages", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
-      ]
-    });
+    if (_cached_TournamentEvent_type_value) return _cached_TournamentEvent_type_value;
+    _cached_TournamentEvent_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_TournamentEvent_type_value.value.elements.push(
+      { name: "id", algebraicType: __AlgebraicTypeValue.U64 },
+      { name: "tournament", algebraicType: __AlgebraicTypeValue.U64 },
+      { name: "name", algebraicType: __AlgebraicTypeValue.String },
+      { name: "phase", algebraicType: EventPhase.getTypeScriptAlgebraicType() },
+      { name: "startingAt", algebraicType: __AlgebraicTypeValue.createTimestampType() },
+      { name: "estimate", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.createTimeDurationType()) },
+      { name: "stages", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64) },
+    );
+    return _cached_TournamentEvent_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: TournamentEvent): void {

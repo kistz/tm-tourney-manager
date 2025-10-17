@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 
 export type Respawn = {
@@ -38,6 +39,8 @@ export type Respawn = {
   checkpointInLap: number,
   speed: number,
 };
+let _cached_Respawn_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -47,19 +50,20 @@ export const Respawn = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "accountId", algebraicType: __AlgebraicTypeValue.String},
-        { name: "login", algebraicType: __AlgebraicTypeValue.String},
-        { name: "time", algebraicType: __AlgebraicTypeValue.U32},
-        { name: "numberRespawns", algebraicType: __AlgebraicTypeValue.U32},
-        { name: "racetime", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "laptime", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "checkpointInRace", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "checkpointInLap", algebraicType: __AlgebraicTypeValue.I32},
-        { name: "speed", algebraicType: __AlgebraicTypeValue.F32},
-      ]
-    });
+    if (_cached_Respawn_type_value) return _cached_Respawn_type_value;
+    _cached_Respawn_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_Respawn_type_value.value.elements.push(
+      { name: "accountId", algebraicType: __AlgebraicTypeValue.String },
+      { name: "login", algebraicType: __AlgebraicTypeValue.String },
+      { name: "time", algebraicType: __AlgebraicTypeValue.U32 },
+      { name: "numberRespawns", algebraicType: __AlgebraicTypeValue.U32 },
+      { name: "racetime", algebraicType: __AlgebraicTypeValue.I32 },
+      { name: "laptime", algebraicType: __AlgebraicTypeValue.I32 },
+      { name: "checkpointInRace", algebraicType: __AlgebraicTypeValue.I32 },
+      { name: "checkpointInLap", algebraicType: __AlgebraicTypeValue.I32 },
+      { name: "speed", algebraicType: __AlgebraicTypeValue.F32 },
+    );
+    return _cached_Respawn_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: Respawn): void {

@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 
 export type MapRegistry = {
@@ -34,6 +35,8 @@ export type MapRegistry = {
   public: boolean,
   file: Uint8Array,
 };
+let _cached_MapRegistry_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -43,15 +46,16 @@ export const MapRegistry = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.String},
-        { name: "uploader", algebraicType: __AlgebraicTypeValue.String},
-        { name: "author", algebraicType: __AlgebraicTypeValue.String},
-        { name: "public", algebraicType: __AlgebraicTypeValue.Bool},
-        { name: "file", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U8)},
-      ]
-    });
+    if (_cached_MapRegistry_type_value) return _cached_MapRegistry_type_value;
+    _cached_MapRegistry_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_MapRegistry_type_value.value.elements.push(
+      { name: "id", algebraicType: __AlgebraicTypeValue.String },
+      { name: "uploader", algebraicType: __AlgebraicTypeValue.String },
+      { name: "author", algebraicType: __AlgebraicTypeValue.String },
+      { name: "public", algebraicType: __AlgebraicTypeValue.Bool },
+      { name: "file", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U8) },
+    );
+    return _cached_MapRegistry_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: MapRegistry): void {

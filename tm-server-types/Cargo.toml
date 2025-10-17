@@ -12,7 +12,7 @@ edition.workspace = true
 repository.workspace = true
 
 [dependencies]
-spacetimedb-lib = { version = "*", optional = true }
+spacetimedb-lib = { workspace = true, optional = true }
 
 serde = { version = "*", optional = true }
 # Renamed to json because maybe swtich to simd-json

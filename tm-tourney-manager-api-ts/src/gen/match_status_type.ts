@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import * as MatchStatusVariants from './match_status_variants'
 
@@ -35,6 +36,8 @@ export type MatchStatus = MatchStatusVariants.Configuring |
   MatchStatusVariants.Match |
   MatchStatusVariants.PostMatch |
   MatchStatusVariants.Ended;
+
+let _cached_MatchStatus_type_value: __AlgebraicTypeType | null = null;
 
 // A value with helper functions to construct the type.
 export const MatchStatus = {
@@ -52,16 +55,17 @@ export const MatchStatus = {
   Ended: { tag: "Ended" } as const,
 
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Sum({
-      variants: [
-        { name: "Configuring", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Upcoming", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "PreMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Match", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "PostMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-        { name: "Ended", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
-      ]
-    });
+    if (_cached_MatchStatus_type_value) return _cached_MatchStatus_type_value;
+    _cached_MatchStatus_type_value = __AlgebraicTypeValue.Sum({ variants: [] });
+    _cached_MatchStatus_type_value.value.variants.push(
+      { name: "Configuring", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "Upcoming", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "PreMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "Match", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "PostMatch", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+      { name: "Ended", algebraicType: __AlgebraicTypeValue.Product({ elements: [] }) },
+    );
+    return _cached_MatchStatus_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: MatchStatus): void {

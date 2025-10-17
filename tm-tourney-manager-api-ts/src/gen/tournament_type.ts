@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import { TournamentStatus } from "./tournament_status_type";
 // Mark import as potentially unused
@@ -44,6 +45,8 @@ export type Tournament = {
   events: bigint[],
   registration: Registration | undefined,
 };
+let _cached_Tournament_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -53,18 +56,19 @@ export const Tournament = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "id", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "creator", algebraicType: __AlgebraicTypeValue.String},
-        { name: "owners", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String)},
-        { name: "name", algebraicType: __AlgebraicTypeValue.String},
-        { name: "description", algebraicType: __AlgebraicTypeValue.String},
-        { name: "status", algebraicType: TournamentStatus.getTypeScriptAlgebraicType()},
-        { name: "events", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64)},
-        { name: "registration", algebraicType: __AlgebraicTypeValue.createOptionType(Registration.getTypeScriptAlgebraicType())},
-      ]
-    });
+    if (_cached_Tournament_type_value) return _cached_Tournament_type_value;
+    _cached_Tournament_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_Tournament_type_value.value.elements.push(
+      { name: "id", algebraicType: __AlgebraicTypeValue.U64 },
+      { name: "creator", algebraicType: __AlgebraicTypeValue.String },
+      { name: "owners", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.String) },
+      { name: "name", algebraicType: __AlgebraicTypeValue.String },
+      { name: "description", algebraicType: __AlgebraicTypeValue.String },
+      { name: "status", algebraicType: TournamentStatus.getTypeScriptAlgebraicType() },
+      { name: "events", algebraicType: __AlgebraicTypeValue.Array(__AlgebraicTypeValue.U64) },
+      { name: "registration", algebraicType: __AlgebraicTypeValue.createOptionType(Registration.getTypeScriptAlgebraicType()) },
+    );
+    return _cached_Tournament_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: Tournament): void {

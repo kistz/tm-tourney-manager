@@ -11,5 +11,5 @@ repository.workspace = true
 publish = true
 
 [dependencies]
-spacetimedb-sdk = "*"
+spacetimedb-sdk.workspace = true
 #hex = "0.4"

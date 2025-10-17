@@ -16,7 +16,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 log = "0.4"
-spacetimedb = { version = "*" }
+spacetimedb.workspace = true
 tm-server-types = { path = "../tm-server-types", features = ['spacetime'] }
 gbx-header = "0"
 

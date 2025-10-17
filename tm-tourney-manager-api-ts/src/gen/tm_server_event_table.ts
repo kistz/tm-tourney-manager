@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 import { TmServerEvent } from "./tm_server_event_type";
 import { Event } from "./event_type";
@@ -44,7 +45,9 @@ declare type __keep = [EventContext, Reducer, RemoteReducers, RemoteTables];
  * but to directly chain method calls,
  * like `ctx.db.tmServerEvent.on_insert(...)`.
  */
-export class TmServerEventTableHandle {
+export class TmServerEventTableHandle<TableName extends string> implements __TableHandle<TableName> {
+  // phantom type to track the table name
+  readonly tableName!: TableName;
   tableCache: __TableCache<TmServerEvent>;
 
   constructor(tableCache: __TableCache<TmServerEvent>) {

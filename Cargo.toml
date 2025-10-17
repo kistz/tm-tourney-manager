@@ -20,3 +20,11 @@ package.edition = "2024"
 package.license = "MIT OR Apache-2.0"
 package.version = "0.0.1"
 package.repository = "https://github.com/kistz/tm-tourney-manager"
+
+
+[workspace.dependencies]
+spacetimedb = { version = "1.6" }
+
+spacetimedb-sdk = { version = "1.6" }
+
+spacetimedb-lib = { version = "1.6" }

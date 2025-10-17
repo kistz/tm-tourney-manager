@@ -25,12 +25,15 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 
 export type PlayerConnect = {
   login: string,
   isSpectator: boolean,
 };
+let _cached_PlayerConnect_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -40,12 +43,13 @@ export const PlayerConnect = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "login", algebraicType: __AlgebraicTypeValue.String},
-        { name: "isSpectator", algebraicType: __AlgebraicTypeValue.Bool},
-      ]
-    });
+    if (_cached_PlayerConnect_type_value) return _cached_PlayerConnect_type_value;
+    _cached_PlayerConnect_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_PlayerConnect_type_value.value.elements.push(
+      { name: "login", algebraicType: __AlgebraicTypeValue.String },
+      { name: "isSpectator", algebraicType: __AlgebraicTypeValue.Bool },
+    );
+    return _cached_PlayerConnect_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: PlayerConnect): void {

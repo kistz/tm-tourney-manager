@@ -25,6 +25,7 @@ import {
   type EventContextInterface as __EventContextInterface,
   type ReducerEventContextInterface as __ReducerEventContextInterface,
   type SubscriptionEventContextInterface as __SubscriptionEventContextInterface,
+  type TableHandle as __TableHandle,
 } from "spacetimedb";
 
 export type ProvisionMatch = {
@@ -32,6 +33,8 @@ export type ProvisionMatch = {
   withConfig: bigint | undefined,
   autoProvisioningServer: boolean,
 };
+let _cached_ProvisionMatch_type_value: __AlgebraicTypeType | null = null;
+
 /**
  * An object for generated helper functions.
  */
@@ -41,13 +44,14 @@ export const ProvisionMatch = {
   * This function is derived from the AlgebraicType used to generate this type.
   */
   getTypeScriptAlgebraicType(): __AlgebraicTypeType {
-    return __AlgebraicTypeValue.Product({
-      elements: [
-        { name: "usedBy", algebraicType: __AlgebraicTypeValue.U64},
-        { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64)},
-        { name: "autoProvisioningServer", algebraicType: __AlgebraicTypeValue.Bool},
-      ]
-    });
+    if (_cached_ProvisionMatch_type_value) return _cached_ProvisionMatch_type_value;
+    _cached_ProvisionMatch_type_value = __AlgebraicTypeValue.Product({ elements: [] });
+    _cached_ProvisionMatch_type_value.value.elements.push(
+      { name: "usedBy", algebraicType: __AlgebraicTypeValue.U64 },
+      { name: "withConfig", algebraicType: __AlgebraicTypeValue.createOptionType(__AlgebraicTypeValue.U64) },
+      { name: "autoProvisioningServer", algebraicType: __AlgebraicTypeValue.Bool },
+    );
+    return _cached_ProvisionMatch_type_value;
   },
 
   serialize(writer: __BinaryWriter, value: ProvisionMatch): void {
