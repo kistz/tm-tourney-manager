@@ -1,5 +1,6 @@
 use spacetimedb::{
-    AnonymousViewContext, Query, ReducerContext, SpacetimeType, Table, reducer, table, view,
+    AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType, Table, reducer, table,
+    view,
 };
 
 use crate::{
@@ -192,4 +193,33 @@ pub fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
         //TODO this equality doesnt work atm because of enum
         //.r#where(|t| t.status.ne(projectStatus::Planning))
         .build()
+}
+
+pub(crate) trait CompetitionRead {
+    fn competition_tree(&self, competition_id: u32) -> Vec<u32>;
+}
+impl<Db: DbContext> CompetitionRead for Db {
+    fn competition_tree(&self, competition_id: u32) -> Vec<u32> {
+        let Some(competition) = self
+            .db_read_only()
+            .tab_competition()
+            .id()
+            .find(competition_id)
+        else {
+            return Vec::new();
+        };
+        let mut tree = vec![competition_id];
+
+        let mut parent_id = competition.parent_id;
+        while parent_id != 0 {
+            if let Some(new_parent) = self.db_read_only().tab_competition().id().find(parent_id) {
+                parent_id = new_parent.parent_id;
+                tree.push(new_parent.id);
+                continue;
+            }
+            parent_id = 0;
+        }
+
+        tree
+    }
 }

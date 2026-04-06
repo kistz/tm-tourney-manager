@@ -5,7 +5,7 @@ use crate::{
     competition::{CompetitionPermissionsV1, connection::tab_connection},
     raw_server::player::PermittedPlayer,
     registration::player::RegisterationPlayer,
-    tm_match::leaderboard::TabMatchRoundPlayer,
+    tm_match::leaderboard::MatchRoundPlayer,
 };
 
 #[derive(Debug)]
@@ -34,10 +34,7 @@ impl ConnectionData {
         self
     }
 
-    pub(super) fn apply_match(
-        &self,
-        tm_match: Vec<TabMatchRoundPlayer>,
-    ) -> Vec<TabMatchRoundPlayer> {
+    pub(super) fn apply_match(&self, tm_match: Vec<MatchRoundPlayer>) -> Vec<MatchRoundPlayer> {
         let players = match &self.options {
             ConnectionDataOption::All => tm_match,
             ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),

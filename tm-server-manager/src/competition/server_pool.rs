@@ -1,15 +1,11 @@
-use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, ReducerContext, Table, ViewContext, reducer, table,
-    view,
-};
+use spacetimedb::{DbContext, ReducerContext, Table, ViewContext, reducer, table, view};
 
 use crate::{
     authorization::Authorization,
-    competition::CompetitionPermissionsV1,
+    competition::{CompetitionPermissionsV1, CompetitionRead},
     raw_server::{
         RawServerV1, occupation::TabRawServerOccupationRead, tab_raw_server, tab_raw_server__view,
     },
-    user::UserRead,
 };
 
 #[table(accessor=tab_competition_raw_server)]
@@ -109,7 +105,7 @@ fn competition_available_server_pool(
     //TODO which permission should we use for this??
     if ctx
         .auth_builder(competition_id)
-        .permission(CompetitionPermissionsV1::OWNER)
+        //.permission(CompetitionPermissionsV1::OWNER)
         .authorize()
         .is_err()
     {
@@ -122,34 +118,37 @@ fn competition_available_server_pool(
 pub(crate) trait TabCompetitionServerPoolRead {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1>;
 }
-pub(crate) trait TabCompetitionServerPoolWrite: TabCompetitionServerPoolRead {}
 
 impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1> {
-        //TODO recurse upwards to catch all inherited servers.
+        let tree = self.competition_tree(competition_id);
 
-        self.db_read_only()
-            .tab_competition_raw_server()
-            .competition_id()
-            .filter(competition_id)
-            .filter_map(|s| {
-                let server = self
-                    .db_read_only()
-                    .tab_raw_server()
-                    .id()
-                    .find(s.server_id)
-                    .unwrap();
-                if !server.is_verified() {
-                    None
-                } else {
-                    if self.raw_server_is_occupied(server.id) {
-                        return None;
-                    }
-                    Some(server)
-                }
-            })
-            .collect()
+        let mut servers = Vec::new();
+        for competition in tree {
+            servers.extend(
+                self.db_read_only()
+                    .tab_competition_raw_server()
+                    .competition_id()
+                    .filter(competition)
+                    .filter_map(|s| {
+                        let server = self
+                            .db_read_only()
+                            .tab_raw_server()
+                            .id()
+                            .find(s.server_id)
+                            .unwrap();
+                        if !server.is_verified() {
+                            None
+                        } else {
+                            if self.raw_server_is_occupied(server.id) {
+                                return None;
+                            }
+                            Some(server)
+                        }
+                    }),
+            )
+        }
+
+        servers
     }
 }
-
-impl<Db: DbContext<DbView = Local>> TabCompetitionServerPoolWrite for Db {}

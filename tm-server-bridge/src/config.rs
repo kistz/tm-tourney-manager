@@ -19,6 +19,7 @@ pub fn metadata_update(_: &EventContext, new_metadata: &tm_server_manager_api_rs
                 && old_metadata.unwrap().lock().await.config == new_metadata.config
             {
                 _ = server.restart_map().await;
+                _ = server.next_map().await;
                 _ = server
                     .chat_send_server_massage(
                         "[tmservers.live] Configuration stayed the same restarting regardless.",
@@ -28,6 +29,7 @@ pub fn metadata_update(_: &EventContext, new_metadata: &tm_server_manager_api_rs
             }
             if configure(new_metadata.clone()).await {
                 _ = server.restart_map().await;
+                _ = server.next_map().await;
             }
 
             _ = server

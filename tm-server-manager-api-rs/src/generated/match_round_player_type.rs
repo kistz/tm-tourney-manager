@@ -6,7 +6,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct TabMatchRoundPlayer {
+pub struct MatchRoundPlayer {
     pub id: u32,
     pub user_id: u32,
     pub match_id: u32,
@@ -15,26 +15,26 @@ pub struct TabMatchRoundPlayer {
     pub round: u16,
 }
 
-impl __sdk::InModule for TabMatchRoundPlayer {
+impl __sdk::InModule for MatchRoundPlayer {
     type Module = super::RemoteModule;
 }
 
-/// Column accessor struct for the table `TabMatchRoundPlayer`.
+/// Column accessor struct for the table `MatchRoundPlayer`.
 ///
 /// Provides typed access to columns for query building.
-pub struct TabMatchRoundPlayerCols {
-    pub id: __sdk::__query_builder::Col<TabMatchRoundPlayer, u32>,
-    pub user_id: __sdk::__query_builder::Col<TabMatchRoundPlayer, u32>,
-    pub match_id: __sdk::__query_builder::Col<TabMatchRoundPlayer, u32>,
-    pub time: __sdk::__query_builder::Col<TabMatchRoundPlayer, i32>,
-    pub points: __sdk::__query_builder::Col<TabMatchRoundPlayer, i32>,
-    pub round: __sdk::__query_builder::Col<TabMatchRoundPlayer, u16>,
+pub struct MatchRoundPlayerCols {
+    pub id: __sdk::__query_builder::Col<MatchRoundPlayer, u32>,
+    pub user_id: __sdk::__query_builder::Col<MatchRoundPlayer, u32>,
+    pub match_id: __sdk::__query_builder::Col<MatchRoundPlayer, u32>,
+    pub time: __sdk::__query_builder::Col<MatchRoundPlayer, i32>,
+    pub points: __sdk::__query_builder::Col<MatchRoundPlayer, i32>,
+    pub round: __sdk::__query_builder::Col<MatchRoundPlayer, u16>,
 }
 
-impl __sdk::__query_builder::HasCols for TabMatchRoundPlayer {
-    type Cols = TabMatchRoundPlayerCols;
+impl __sdk::__query_builder::HasCols for MatchRoundPlayer {
+    type Cols = MatchRoundPlayerCols;
     fn cols(table_name: &'static str) -> Self::Cols {
-        TabMatchRoundPlayerCols {
+        MatchRoundPlayerCols {
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             user_id: __sdk::__query_builder::Col::new(table_name, "user_id"),
             match_id: __sdk::__query_builder::Col::new(table_name, "match_id"),
@@ -45,22 +45,22 @@ impl __sdk::__query_builder::HasCols for TabMatchRoundPlayer {
     }
 }
 
-/// Indexed column accessor struct for the table `TabMatchRoundPlayer`.
+/// Indexed column accessor struct for the table `MatchRoundPlayer`.
 ///
 /// Provides typed access to indexed columns for query building.
-pub struct TabMatchRoundPlayerIxCols {
-    pub id: __sdk::__query_builder::IxCol<TabMatchRoundPlayer, u32>,
-    pub user_id: __sdk::__query_builder::IxCol<TabMatchRoundPlayer, u32>,
+pub struct MatchRoundPlayerIxCols {
+    pub id: __sdk::__query_builder::IxCol<MatchRoundPlayer, u32>,
+    pub user_id: __sdk::__query_builder::IxCol<MatchRoundPlayer, u32>,
 }
 
-impl __sdk::__query_builder::HasIxCols for TabMatchRoundPlayer {
-    type IxCols = TabMatchRoundPlayerIxCols;
+impl __sdk::__query_builder::HasIxCols for MatchRoundPlayer {
+    type IxCols = MatchRoundPlayerIxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
-        TabMatchRoundPlayerIxCols {
+        MatchRoundPlayerIxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
             user_id: __sdk::__query_builder::IxCol::new(table_name, "user_id"),
         }
     }
 }
 
-impl __sdk::__query_builder::CanBeLookupTable for TabMatchRoundPlayer {}
+impl __sdk::__query_builder::CanBeLookupTable for MatchRoundPlayer {}

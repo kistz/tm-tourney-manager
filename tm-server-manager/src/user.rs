@@ -2,7 +2,7 @@ use spacetimedb::{AnonymousViewContext, Identity, Query, Table, Uuid, ViewContex
 
 use crate::{
     authorization::Authorization,
-    tm_match::leaderboard::{TabMatchRoundPlayerIxCols, tab_match_round_player__query},
+    tm_match::leaderboard::{MatchRoundPlayerIxCols, tab_match_round_player__query},
 };
 
 #[table(accessor= tab_user,vis_private)]
@@ -56,7 +56,7 @@ pub fn match_round_users(ctx: &AnonymousViewContext) -> impl Query<UserV1> {
         .r#where(|m| m.round.eq(1))
         .right_semijoin(
             ctx.from.tab_user(),
-            |mr: &TabMatchRoundPlayerIxCols, u: &UserV1IxCols| mr.user_id.eq(u.id),
+            |mr: &MatchRoundPlayerIxCols, u: &UserV1IxCols| mr.user_id.eq(u.id),
         )
 }
 

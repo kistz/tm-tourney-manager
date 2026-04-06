@@ -68,6 +68,8 @@ pub mod match_create_reducer;
 pub mod match_delete_reducer;
 pub mod match_event_type;
 pub mod match_round_ext_table;
+pub mod match_round_player_ext_type;
+pub mod match_round_player_type;
 pub mod match_round_replay_type;
 pub mod match_round_table;
 pub mod match_round_users_table;
@@ -186,8 +188,6 @@ pub mod start_turn_type;
 pub mod tab_competition_node_position_type;
 pub mod tab_connection_action_type;
 pub mod tab_connection_type;
-pub mod tab_match_round_player_ext_type;
-pub mod tab_match_round_player_type;
 pub mod tab_player_destination_type;
 pub mod tab_tm_map_type;
 pub mod team_type;
@@ -275,6 +275,8 @@ pub use match_create_reducer::match_create;
 pub use match_delete_reducer::match_delete;
 pub use match_event_type::MatchEvent;
 pub use match_round_ext_table::*;
+pub use match_round_player_ext_type::MatchRoundPlayerExt;
+pub use match_round_player_type::MatchRoundPlayer;
 pub use match_round_replay_type::MatchRoundReplay;
 pub use match_round_table::*;
 pub use match_round_users_table::*;
@@ -393,8 +395,6 @@ pub use start_turn_type::StartTurn;
 pub use tab_competition_node_position_type::TabCompetitionNodePosition;
 pub use tab_connection_action_type::TabConnectionAction;
 pub use tab_connection_type::TabConnection;
-pub use tab_match_round_player_ext_type::TabMatchRoundPlayerExt;
-pub use tab_match_round_player_type::TabMatchRoundPlayer;
 pub use tab_player_destination_type::TabPlayerDestination;
 pub use tab_tm_map_type::TabTmMap;
 pub use team_type::Team;
@@ -1074,8 +1074,8 @@ pub struct DbUpdate {
     competition: __sdk::TableUpdate<CompetitionV1>,
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
     competition_connection_data: __sdk::TableUpdate<ConnectionData>,
-    match_round: __sdk::TableUpdate<TabMatchRoundPlayer>,
-    match_round_ext: __sdk::TableUpdate<TabMatchRoundPlayerExt>,
+    match_round: __sdk::TableUpdate<MatchRoundPlayer>,
+    match_round_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
     match_round_users: __sdk::TableUpdate<UserV1>,
     match_state: __sdk::TableUpdate<MatchState>,
     my_connections: __sdk::TableUpdate<CompetitionConnection>,
@@ -1089,7 +1089,7 @@ pub struct DbUpdate {
     raw_server_method_call: __sdk::TableUpdate<RawServerMethodCall>,
     raw_server_permitted_players: __sdk::TableUpdate<PermittedPlayer>,
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
-    temp_match_leaderboard: __sdk::TableUpdate<TabMatchRoundPlayer>,
+    temp_match_leaderboard: __sdk::TableUpdate<MatchRoundPlayer>,
     temp_registration_player: __sdk::TableUpdate<RegisterationPlayer>,
     this_raw_server: __sdk::TableUpdate<RawServerV1>,
     user_available_server_pool: __sdk::TableUpdate<RawServerV1>,
@@ -1229,11 +1229,9 @@ impl __sdk::DbUpdate for DbUpdate {
             )
             .with_updates_by_pk(|row| &row.connection_id);
         diff.match_round =
-            cache.apply_diff_to_table::<TabMatchRoundPlayer>("match_round", &self.match_round);
-        diff.match_round_ext = cache.apply_diff_to_table::<TabMatchRoundPlayerExt>(
-            "match_round_ext",
-            &self.match_round_ext,
-        );
+            cache.apply_diff_to_table::<MatchRoundPlayer>("match_round", &self.match_round);
+        diff.match_round_ext = cache
+            .apply_diff_to_table::<MatchRoundPlayerExt>("match_round_ext", &self.match_round_ext);
         diff.match_round_users = cache
             .apply_diff_to_table::<UserV1>("match_round_users", &self.match_round_users)
             .with_updates_by_pk(|row| &row.id);
@@ -1274,7 +1272,7 @@ impl __sdk::DbUpdate for DbUpdate {
             "raw_server_player_destination",
             &self.raw_server_player_destination,
         );
-        diff.temp_match_leaderboard = cache.apply_diff_to_table::<TabMatchRoundPlayer>(
+        diff.temp_match_leaderboard = cache.apply_diff_to_table::<MatchRoundPlayer>(
             "temp_match_leaderboard",
             &self.temp_match_leaderboard,
         );
@@ -1492,8 +1490,8 @@ pub struct AppliedDiff<'r> {
     competition: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
     competition_connection_data: __sdk::TableAppliedDiff<'r, ConnectionData>,
-    match_round: __sdk::TableAppliedDiff<'r, TabMatchRoundPlayer>,
-    match_round_ext: __sdk::TableAppliedDiff<'r, TabMatchRoundPlayerExt>,
+    match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
+    match_round_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
     match_round_users: __sdk::TableAppliedDiff<'r, UserV1>,
     match_state: __sdk::TableAppliedDiff<'r, MatchState>,
     my_connections: __sdk::TableAppliedDiff<'r, CompetitionConnection>,
@@ -1507,7 +1505,7 @@ pub struct AppliedDiff<'r> {
     raw_server_method_call: __sdk::TableAppliedDiff<'r, RawServerMethodCall>,
     raw_server_permitted_players: __sdk::TableAppliedDiff<'r, PermittedPlayer>,
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
-    temp_match_leaderboard: __sdk::TableAppliedDiff<'r, TabMatchRoundPlayer>,
+    temp_match_leaderboard: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
     temp_registration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
     this_raw_server: __sdk::TableAppliedDiff<'r, RawServerV1>,
     user_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
@@ -1547,12 +1545,12 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.competition_connection_data,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<TabMatchRoundPlayer>(
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
             "match_round",
             &self.match_round,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<TabMatchRoundPlayerExt>(
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayerExt>(
             "match_round_ext",
             &self.match_round_ext,
             event,
@@ -1610,7 +1608,7 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.raw_server_player_destination,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<TabMatchRoundPlayer>(
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
             "temp_match_leaderboard",
             &self.temp_match_leaderboard,
             event,

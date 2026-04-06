@@ -7,7 +7,7 @@ use crate::{
     raw_server::occupation::TabRawServerOccupationWrite,
     tm_match::{
         leaderboard::{
-            TabMatchRoundPlayer, TabMatchRoundPlayerExt, tab_match_round_player,
+            MatchRoundPlayer, MatchRoundPlayerExt, tab_match_round_player,
             tab_match_round_player_ext,
         },
         state::tab_match_state,
@@ -47,10 +47,10 @@ pub(crate) fn handle_match_event(
                 let player = ctx
                     .db
                     .tab_match_round_player()
-                    .try_insert(TabMatchRoundPlayer::new(match_id, user_id, round))?;
+                    .try_insert(MatchRoundPlayer::new(match_id, user_id, round))?;
                 ctx.db
                     .tab_match_round_player_ext()
-                    .try_insert(TabMatchRoundPlayerExt::new(
+                    .try_insert(MatchRoundPlayerExt::new(
                         player.id,
                         match_id,
                         user_id,

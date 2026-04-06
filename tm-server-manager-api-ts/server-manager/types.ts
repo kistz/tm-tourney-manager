@@ -488,6 +488,27 @@ export const MatchEvent = __t.object("MatchEvent", {
 });
 export type MatchEvent = __Infer<typeof MatchEvent>;
 
+export const MatchRoundPlayer = __t.object("MatchRoundPlayer", {
+  id: __t.u32(),
+  userId: __t.u32(),
+  matchId: __t.u32(),
+  time: __t.i32(),
+  points: __t.i32(),
+  round: __t.u16(),
+});
+export type MatchRoundPlayer = __Infer<typeof MatchRoundPlayer>;
+
+export const MatchRoundPlayerExt = __t.object("MatchRoundPlayerExt", {
+  get roundActions() {
+    return __t.array(PlayerAction);
+  },
+  userId: __t.u32(),
+  id: __t.u32(),
+  matchId: __t.u32(),
+  round: __t.u16(),
+});
+export type MatchRoundPlayerExt = __Infer<typeof MatchRoundPlayerExt>;
+
 export const MatchRoundReplay = __t.object("MatchRoundReplay", {
   mapId: __t.u32(),
   matchId: __t.u32(),
@@ -1147,27 +1168,6 @@ export const TabConnectionAction = __t.object("TabConnectionAction", {
   },
 });
 export type TabConnectionAction = __Infer<typeof TabConnectionAction>;
-
-export const TabMatchRoundPlayer = __t.object("TabMatchRoundPlayer", {
-  id: __t.u32(),
-  userId: __t.u32(),
-  matchId: __t.u32(),
-  time: __t.i32(),
-  points: __t.i32(),
-  round: __t.u16(),
-});
-export type TabMatchRoundPlayer = __Infer<typeof TabMatchRoundPlayer>;
-
-export const TabMatchRoundPlayerExt = __t.object("TabMatchRoundPlayerExt", {
-  get roundActions() {
-    return __t.array(PlayerAction);
-  },
-  userId: __t.u32(),
-  id: __t.u32(),
-  matchId: __t.u32(),
-  round: __t.u16(),
-});
-export type TabMatchRoundPlayerExt = __Infer<typeof TabMatchRoundPlayerExt>;
 
 export const TabPlayerDestination = __t.object("TabPlayerDestination", {
   competitionId: __t.u32(),

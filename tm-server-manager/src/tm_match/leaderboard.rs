@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use spacetimedb::{AnonymousViewContext, SpacetimeType, Uuid, table, view};
+use spacetimedb::{AnonymousViewContext, SpacetimeType, table, view};
 
-use crate::{tm_match::state::tab_match_state__view, user::UserRead};
+use crate::tm_match::state::tab_match_state__view;
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub(super) enum PlayerAction {
@@ -32,7 +32,7 @@ pub(super) struct PlayerActionCheckpoint {
     index(accessor=match_round_player, hash(columns=[match_id,round,user_id]))
 )]
 #[derive(Debug, Clone, Copy)]
-pub struct TabMatchRoundPlayer {
+pub struct MatchRoundPlayer {
     #[auto_inc]
     #[primary_key]
     pub id: u32,
@@ -48,7 +48,7 @@ pub struct TabMatchRoundPlayer {
     round: u16,
 }
 
-impl TabMatchRoundPlayer {
+impl MatchRoundPlayer {
     pub fn new(match_id: u32, user_id: u32, round: u16) -> Self {
         Self {
             user_id,
@@ -74,7 +74,7 @@ impl TabMatchRoundPlayer {
     index(accessor=match_round_range, btree(columns=[match_id,round])),
     index(accessor=match_round_player, hash(columns=[match_id,round,user_id]))
 )]
-pub struct TabMatchRoundPlayerExt {
+pub struct MatchRoundPlayerExt {
     round_actions: Vec<PlayerAction>,
 
     user_id: u32,
@@ -84,7 +84,7 @@ pub struct TabMatchRoundPlayerExt {
     round: u16,
 }
 
-impl TabMatchRoundPlayerExt {
+impl MatchRoundPlayerExt {
     pub fn new(id: u32, match_id: u32, user_id: u32, round: u16, server_time: u32) -> Self {
         Self {
             user_id,
@@ -147,35 +147,10 @@ impl TabMatchRoundPlayerExt {
     }
 }
 
-/* #[derive(Debug, SpacetimeType, Clone, Copy)]
-pub struct MatchRoundPlayer {
-    pub account_id: Uuid,
-
-    id: u32,
-    // We can most likely omit this match_id because we already query after the match so it should be obvious.
-    // For now its not really an issue but maybe this can be replaced with something else.
-    match_id: u32,
-    // We can most likely omit this. maybe we could include the best match round time? -> then we should rename.
-    time: i32,
-    // The points of the round.
-    score: i32,
-
-    round: u16,
-    position: u16,
-} */
-
-/* #[derive(Debug, SpacetimeType, Clone)]
-pub struct MatchRoundPlayerExt {
-    round_actions: Vec<PlayerAction>,
-    id: u32,
-    match_id: u32,
-    round: u16,
-} */
-
 #[view(accessor=temp_match_leaderboard,public)]
 fn temp_match_leaderboard(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
-) -> Vec<TabMatchRoundPlayer> {
+) -> Vec<MatchRoundPlayer> {
     ctx.match_leaderboard(51, 0)
 }
 
@@ -185,7 +160,7 @@ fn temp_match_leaderboard(
 #[view(accessor=match_round,public)]
 pub fn match_round(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
-) -> Vec<TabMatchRoundPlayer> {
+) -> Vec<MatchRoundPlayer> {
     let match_id = 51u32;
     let mut round = 0u16;
 
@@ -201,20 +176,10 @@ pub fn match_round(
         .tab_match_round_player()
         .match_round()
         .filter((match_id, round))
-        /* .map(|p| TabMatchRoundPlayer {
-            account_id: ctx.user_account_from_id(p.user_id),
-            match_id,
-            id: p.id,
-            time: p.time,
-            score: p.points,
-            round: p.round,
-            position: 0,
-        }) */
         .collect::<Vec<_>>();
+    // This is part of the contracft of the function!!!
+    // For calls in the module e.g. depending nodes requesting results. it needs to be sorted correctly.
     standings.sort_by_key(|v| v.points);
-    /* for (position, entry) in standings.iter_mut().enumerate() {
-        entry.position = (position + 1) as u16;
-    } */
     standings
 }
 
@@ -222,7 +187,7 @@ pub fn match_round(
 #[view(accessor=match_round_ext,public)]
 pub fn match_round_ext(
     ctx: &AnonymousViewContext, /* match_id: u32, round: u16 */
-) -> Vec<TabMatchRoundPlayerExt> {
+) -> Vec<MatchRoundPlayerExt> {
     let match_id = 51u32;
     let mut round = 0u16;
 
@@ -237,24 +202,18 @@ pub fn match_round_ext(
         .tab_match_round_player_ext()
         .match_round()
         .filter((match_id, round))
-        /* .map(|p| TabMatchRoundPlayerExt {
-            round_actions: p.round_actions,
-            id: p.id,
-            match_id,
-            round,
-        }) */
         .collect()
 }
 
 pub(crate) trait MatchLeadearboardRead {
-    fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<TabMatchRoundPlayer>;
+    fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
 }
 impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
     /// Accumulates points of all previous rounds.
     /// Round 0 is giving you a live view.
     /// If you want points from individual rounds use the match_round view instead.
-    fn match_leaderboard(&self, match_id: u32, mut round: u16) -> Vec<TabMatchRoundPlayer> {
-        let entries: Vec<TabMatchRoundPlayer> = if round == 0 {
+    fn match_leaderboard(&self, match_id: u32, mut round: u16) -> Vec<MatchRoundPlayer> {
+        let entries: Vec<MatchRoundPlayer> = if round == 0 {
             //TODO if the match is finished then do inclusive range.
             let Some(state) = self
                 .db_read_only()
@@ -278,7 +237,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 .collect()
         };
 
-        let mut map = HashMap::<u32, TabMatchRoundPlayer>::new();
+        let mut map = HashMap::<u32, MatchRoundPlayer>::new();
 
         for entry in entries {
             map.entry(entry.user_id)
@@ -292,23 +251,11 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 .or_insert(entry);
         }
 
-        let mut standings = map
-            .into_values()
-            /* .map(|p| MatchRoundPlayer {
-                account_id: self.user_account_from_id(p.user_id),
-                id: p.id,
-                match_id,
-                time: p.time,
-                score: p.points,
-                round: p.round,
-                position: 0,
-            }) */
-            .collect::<Vec<_>>();
+        let mut standings = map.into_values().collect::<Vec<_>>();
 
+        // This is part of the contracft of the function!!!
+        // For calls in the module e.g. depending nodes requesting results. it needs to be sorted correctly.
         standings.sort_by_key(|v| v.points);
-        /* for (position, entry) in standings.iter_mut().enumerate() {
-            entry.position = (position + 1) as u16;
-        } */
         standings
     }
 }

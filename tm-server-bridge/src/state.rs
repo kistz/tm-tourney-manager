@@ -128,28 +128,28 @@ pub async fn setup_state_synchronization() {
     });
 
     server.on_start_server_start(async |event: &StartServer| {
-        if event.mode.updated {
-            let config = unsafe {
-                std::mem::transmute::<
-                    tm_server_manager_api_rs::ServerConfig,
-                    tm_server_controller::config::ServerConfig,
-                >(SERVER_METADATA.wait().lock().await.config.clone())
-            };
+        //if event.mode.updated {
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(SERVER_METADATA.wait().lock().await.config.clone())
+        };
 
-            //We need to load the settings again because we changed the script.
-            if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
-                tracing::error!("{error}")
-            };
-        } else {
+        //We need to load the settings again because we changed the script.
+        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+            tracing::error!("{error}")
+        };
+        /*  } else {
             //We should be fine because the settings already loaded correctly.
-        }
+        } */
     });
 
     server.on_start_map_end(async |map: &StartMap| {
         //We need to load the settings again because we changed the script.
-        if !map.restarted {
+        /* if !map.restarted {
             return;
-        }
+        } */
 
         let config = unsafe {
             std::mem::transmute::<
