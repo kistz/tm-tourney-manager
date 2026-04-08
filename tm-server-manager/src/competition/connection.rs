@@ -178,15 +178,12 @@ pub fn connection_create(
         ));
     }
 
-    log::error!("{set:?}");
-
     let mut map = HashMap::with_capacity(set.len());
     let mut graph = petgraph::graph::Graph::new();
     for set_entry in set.into_iter() {
         let index = graph.add_node(set_entry);
         map.insert(set_entry, index);
     }
-    log::error!("{map:?}");
 
     let edge_extension = competition_connections
         .into_iter()
@@ -201,7 +198,6 @@ pub fn connection_create(
 
     graph.extend_with_edges(edge_extension);
 
-    log::error!("{graph:?}");
     let mut graph = Acyclic::try_from_graph(graph).map_err(|e| format!("{e:?}"))?;
     graph
         .try_add_edge(*map.get(&origin).unwrap(), *map.get(&target).unwrap(), kind)
