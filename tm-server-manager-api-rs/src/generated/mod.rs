@@ -49,6 +49,7 @@ pub mod end_server_type;
 pub mod end_turn_end_type;
 pub mod end_turn_start_type;
 pub mod env_type;
+pub mod event_raw_server_state_type;
 pub mod event_type;
 pub mod finish_timeout_type;
 pub mod give_up_type;
@@ -65,8 +66,8 @@ pub mod maps_per_match_type;
 pub mod match_assign_server_reducer;
 pub mod match_configured_reducer;
 pub mod match_create_reducer;
-pub mod match_delete_reducer;
 pub mod match_event_type;
+pub mod match_override_config_reducer;
 pub mod match_round_ext_table;
 pub mod match_round_player_ext_type;
 pub mod match_round_player_type;
@@ -79,7 +80,6 @@ pub mod match_state_type;
 pub mod match_status_type;
 pub mod match_template_create_reducer;
 pub mod match_try_start_reducer;
-pub mod match_update_config_reducer;
 pub mod match_update_pre_config_reducer;
 pub mod match_v_1_type;
 pub mod member_add_reducer;
@@ -256,6 +256,7 @@ pub use end_server_type::EndServer;
 pub use end_turn_end_type::EndTurnEnd;
 pub use end_turn_start_type::EndTurnStart;
 pub use env_type::Env;
+pub use event_raw_server_state_type::EventRawServerState;
 pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
 pub use give_up_type::GiveUp;
@@ -272,8 +273,8 @@ pub use maps_per_match_type::MapsPerMatch;
 pub use match_assign_server_reducer::match_assign_server;
 pub use match_configured_reducer::match_configured;
 pub use match_create_reducer::match_create;
-pub use match_delete_reducer::match_delete;
 pub use match_event_type::MatchEvent;
+pub use match_override_config_reducer::match_override_config;
 pub use match_round_ext_table::*;
 pub use match_round_player_ext_type::MatchRoundPlayerExt;
 pub use match_round_player_type::MatchRoundPlayer;
@@ -286,7 +287,6 @@ pub use match_state_type::MatchState;
 pub use match_status_type::MatchStatus;
 pub use match_template_create_reducer::match_template_create;
 pub use match_try_start_reducer::match_try_start;
-pub use match_update_config_reducer::match_update_config;
 pub use match_update_pre_config_reducer::match_update_pre_config;
 pub use match_v_1_type::MatchV1;
 pub use member_add_reducer::member_add;
@@ -487,8 +487,9 @@ pub enum Reducer {
         parent_id: u32,
         with_template: u32,
     },
-    MatchDelete {
-        match_id: u32,
+    MatchOverrideConfig {
+        id: u32,
+        config: ServerConfig,
     },
     MatchSetPreparation {
         match_id: u32,
@@ -499,10 +500,6 @@ pub enum Reducer {
     },
     MatchTryStart {
         match_id: u32,
-    },
-    MatchUpdateConfig {
-        id: u32,
-        config: ServerConfig,
     },
     MatchUpdatePreConfig {
         id: u32,
@@ -659,11 +656,10 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
             Reducer::MatchCreate { .. } => "match_create",
-            Reducer::MatchDelete { .. } => "match_delete",
+            Reducer::MatchOverrideConfig { .. } => "match_override_config",
             Reducer::MatchSetPreparation { .. } => "match_set_preparation",
             Reducer::MatchTemplateCreate { .. } => "match_template_create",
             Reducer::MatchTryStart { .. } => "match_try_start",
-            Reducer::MatchUpdateConfig { .. } => "match_update_config",
             Reducer::MatchUpdatePreConfig { .. } => "match_update_pre_config",
             Reducer::MemberAdd { .. } => "member_add",
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
@@ -811,9 +807,10 @@ impl __sdk::Reducer for Reducer {
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
             }),
-            Reducer::MatchDelete { match_id } => {
-                __sats::bsatn::to_vec(&match_delete_reducer::MatchDeleteArgs {
-                    match_id: match_id.clone(),
+            Reducer::MatchOverrideConfig { id, config } => {
+                __sats::bsatn::to_vec(&match_override_config_reducer::MatchOverrideConfigArgs {
+                    id: id.clone(),
+                    config: config.clone(),
                 })
             }
             Reducer::MatchSetPreparation { match_id } => {
@@ -830,12 +827,6 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchTryStart { match_id } => {
                 __sats::bsatn::to_vec(&match_try_start_reducer::MatchTryStartArgs {
                     match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchUpdateConfig { id, config } => {
-                __sats::bsatn::to_vec(&match_update_config_reducer::MatchUpdateConfigArgs {
-                    id: id.clone(),
-                    config: config.clone(),
                 })
             }
             Reducer::MatchUpdatePreConfig { id, config_id } => {
@@ -1822,10 +1813,6 @@ impl DbConnection {
     pub async fn run_async(&self) -> __sdk::Result<()> {
         self.imp.run_async().await
     }
-
-    pub fn custom_new(imp: __sdk::DbContextImpl<RemoteModule>) -> Self {
-        __sdk::DbConnection::new(imp)
-    }
 }
 
 impl __sdk::DbConnection for DbConnection {
@@ -1883,19 +1870,19 @@ impl __sdk::SubscriptionHandle for SubscriptionHandle {
 /// either a [`DbConnection`] or an [`EventContext`] and operate on either.
 pub trait RemoteDbContext:
     __sdk::DbContext<
-        DbView = RemoteTables,
-        Reducers = RemoteReducers,
-        SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
-    >
+    DbView = RemoteTables,
+    Reducers = RemoteReducers,
+    SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
+>
 {
 }
 impl<
-    Ctx: __sdk::DbContext<
+        Ctx: __sdk::DbContext<
             DbView = RemoteTables,
             Reducers = RemoteReducers,
             SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
         >,
-> RemoteDbContext for Ctx
+    > RemoteDbContext for Ctx
 {
 }
 
@@ -2207,12 +2194,6 @@ pub struct ErrorContext {
     /// The event which caused these callbacks to run.
     pub event: Option<__sdk::Error>,
     imp: __sdk::DbContextImpl<RemoteModule>,
-}
-
-impl ErrorContext {
-    pub fn imp(&self) -> __sdk::DbContextImpl<RemoteModule> {
-        self.imp.clone()
-    }
 }
 
 impl __sdk::AbstractEventContext for ErrorContext {

@@ -1,10 +1,12 @@
-use spacetimedb::{DbContext, Local, SpacetimeType, Table, Uuid, ViewContext, table, view};
+use spacetimedb::{DbContext, Local, SpacetimeType, Uuid, ViewContext, table, view};
 
 use crate::{
     authorization::Authorization,
-    competition::node::{NodeHandle, NodeRead},
+    competition::{
+        CompetitionRead,
+        node::{NodeHandle, NodeRead},
+    },
     raw_server::{occupation::TabRawServerOccupationRead, tab_raw_server__view},
-    tm_match::tab_match__view,
     user::UserRead,
 };
 
@@ -21,7 +23,7 @@ pub struct TabPlayerDestination {
     // Destination for the player
     #[index(hash)]
     pub destination_server_id: u32,
-    // So this would need to be 0 to move all players?
+
     pub user_id: u32,
 }
 
@@ -45,37 +47,44 @@ fn raw_server_player_destination(ctx: &ViewContext) -> Vec<PlayerDestination> {
         return Vec::new();
     };
 
-    ctx.db
-        .tab_player_destination()
-        .competition_id()
-        .filter(competition_id)
-        .filter(|p| p.destination_server_id != this_server.id)
-        .map(|r| {
-            if r.user_id == 0 {
-                PlayerDestination {
-                    account_id: Uuid::MAX,
-                    server_account_id: ctx
-                        .db
-                        .tab_raw_server()
-                        .id()
-                        .find(r.destination_server_id)
-                        .unwrap()
-                        .server_account_id,
-                }
-            } else {
-                PlayerDestination {
-                    account_id: ctx.user_account_from_id(r.user_id),
-                    server_account_id: ctx
-                        .db
-                        .tab_raw_server()
-                        .id()
-                        .find(r.destination_server_id)
-                        .unwrap()
-                        .server_account_id,
-                }
-            }
-        })
-        .collect()
+    let tree = ctx.competition_tree(competition_id);
+
+    let mut destinations = Vec::new();
+    for competition_id in tree {
+        destinations.extend(
+            ctx.db
+                .tab_player_destination()
+                .competition_id()
+                .filter(competition_id)
+                .filter(|p| p.destination_server_id != this_server.id)
+                .map(|r| {
+                    if r.user_id == 0 {
+                        PlayerDestination {
+                            account_id: Uuid::MAX,
+                            server_account_id: ctx
+                                .db
+                                .tab_raw_server()
+                                .id()
+                                .find(r.destination_server_id)
+                                .unwrap()
+                                .server_account_id,
+                        }
+                    } else {
+                        PlayerDestination {
+                            account_id: ctx.user_account_from_id(r.user_id),
+                            server_account_id: ctx
+                                .db
+                                .tab_raw_server()
+                                .id()
+                                .find(r.destination_server_id)
+                                .unwrap()
+                                .server_account_id,
+                        }
+                    }
+                }),
+        )
+    }
+    destinations
 }
 
 pub(crate) trait TabRawServerDestinationRead {}
@@ -87,6 +96,7 @@ pub(crate) trait TabRawServerDestinationWrite: TabRawServerDestinationRead {
 impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String> {
         let players = self.node_permitted_players_input(node);
+        //TODO
         for player in players {
             /* self.db()
             .tab_player_destination()

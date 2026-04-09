@@ -1,7 +1,7 @@
 use spacetimedb::{CaseConversionPolicy, ReducerContext, Uuid};
 
 use crate::{
-    raw_server::tab_raw_server,
+    raw_server::{TabRawServerWrite, tab_raw_server},
     user::{UserV1 as UserStruct, UserWrite},
 };
 
@@ -98,7 +98,6 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
 #[spacetimedb::reducer(client_disconnected)]
 fn client_disconnected(ctx: &ReducerContext) {
     if let Some(mut server) = ctx.db.tab_raw_server().identity().find(ctx.sender()) {
-        server.set_offline();
-        ctx.db.tab_raw_server().id().update(server);
+        ctx.raw_server_disconnected(server);
     }
 }

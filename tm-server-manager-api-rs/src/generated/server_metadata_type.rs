@@ -11,6 +11,7 @@ use super::server_config_type::ServerConfig;
 pub struct ServerMetadata {
     pub config: ServerConfig,
     pub open: bool,
+    pub force_restart: bool,
 }
 
 impl __sdk::InModule for ServerMetadata {
@@ -23,6 +24,7 @@ impl __sdk::InModule for ServerMetadata {
 pub struct ServerMetadataCols {
     pub config: __sdk::__query_builder::Col<ServerMetadata, ServerConfig>,
     pub open: __sdk::__query_builder::Col<ServerMetadata, bool>,
+    pub force_restart: __sdk::__query_builder::Col<ServerMetadata, bool>,
 }
 
 impl __sdk::__query_builder::HasCols for ServerMetadata {
@@ -31,6 +33,7 @@ impl __sdk::__query_builder::HasCols for ServerMetadata {
         ServerMetadataCols {
             config: __sdk::__query_builder::Col::new(table_name, "config"),
             open: __sdk::__query_builder::Col::new(table_name, "open"),
+            force_restart: __sdk::__query_builder::Col::new(table_name, "force_restart"),
         }
     }
 }

@@ -18,4 +18,5 @@ export default __t.row({
   warmup: __t.u16(),
   isWarmup: __t.bool().name("is_warmup"),
   paused: __t.bool(),
+  preparation: __t.bool(),
 });

@@ -86,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .expect("Environment variable: TM_MASTERSERVER_LOGIN MUST be set");
     let tm_server_password = std::env::var("TM_MASTERSERVER_PASSWORD")
         .expect("Environment variable: TM_MASTERSERVER_password MUST be set");
-    let tm_account_id = std::env::var("TM_ACCOUNT_ID")
+    std::env::var("TM_ACCOUNT_ID")
         .expect("Environment variable: TM_ACCOUNT_ID MUST be set at the moment.
         This will be the account where the server will be available under and can be obtained from e.g. trackmania.io. 
         We hope to make this optional in the future but depend on a change from nadeo on that sooo good luck ^^");
@@ -127,30 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         }
     }
 
-    // Connect to SpacetimeDB
-    {
-        let spacetime = connect_to_db();
-        let tm_account_id = Uuid::parse_str(&tm_account_id)?;
-
-        _ = SPACETIME.set(spacetime);
-
-        tokio::spawn(async move {
-            let connection = SPACETIME.wait();
-            loop {
-                _ = connection.run_async().await;
-            }
-        });
-
-        SPACETIME
-            .wait()
-            .procedures()
-            .login_as_server_async(tm_server_login, tm_server_password, tm_account_id)
-            .await
-            .unwrap()
-            .expect("Server could not be authenticated successfully");
-
-        tracing::info!("Successfully connected to tmservers.live!");
-    }
+    spacetime_connect(false).await;
 
     // Initial Configuration for the Trackmania server connection.
     {
@@ -177,36 +154,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     setup_chat().await;
 
     // Initialize state subscriptions for the server.
-    {
-        let spacetime = SPACETIME.wait();
-        _ = spacetime
-            .subscription_builder()
-            .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
-            .on_error(|_, error| tracing::error!("Subscription failed: {error:?}"))
-            .add_query(|ctx| ctx.from.raw_server_method_call())
-            .add_query(|ctx| ctx.from.raw_server_config())
-            .add_query(|ctx| ctx.from.raw_server_permitted_players())
-            .add_query(|ctx| ctx.from.raw_server_player_destination())
-            .subscribe();
-
-        //TODO switch to this_server if on_update callbacks are there
-        spacetime.db.raw_server_config().on_insert(metadata_update);
-
-        spacetime
-            .db
-            .raw_server_permitted_players()
-            .on_delete(|_, _| check_allowed_players());
-
-        spacetime
-            .db
-            .raw_server_method_call()
-            .on_insert(method_call_received);
-
-        spacetime
-            .db
-            .raw_server_player_destination()
-            .on_insert(|_, _| check_players_have_destination());
-    }
+    {}
 
     match signal::ctrl_c().await {
         Ok(()) => {}
@@ -230,9 +178,69 @@ fn on_stdb_disconnected(ctx: &ErrorContext, err: Option<Error>) {
             "Forcefully disconnected from SpacetimeDB with Error: {}",
             err
         );
-        spacetime_disconnected();
-        let connection = DbConnection::custom_new(ctx.imp());
-    } else {
-        tracing::error!("Disconnected normally.");
+        //let connection = DbConnection::custom_new(ctx.imp());
+        return;
     }
+    tracing::error!("Spacetime database exited.");
+    spacetime_disconnected();
+}
+
+async fn spacetime_connect(force_ful: bool) {
+    let spacetime = connect_to_db();
+
+    let tm_server_login = std::env::var("TM_MASTERSERVER_LOGIN").unwrap();
+    let tm_server_password = std::env::var("TM_MASTERSERVER_PASSWORD").unwrap();
+    let tm_account_id = std::env::var("TM_ACCOUNT_ID").unwrap();
+    let tm_account_id = Uuid::parse_str(&tm_account_id).unwrap();
+
+    _ = SPACETIME.set(spacetime);
+
+    tokio::spawn(async move {
+        let connection = SPACETIME.wait();
+        loop {
+            _ = connection.run_async().await;
+        }
+    });
+
+    SPACETIME
+        .wait()
+        .procedures()
+        .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, false)
+        .await
+        .unwrap()
+        .expect("Server could not be authenticated successfully");
+
+    tracing::info!("Successfully connected to tmservers.live!");
+
+    // Initialize state subscriptions for the server.
+
+    let spacetime = SPACETIME.wait();
+
+    _ = spacetime
+        .subscription_builder()
+        .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
+        .on_error(|_, error| tracing::error!("Subscription failed: {error:?}"))
+        .add_query(|ctx| ctx.from.raw_server_method_call())
+        .add_query(|ctx| ctx.from.raw_server_config())
+        .add_query(|ctx| ctx.from.raw_server_permitted_players())
+        .add_query(|ctx| ctx.from.raw_server_player_destination())
+        .subscribe();
+
+    //TODO switch to this_server if on_update callbacks are there
+    spacetime.db.raw_server_config().on_insert(metadata_update);
+
+    spacetime
+        .db
+        .raw_server_permitted_players()
+        .on_delete(|_, _| check_allowed_players());
+
+    spacetime
+        .db
+        .raw_server_method_call()
+        .on_insert(method_call_received);
+
+    spacetime
+        .db
+        .raw_server_player_destination()
+        .on_insert(|_, _| check_players_have_destination());
 }

@@ -19,4 +19,5 @@ export default __t.row({
     return ServerConfig;
   },
   open: __t.bool(),
+  forceRestart: __t.bool().name("force_restart"),
 });

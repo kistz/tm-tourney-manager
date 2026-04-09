@@ -14,5 +14,6 @@ export const params = {
   login: __t.string(),
   password: __t.string(),
   userAccountId: __t.uuid(),
+  requestRecovery: __t.bool(),
 };
 export const returnType = __t.result(__t.unit(), __t.string())

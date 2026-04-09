@@ -17,6 +17,7 @@ use crate::{
         tab_raw_server,
     },
     tm_match::{
+        leaderboard::{tab_match_round_player, tab_match_round_player_ext},
         state::{MatchState, tab_match_state},
         template::match_template_instantiate,
     },
@@ -98,8 +99,13 @@ impl MatchV1 {
             MatchStatus::Locked => {
                 panic!("should not ask for a config if match is locked.")
             }
+            // This should get conceptually treated as preparing.
             MatchStatus::Recovery => {
-                panic!("should not ask for a config if match is in recovery.")
+                if self.pre_config != 0 {
+                    self.pre_config
+                } else {
+                    self.config
+                }
             }
         }
     }
@@ -134,6 +140,10 @@ impl MatchV1 {
 
     pub(crate) fn end_match(&mut self) {
         self.status = MatchStatus::Ended;
+    }
+
+    pub(crate) fn enter_recovery(&mut self) {
+        self.status = MatchStatus::Recovery;
     }
 
     pub(crate) fn force_restart(&self) -> bool {
@@ -367,23 +377,19 @@ pub fn authorized_match_set_preparation(ctx: &ReducerContext, match_id: u32) -> 
         .is_some()
     {
         tm_match.status = MatchStatus::Preparation;
-        ctx.db.tab_match().id().update(tm_match);
-
-        ctx.db
-            .tab_match_state()
-            .try_insert(MatchState::new(match_id))?;
     } else if tm_match.auto_provision_server {
         ctx.raw_server_pool_assign(NodeHandle::MatchV1(match_id))?;
 
         tm_match.status = MatchStatus::Preparation;
-        ctx.db.tab_match().id().update(tm_match);
-
-        ctx.db
-            .tab_match_state()
-            .try_insert(MatchState::new(match_id))?;
     } else {
         return Err("Match has auto provisioning turned off and no server assigned! Cannot start the match!".into());
     };
+
+    ctx.db.tab_match().id().update(tm_match);
+
+    let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
+    state.set_live();
+    ctx.db.tab_match_state().match_id().update(state);
 
     ctx.destination_claim(NodeHandle::MatchV1(match_id))?;
 
@@ -421,14 +427,17 @@ pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String
     tm_match.status = MatchStatus::Live;
     ctx.db.tab_match().id().update(tm_match);
 
-    ctx.db
+    let result = ctx
+        .db
         .tab_match_state()
-        .try_insert(MatchState::new(match_id))?;
+        .try_insert(MatchState::new(match_id));
+    log::error!("{result:?}");
 
     Ok(())
 }
 
-#[reducer]
+//TODO restore functionality.
+/* #[reducer]
 pub fn match_delete(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
     let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
         return Err(format!("Match with id: {match_id} not found."));
@@ -447,7 +456,7 @@ pub fn match_delete(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
     ctx.node_delete(handle)?;
 
     Ok(())
-}
+} */
 
 #[view(accessor=my_matches,public)]
 fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1> {
@@ -466,11 +475,50 @@ fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1
     ctx.from.tab_match()
 }
 
-/* pub(crate) trait MatchRead {
-}
-impl<Db: spacetimedb::DbContext> MatchRead for Db {
+pub(crate) trait MatchRead {}
+impl<Db: spacetimedb::DbContext> MatchRead for Db {}
 
+pub(crate) trait MatchWrite: MatchRead {
+    fn match_enter_recovery(&self, match_id: u32);
+}
+impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
+    fn match_enter_recovery(&self, match_id: u32) {
+        //SAFETY: if a occupation is inserted it must also exist.
+        let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
+
+        if tm_match.is_live() {
+            log::error!("MATCH {} ENTERING RECOVERY", tm_match.id);
+
+            tm_match.enter_recovery();
+            self.db().tab_match().id().update(tm_match);
+
+            //SAFETY: Match is live so have to have a state.
+            let mut state = self
+                .db()
+                .tab_match_state()
+                .match_id()
+                .find(match_id)
+                .unwrap();
+
+            state.set_pause(true);
+
+            self.db()
+                .tab_match_round_player()
+                .match_round()
+                .delete((match_id, state.get_round()));
+            self.db()
+                .tab_match_round_player_ext()
+                .match_round()
+                .delete((match_id, state.get_round()));
+
+            self.db().tab_match_state().match_id().update(state);
+        }
+    }
 }
 
-pub(crate) trait MatchWrite: MatchRead {}
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {} */
+// How would a recovery flow look like?
+// # Spacetime disconnects from bridge.
+// -> Bridge sets match in pause mode.
+// -> on_disconnect reducer runs and sets the match in recovery mode.
+// ->  -> first decision because this could have been either the fault of the server itself or because the module restarted.
+// -> -> Does this make a difference? -> We could insert a timer to reprovision the match? because in case of the databases fault the match should eagerly reconnect?

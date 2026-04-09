@@ -277,7 +277,9 @@ pub fn check_players_have_destination() {
 }
 
 pub fn spacetime_disconnected() {
-    spawn_blocking(async move || {
+    tracing::info!("start.");
+    /* spawn_blocking */
+    tokio::spawn(/* async move || */ async {
         let server = TRACKMANIA.wait();
         if let Err(err) = server.pause_set_active(true).await {
             tracing::error!(
@@ -285,11 +287,13 @@ pub fn spacetime_disconnected() {
                 err
             )
         };
+        tracing::info!("Server should be paused.");
         if let Err(err) = server
-            .chat_send_server_massage("[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
+            .chat_send_server_massage("$f00[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
             .await
         {
             tracing::error!("Error sending disconnect message. Reason: {}", err)
         };
     });
+    tracing::info!("what");
 }

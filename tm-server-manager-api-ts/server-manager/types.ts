@@ -397,6 +397,16 @@ export const Event = __t.enum("Event", {
 });
 export type Event = __Infer<typeof Event>;
 
+export const EventRawServerState = __t.object("EventRawServerState", {
+  get config() {
+    return ServerConfig;
+  },
+  open: __t.bool(),
+  recoverySection: __t.bool(),
+  forceRestart: __t.bool(),
+});
+export type EventRawServerState = __Infer<typeof EventRawServerState>;
+
 // The tagged union or sum type for the algebraic type `FinishTimeout`.
 export const FinishTimeout = __t.enum("FinishTimeout", {
   BasedOnMedal: __t.unit(),
@@ -525,6 +535,7 @@ export const MatchState = __t.object("MatchState", {
   warmup: __t.u16(),
   isWarmup: __t.bool(),
   paused: __t.bool(),
+  preparation: __t.bool(),
 });
 export type MatchState = __Infer<typeof MatchState>;
 
@@ -536,6 +547,7 @@ export const MatchStatus = __t.enum("MatchStatus", {
   Live: __t.unit(),
   Ended: __t.unit(),
   Locked: __t.unit(),
+  Recovery: __t.unit(),
 });
 export type MatchStatus = __Infer<typeof MatchStatus>;
 
@@ -551,6 +563,7 @@ export const MatchV1 = __t.object("MatchV1", {
   autoProvisionServer: __t.bool(),
   open: __t.bool(),
   template: __t.bool(),
+  dirty: __t.bool(),
 });
 export type MatchV1 = __Infer<typeof MatchV1>;
 
@@ -1069,6 +1082,7 @@ export const ServerMetadata = __t.object("ServerMetadata", {
     return ServerConfig;
   },
   open: __t.bool(),
+  forceRestart: __t.bool(),
 });
 export type ServerMetadata = __Infer<typeof ServerMetadata>;
 

@@ -8,46 +8,46 @@ use super::server_config_type::ServerConfig;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct MatchUpdateConfigArgs {
+pub(super) struct MatchOverrideConfigArgs {
     pub id: u32,
     pub config: ServerConfig,
 }
 
-impl From<MatchUpdateConfigArgs> for super::Reducer {
-    fn from(args: MatchUpdateConfigArgs) -> Self {
-        Self::MatchUpdateConfig {
+impl From<MatchOverrideConfigArgs> for super::Reducer {
+    fn from(args: MatchOverrideConfigArgs) -> Self {
+        Self::MatchOverrideConfig {
             id: args.id,
             config: args.config,
         }
     }
 }
 
-impl __sdk::InModule for MatchUpdateConfigArgs {
+impl __sdk::InModule for MatchOverrideConfigArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `match_update_config`.
+/// Extension trait for access to the reducer `match_override_config`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait match_update_config {
-    /// Request that the remote module invoke the reducer `match_update_config` to run as soon as possible.
+pub trait match_override_config {
+    /// Request that the remote module invoke the reducer `match_override_config` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`match_update_config:match_update_config_then`] to run a callback after the reducer completes.
-    fn match_update_config(&self, id: u32, config: ServerConfig) -> __sdk::Result<()> {
-        self.match_update_config_then(id, config, |_, _| {})
+    /// /// Use [`match_override_config:match_override_config_then`] to run a callback after the reducer completes.
+    fn match_override_config(&self, id: u32, config: ServerConfig) -> __sdk::Result<()> {
+        self.match_override_config_then(id, config, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `match_update_config` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `match_override_config` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn match_update_config_then(
+    fn match_override_config_then(
         &self,
         id: u32,
         config: ServerConfig,
@@ -58,8 +58,8 @@ pub trait match_update_config {
     ) -> __sdk::Result<()>;
 }
 
-impl match_update_config for super::RemoteReducers {
-    fn match_update_config_then(
+impl match_override_config for super::RemoteReducers {
+    fn match_override_config_then(
         &self,
         id: u32,
         config: ServerConfig,
@@ -69,6 +69,6 @@ impl match_update_config for super::RemoteReducers {
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(MatchUpdateConfigArgs { id, config }, callback)
+            .invoke_reducer_with_callback(MatchOverrideConfigArgs { id, config }, callback)
     }
 }

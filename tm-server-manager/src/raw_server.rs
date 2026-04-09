@@ -11,6 +11,8 @@ use crate::authorization::Authorization;
 use crate::competition::node::{NodeHandle, NodeRead};
 use crate::competition::server_pool::TabCompetitionServerPoolRead;
 use crate::raw_server::occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite};
+use crate::tm_match::state::tab_match_state;
+use crate::tm_match::{MatchWrite, tab_match};
 use crate::user::UserRead;
 
 pub mod config;
@@ -232,6 +234,7 @@ fn raw_server_verify(ctx: &ReducerContext, server_id: u32) -> Result<(), String>
 pub(crate) trait TabRawServerRead {}
 pub(crate) trait TabRawServerWrite: TabRawServerRead {
     fn raw_server_pool_assign(&self, node_handle: NodeHandle) -> Result<u32, String>;
+    fn raw_server_disconnected(&self, server: RawServerV1);
 }
 
 impl<Db: DbContext> TabRawServerRead for Db {}
@@ -248,6 +251,20 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
         self.raw_server_occupation_add(node_handle, server_id)?;
 
         Ok(server_id)
+    }
+
+    fn raw_server_disconnected(&self, mut server: RawServerV1) {
+        let server_id = server.id;
+        server.set_offline();
+        self.db().tab_raw_server().id().update(server);
+
+        if let Some(occupation) = self.raw_server_occupation(server_id)
+            && occupation.is_match()
+        {
+            let match_id = occupation.id();
+            
+            self.match_enter_recovery(match_id);
+        }
     }
 }
 

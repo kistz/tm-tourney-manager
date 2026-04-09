@@ -11,6 +11,7 @@ pub struct MatchState {
     warmup: u16,
     is_warmup: bool,
     paused: bool,
+    preparation: bool,
 }
 
 impl MatchState {
@@ -23,6 +24,7 @@ impl MatchState {
             is_warmup: false,
             paused: false,
             map_id: 0,
+            preparation: true,
         }
     }
 
@@ -36,6 +38,9 @@ impl MatchState {
 
     pub(crate) fn set_pause(&mut self, paused: bool) {
         self.paused = paused;
+        //rollback the current round.
+        //TODO check if this is correct.
+        self.round -= 1;
     }
 
     pub(crate) fn new_wu_round(&mut self) {
@@ -44,6 +49,10 @@ impl MatchState {
 
     pub(crate) fn new_round(&mut self) {
         self.round += 1;
+    }
+
+    pub(crate) fn set_live(&mut self) {
+        self.preparation = false;
     }
 
     pub(super) fn get_round(&self) -> u16 {

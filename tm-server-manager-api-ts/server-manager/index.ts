@@ -48,11 +48,10 @@ import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
 import MatchCreateReducer from "./match_create_reducer";
-import MatchDeleteReducer from "./match_delete_reducer";
+import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
 import MatchTemplateCreateReducer from "./match_template_create_reducer";
 import MatchTryStartReducer from "./match_try_start_reducer";
-import MatchUpdateConfigReducer from "./match_update_config_reducer";
 import MatchUpdatePreConfigReducer from "./match_update_pre_config_reducer";
 import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
@@ -325,11 +324,10 @@ const reducersSchema = __reducers(
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
   __reducerSchema("match_create", MatchCreateReducer),
-  __reducerSchema("match_delete", MatchDeleteReducer),
+  __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
   __reducerSchema("match_template_create", MatchTemplateCreateReducer),
   __reducerSchema("match_try_start", MatchTryStartReducer),
-  __reducerSchema("match_update_config", MatchUpdateConfigReducer),
   __reducerSchema("match_update_pre_config", MatchUpdatePreConfigReducer),
   __reducerSchema("member_add", MemberAddReducer),
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
