@@ -1,4 +1,4 @@
-use spacetimedb_sdk::{Table, Uuid};
+use spacetimedb_sdk::{Status, Table, Uuid};
 use tm_server_controller::{
     callbacks::TypedCallbacks,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
@@ -13,7 +13,7 @@ use tm_server_types::{
 };
 use tokio::task::spawn_blocking;
 
-use crate::{SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.wait();
@@ -23,15 +23,21 @@ pub async fn setup_state_synchronization() {
     // Sync all events to spacetimedb.
     server.on_event(|event| {
         let spacetime = SPACETIME.wait();
+        EVENT_CACHE.lock().unwrap().push_back(event.clone());
         if spacetime
             .reducers
-            .post_event(
+            .post_event_then(
                 //SAFETY: Its the same type. Sadly Rust can not know that :< .
                 unsafe {
                     std::mem::transmute::<
                         tm_server_controller::event::Event,
                         tm_server_manager_api_rs::Event,
                     >(event.clone())
+                },
+                |e, _| {
+                    tracing::debug!("Reducer finished: {:?}", e.event.reducer);
+                    //TODO verify that it is always ordered.
+                    EVENT_CACHE.lock().unwrap().pop_front();
                 },
             )
             .is_err()
@@ -267,5 +273,23 @@ pub fn check_players_have_destination() {
                 };
             }
         }
+    });
+}
+
+pub fn spacetime_disconnected() {
+    spawn_blocking(async move || {
+        let server = TRACKMANIA.wait();
+        if let Err(err) = server.pause_set_active(true).await {
+            tracing::error!(
+                "Error pausing the match in a critical disconnect section. Reason: {}",
+                err
+            )
+        };
+        if let Err(err) = server
+            .chat_send_server_massage("[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
+            .await
+        {
+            tracing::error!("Error sending disconnect message. Reason: {}", err)
+        };
     });
 }

@@ -69,7 +69,7 @@ impl RawServerV1 {
     }
 }
 
-/// Elevates an annonymous user to a trackmania server.
+/// Elevates an annonymous connection to a trackmania dedicated server sidecar.
 /// password of the server doesn't get saved but rather verified for validity.
 #[spacetimedb::procedure]
 pub fn login_as_server(
@@ -77,6 +77,7 @@ pub fn login_as_server(
     login: String,
     password: String,
     user_account_id: Uuid,
+    request_recovery: bool,
 ) -> Result<(), String> {
     let request = Request::builder()
         .method("POST")

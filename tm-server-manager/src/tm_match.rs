@@ -71,6 +71,10 @@ pub struct MatchV1 {
     //Whether the match is open for all to join or restricted.
     open: bool,
     template: bool,
+    // Used for force restart. If status changes this should get set to true and false again
+    // to trigger a config refresh on the raw_server.
+    // TODOMaybe just send an event mhm.
+    dirty: bool,
 }
 
 impl MatchV1 {
@@ -93,6 +97,9 @@ impl MatchV1 {
             MatchStatus::Ended => self.config,
             MatchStatus::Locked => {
                 panic!("should not ask for a config if match is locked.")
+            }
+            MatchStatus::Recovery => {
+                panic!("should not ask for a config if match is in recovery.")
             }
         }
     }
@@ -128,6 +135,10 @@ impl MatchV1 {
     pub(crate) fn end_match(&mut self) {
         self.status = MatchStatus::Ended;
     }
+
+    pub(crate) fn force_restart(&self) -> bool {
+        self.dirty
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, SpacetimeType, Clone, Copy)]
@@ -143,6 +154,7 @@ pub enum MatchStatus {
     /// Loads the post match config if present.
     Ended,
     Locked,
+    Recovery,
 }
 
 impl MatchStatus {
@@ -154,6 +166,7 @@ impl MatchStatus {
             MatchStatus::Live => false,
             MatchStatus::Ended => false,
             MatchStatus::Locked => false,
+            MatchStatus::Recovery => false,
         }
     }
 }
@@ -194,6 +207,7 @@ pub fn match_create(
             auto_provision_server: true,
             template: false,
             open: false,
+            dirty: false,
         };
 
         let tm_match = ctx.db.tab_match().try_insert(tm_match)?;
@@ -287,7 +301,7 @@ pub fn match_update_pre_config(
 }
 
 #[reducer]
-pub fn match_update_config(
+pub fn match_override_config(
     ctx: &ReducerContext,
     id: u32,
     config: ServerConfig,
@@ -347,8 +361,6 @@ pub fn authorized_match_set_preparation(ctx: &ReducerContext, match_id: u32) -> 
             "Match needs a configuration in order to advance to the upcoming state.".into(),
         );
     }
-
-    let competition_id = tm_match.parent_id;
 
     if ctx
         .occupation_with_occupier(NodeHandle::MatchV1(match_id))

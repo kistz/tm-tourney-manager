@@ -67,7 +67,7 @@ pub fn create_server_config(ctx: &ReducerContext, config: ServerConfig) -> Resul
 struct ServerMetadata {
     config: ServerConfig,
     open: bool,
-    //status: MatchStatus,
+    force_restart: bool,
 }
 
 #[view(accessor=raw_server_config,public)]
@@ -87,6 +87,7 @@ fn raw_server_config(ctx: &ViewContext) -> Option<ServerMetadata> {
             Some(ServerMetadata {
                 config: config.config,
                 open: tm_match.is_open(),
+                force_restart: tm_match.force_restart(),
             })
         }
         crate::competition::node::NodeHandle::ServerV1(s) => {
@@ -99,6 +100,8 @@ fn raw_server_config(ctx: &ViewContext) -> Option<ServerMetadata> {
             Some(ServerMetadata {
                 config: config.config,
                 open: tm_server.is_open(),
+                //TODO,
+                force_restart: false,
             })
         }
         _ => {
@@ -106,4 +109,12 @@ fn raw_server_config(ctx: &ViewContext) -> Option<ServerMetadata> {
             None
         }
     }
+}
+
+#[table(accessor=event_raw_server_state,event)]
+struct EventRawServerState {
+    config: ServerConfig,
+    open: bool,
+    recovery_section: bool,
+    force_restart: bool,
 }

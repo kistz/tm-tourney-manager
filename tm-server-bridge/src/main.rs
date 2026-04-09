@@ -1,4 +1,7 @@
-use std::sync::OnceLock;
+use std::{
+    collections::VecDeque,
+    sync::{LazyLock, Mutex as StdMutex, OnceLock},
+};
 
 use nadeo_api::NadeoClient;
 
@@ -14,6 +17,7 @@ use tm_server_manager_api_rs::{
     login_as_server, raw_server_configQueryTableAccess, raw_server_method_callQueryTableAccess,
     raw_server_permitted_playersQueryTableAccess, raw_server_player_destinationQueryTableAccess,
 };
+use tm_server_types::event::Event;
 use tokio::{signal, sync::Mutex};
 use tracing::{instrument, warn};
 
@@ -21,7 +25,10 @@ use crate::{
     chat::setup_chat,
     config::metadata_update,
     methods::method_call_received,
-    state::{check_allowed_players, check_players_have_destination, setup_state_synchronization},
+    state::{
+        check_allowed_players, check_players_have_destination, setup_state_synchronization,
+        spacetime_disconnected,
+    },
     telemetry::init_tracing_subscriber,
 };
 
@@ -47,6 +54,8 @@ static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
 static TRACKMANIA_FILES: OnceLock<String> = OnceLock::new();
 
 static SERVER_METADATA: OnceLock<Mutex<ServerMetadata>> = OnceLock::new();
+static EVENT_CACHE: LazyLock<StdMutex<VecDeque<Event>>> =
+    LazyLock::new(|| StdMutex::new(VecDeque::with_capacity(1000)));
 
 /// Load credentials from a file and connect to the database.
 #[instrument(level = "debug")]
@@ -56,7 +65,8 @@ fn connect_to_db() -> DbConnection {
         .on_disconnect(on_stdb_disconnected)
         .with_database_name(std::env::var("SPACETIMEDB_MODULE").unwrap_or("tmservers".to_string()))
         .with_uri(
-            std::env::var("SPACETIMEDB_URL").unwrap_or("wss://connect.tmservers.live".to_string()),
+            std::env::var("SPACETIMEDB_URL")
+                .unwrap_or("wss://maincloud.spacetimedb.com".to_string()),
         )
         .build()
         .expect("Failed to connect to SpacetimeDB. Aborting.")
@@ -214,12 +224,14 @@ fn on_stdb_connect_error(_ctx: &ErrorContext, err: Error) {
     std::process::exit(1);
 }
 
-fn on_stdb_disconnected(_ctx: &ErrorContext, err: Option<Error>) {
+fn on_stdb_disconnected(ctx: &ErrorContext, err: Option<Error>) {
     if let Some(err) = err {
         tracing::error!(
             "Forcefully disconnected from SpacetimeDB with Error: {}",
             err
         );
+        spacetime_disconnected();
+        let connection = DbConnection::custom_new(ctx.imp());
     } else {
         tracing::error!("Disconnected normally.");
     }
