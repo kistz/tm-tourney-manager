@@ -568,3 +568,31 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 // If the trackmania server disconnect from the bridge we sould be able to call an reducer
 // and then disconnect. This would make the reason apparent to the module but is it necessary?
 // only disconnecting would do the same thing i guess
+
+// Recovery Cases:
+// - Host restarts/disconnects.
+//   - rely on on_disconnected
+//   - because bridge is still alive pause match
+//   - Bridge eagerly tries to reconnect with seamless flag set.
+//   - Upon successful reconnection we can just unpause the match.
+//
+// - Bridge disconnects for some other reason
+//   - rely on on_disconnected
+//   - because bridge is still alive pause match
+//   - Bridge eagerly tries to reconnect with seamless flag set.
+//   - Upon successful reconnection we can just unpause the match.
+//
+
+// Trackmania server loses connection.
+// -> This case is _very_ bad.
+// -> worst case is that the players keep playing -> its joever.
+// -> Call reducer and that we lost connection and emergency ping to the admins or whatever.
+// -> crash the whole bridge. -> restart: unless_stopped ensures eager reconnection tries.
+// -> If we have a global seamless flag on the bridge which gets set to false upon start we can ensure the right connection logic.
+
+// Now for the wombo combo.
+// The brighe disconnects smh.
+// Then the trackmania server also crashes in the meantime.
+// We need to somehow commuicate this upon reconnection because it would be a seamless case otherise.
+// This could be done via the aforementioned global seamless flag that the bridge owns.
+// -> Crash the bridge so this is set to false afterwards.

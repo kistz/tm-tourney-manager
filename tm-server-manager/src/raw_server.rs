@@ -86,7 +86,7 @@ pub fn login_as_server(
     login: String,
     password: String,
     user_account_id: Uuid,
-    //request_recovery: bool,
+    seamless: bool,
 ) -> Result<(), String> {
     let request = Request::builder()
         .method("POST")
