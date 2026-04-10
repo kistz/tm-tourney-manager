@@ -591,8 +591,17 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 // -> If we have a global seamless flag on the bridge which gets set to false upon start we can ensure the right connection logic.
 
 // Now for the wombo combo.
-// The brighe disconnects smh.
+// The bridge disconnects smh.
 // Then the trackmania server also crashes in the meantime.
 // We need to somehow commuicate this upon reconnection because it would be a seamless case otherise.
 // This could be done via the aforementioned global seamless flag that the bridge owns.
 // -> Crash the bridge so this is set to false afterwards.
+
+// How do we handle the new match (in case it is not seamless)
+// -> Need to assign a new server
+// -> need to wait for players.
+// -> need to load match config.
+// -> need to restore the map
+// -> need to restore the map progress e.g. 2 out of 4 map rounds left.
+// -> need to restore the points.
+// -> start. (start command would need to happen sooner i guess but idk where exactly yet.)
