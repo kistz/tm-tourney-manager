@@ -97,7 +97,7 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
 
 #[spacetimedb::reducer(client_disconnected)]
 fn client_disconnected(ctx: &ReducerContext) {
-    if let Some(mut server) = ctx.db.tab_raw_server().identity().find(ctx.sender()) {
-        ctx.raw_server_disconnected(server);
+    if let Some(server) = ctx.db.tab_raw_server().identity().find(ctx.sender()) {
+        ctx.raw_server_disconnected(server, ctx.timestamp);
     }
 }

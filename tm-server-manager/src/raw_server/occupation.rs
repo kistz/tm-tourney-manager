@@ -30,6 +30,7 @@ pub(crate) trait TabRawServerOccupationRead {
     fn raw_server_is_occupied(&self, server_id: u32) -> bool;
     fn raw_server_occupation(&self, server_id: u32) -> Option<NodeHandle>;
     fn occupation_with_occupier(&self, node_handle: NodeHandle) -> Option<NodeHandle>;
+    fn occupation_get_server(&self, node_handle: NodeHandle) -> u32;
 }
 pub(crate) trait TabRawServerOccupationWrite: TabRawServerOccupationRead {
     fn raw_server_occupation_add(
@@ -64,6 +65,16 @@ impl<Db: DbContext> TabRawServerOccupationRead for Db {
             .filter(node_handle.split())
             .next()
             .map(|o| NodeHandle::combine(o.node_variant, o.node_id))
+    }
+
+    fn occupation_get_server(&self, node_handle: NodeHandle) -> u32 {
+        self.db_read_only()
+            .tab_raw_server_occupation()
+            .node_handle()
+            .filter(node_handle.split())
+            .next()
+            .unwrap()
+            .server_id
     }
 }
 

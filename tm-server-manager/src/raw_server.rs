@@ -1,9 +1,10 @@
 use base64::Engine;
 use base64::prelude::{BASE64_STANDARD, BASE64_URL_SAFE_NO_PAD};
+use petgraph::visit::Time;
 use serde::Deserialize;
 use spacetimedb::http::Request;
 use spacetimedb::{
-    DbContext, Identity, Local, ReducerContext, Table, Uuid, ViewContext, reducer, table,
+    DbContext, Identity, Local, ReducerContext, Table, Timestamp, Uuid, ViewContext, reducer, table,
 };
 use spacetimedb::{ProcedureContext, view};
 
@@ -33,6 +34,10 @@ pub struct RawServerV1 {
     // Account id of the server from the trackmania web services.
     server_account_id: Uuid,
 
+    // Whenever the server has last connected or disconnected.
+    // Read this together with online or offline to get the correct value.
+    last_connection: Timestamp,
+
     /// Each server also has a ubisoft account associated with it.
     /// This is a user_account_id because you could add a user which was not seen yet.
     #[index(hash)]
@@ -55,10 +60,12 @@ pub struct RawServerV1 {
 }
 
 impl RawServerV1 {
-    pub fn set_online(&mut self) {
+    pub fn set_online(&mut self, when: Timestamp) {
+        self.last_connection = when;
         self.online = true;
     }
-    pub fn set_offline(&mut self) {
+    pub fn set_offline(&mut self, when: Timestamp) {
+        self.last_connection = when;
         self.online = false;
     }
 
@@ -79,7 +86,7 @@ pub fn login_as_server(
     login: String,
     password: String,
     user_account_id: Uuid,
-    request_recovery: bool,
+    //request_recovery: bool,
 ) -> Result<(), String> {
     let request = Request::builder()
         .method("POST")
@@ -131,12 +138,22 @@ pub fn login_as_server(
 
     ctx.try_with_tx::<(), String>(|ctx| {
         if let Some(mut server) = ctx.db.tab_raw_server().server_login().find(&login) {
-            if server.server_account_id != user_account_id {
+            let server_id = server.id;
+            if ctx.user_account_from_id(server.user_id) != user_account_id {
                 server.verified = false;
             }
-            server.set_online();
+            server.set_online(ctx.timestamp);
             server.set_identity(identity);
             ctx.db.tab_raw_server().id().update(server);
+
+            //RECOVERY
+            if let Some(occupation) = ctx.raw_server_occupation(server_id)
+                && occupation.is_match()
+            {
+                let match_id = occupation.id();
+
+                ctx.match_exit_recovery(match_id);
+            }
         } else {
             // Server has never been seen before so create a new one.
             ctx.db.tab_raw_server().try_insert(RawServerV1 {
@@ -148,8 +165,10 @@ pub fn login_as_server(
                 capturable: true,
                 verified: false,
                 online: true,
+                last_connection: ctx.timestamp,
             })?;
         }
+
         Ok(())
     })?;
 
@@ -231,13 +250,24 @@ fn raw_server_verify(ctx: &ReducerContext, server_id: u32) -> Result<(), String>
     }
 }
 
-pub(crate) trait TabRawServerRead {}
+pub(crate) trait TabRawServerRead {
+    fn raw_server_last_connection(&self, server_id: u32) -> Timestamp;
+}
 pub(crate) trait TabRawServerWrite: TabRawServerRead {
     fn raw_server_pool_assign(&self, node_handle: NodeHandle) -> Result<u32, String>;
-    fn raw_server_disconnected(&self, server: RawServerV1);
+    fn raw_server_disconnected(&self, server: RawServerV1, now: Timestamp);
 }
 
-impl<Db: DbContext> TabRawServerRead for Db {}
+impl<Db: DbContext> TabRawServerRead for Db {
+    fn raw_server_last_connection(&self, server_id: u32) -> Timestamp {
+        self.db_read_only()
+            .tab_raw_server()
+            .id()
+            .find(server_id)
+            .unwrap()
+            .last_connection
+    }
+}
 
 impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
     fn raw_server_pool_assign(&self, node_handle: NodeHandle) -> Result<u32, String> {
@@ -253,16 +283,17 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
         Ok(server_id)
     }
 
-    fn raw_server_disconnected(&self, mut server: RawServerV1) {
+    fn raw_server_disconnected(&self, mut server: RawServerV1, when: Timestamp) {
         let server_id = server.id;
-        server.set_offline();
+
+        server.set_offline(when);
         self.db().tab_raw_server().id().update(server);
 
         if let Some(occupation) = self.raw_server_occupation(server_id)
             && occupation.is_match()
         {
             let match_id = occupation.id();
-            
+
             self.match_enter_recovery(match_id);
         }
     }

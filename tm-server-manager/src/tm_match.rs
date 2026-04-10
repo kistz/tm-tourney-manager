@@ -1,4 +1,8 @@
-use spacetimedb::{Query, ReducerContext, SpacetimeType, Table, ViewContext, reducer, table, view};
+use std::time::Duration;
+
+use spacetimedb::{
+    Query, ReducerContext, SpacetimeType, Table, TimeDuration, ViewContext, reducer, table, view,
+};
 use tm_server_types::config::ServerConfig;
 
 use crate::{
@@ -10,7 +14,7 @@ use crate::{
         tab_competition,
     },
     raw_server::{
-        TabRawServerWrite,
+        TabRawServerRead, TabRawServerWrite,
         config::{RawServerConfig, tab_raw_server_config},
         destination::TabRawServerDestinationWrite,
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
@@ -18,6 +22,7 @@ use crate::{
     },
     tm_match::{
         leaderboard::{tab_match_round_player, tab_match_round_player_ext},
+        recovery::RecoveryWrite,
         state::{MatchState, tab_match_state},
         template::match_template_instantiate,
     },
@@ -25,6 +30,7 @@ use crate::{
 
 pub mod event;
 pub mod leaderboard;
+mod recovery;
 pub mod replay;
 pub mod state;
 pub mod template;
@@ -113,6 +119,10 @@ impl MatchV1 {
     /// Evaluates is the Match is in the "Match" state of its lifecycle.
     pub fn is_live(&self) -> bool {
         self.status == MatchStatus::Live
+    }
+
+    pub fn is_recovery(&self) -> bool {
+        self.status == MatchStatus::Recovery
     }
 
     pub fn is_open(&self) -> bool {
@@ -480,6 +490,7 @@ impl<Db: spacetimedb::DbContext> MatchRead for Db {}
 
 pub(crate) trait MatchWrite: MatchRead {
     fn match_enter_recovery(&self, match_id: u32);
+    fn match_exit_recovery(&self, match_id: u32);
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
     fn match_enter_recovery(&self, match_id: u32) {
@@ -512,6 +523,31 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
                 .delete((match_id, state.get_round()));
 
             self.db().tab_match_state().match_id().update(state);
+
+            let raw_server = self.occupation_get_server(NodeHandle::MatchV1(match_id));
+            if let Err(err) = self.match_auto_recovery_insert(
+                match_id,
+                self.raw_server_last_connection(raw_server),
+                TimeDuration::from_duration(Duration::from_mins(5)),
+            ) {
+                log::error!("Could not insert match auto recovery. Reason: {err}")
+            };
+        }
+    }
+
+    fn match_exit_recovery(&self, match_id: u32) {
+        //SAFETY: if a occupation is inserted it must also exist.
+        let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
+
+        if tm_match.is_recovery() {
+            log::error!(
+                "TODO: MATCH {} EXITING RECOVERY BECAUSE SERVER CAME BACK.",
+                tm_match.id
+            );
+
+            //TODO
+            //tm_match.exit_recovery();
+            //self.db().tab_match().id().update(tm_match);
         }
     }
 }
@@ -522,3 +558,13 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 // -> on_disconnect reducer runs and sets the match in recovery mode.
 // ->  -> first decision because this could have been either the fault of the server itself or because the module restarted.
 // -> -> Does this make a difference? -> We could insert a timer to reprovision the match? because in case of the databases fault the match should eagerly reconnect?
+
+// Making progress is impossible if we want to allow for auto recovery.
+// This is because if the raw_server caches events and continues but stays disconnected
+// for an extended period of time the auto recovery could override the progress already made.
+// So it is easier if we pause the match in that case.
+// furthermore we would not have live data.
+
+// If the trackmania server disconnect from the bridge we sould be able to call an reducer
+// and then disconnect. This would make the reason apparent to the module but is it necessary?
+// only disconnecting would do the same thing i guess
