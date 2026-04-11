@@ -105,8 +105,10 @@ impl MatchV1 {
             MatchStatus::Locked => {
                 panic!("should not ask for a config if match is locked.")
             }
+            // This is for the seamless discovery so it is treated as a live match.
+            MatchStatus::Recovery => self.config,
             // This should get conceptually treated as preparing.
-            MatchStatus::Recovery => {
+            MatchStatus::RecoveryPreparation => {
                 if self.pre_config != 0 {
                     self.pre_config
                 } else {
@@ -175,6 +177,7 @@ pub enum MatchStatus {
     Ended,
     Locked,
     Recovery,
+    RecoveryPreparation,
 }
 
 impl MatchStatus {
@@ -187,6 +190,7 @@ impl MatchStatus {
             MatchStatus::Ended => false,
             MatchStatus::Locked => false,
             MatchStatus::Recovery => false,
+            MatchStatus::RecoveryPreparation => false,
         }
     }
 }
