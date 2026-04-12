@@ -1,4 +1,4 @@
-use spacetimedb_sdk::{Status, Table, Uuid};
+use spacetimedb_sdk::{Table, Uuid};
 use tm_server_controller::{
     callbacks::TypedCallbacks,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
@@ -11,9 +11,10 @@ use tm_server_types::{
     base::account_id_to_login,
     event::{EndRoundStart, PlayerConnect, StartMap, StartServer},
 };
-use tokio::task::spawn_blocking;
 
-use crate::{EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{
+    EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES, spacetime_connect,
+};
 
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.wait();
@@ -146,13 +147,13 @@ pub async fn setup_state_synchronization() {
             tracing::error!("{error}")
         };
         if event.mode.updated {
-            tracing::error!("Mode Script was updated");
+            tracing::info!("Mode Script was updated");
         } else {
-            tracing::error!("Mode Script stayed the same");
+            tracing::info!("Mode Script stayed the same");
         }
     });
 
-    server.on_start_map_end(async |map: &StartMap| {
+    server.on_start_map_start(async |map: &StartMap| {
         //We need to load the settings again because we changed the script.
         if !map.restarted {
             return;
@@ -288,7 +289,6 @@ pub fn check_players_have_destination() {
 }
 
 pub fn spacetime_disconnected() {
-    tracing::info!("start.");
     tokio::task::block_in_place(move || {
         tokio::runtime::Handle::current().block_on(async move {
         let server = TRACKMANIA.wait();
@@ -297,15 +297,30 @@ pub fn spacetime_disconnected() {
                 "Error pausing the match in a critical disconnect section. Reason: {}",
                 err
             )
-        };
-        tracing::info!("Server should be paused.");
+        }else{
+            tracing::info!("Server paused because of spacetime disconnect.");
+        }
         if let Err(err) = server
             .chat_send_server_massage("$f00[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
             .await
         {
             tracing::error!("Error sending disconnect message. Reason: {}", err)
         };
+
+        loop {
+            let connected=spacetime_connect(true).await;
+        if connected {
+            tracing::info!("Sucessfully reconnected.");
+            if let Err(err) = server.pause_set_active(false).await {
+            tracing::error!(
+                "Error unpausing the match because spacetime reconnected. Reson: {}",
+                err
+            )
+        }
+            break;} else {
+            tracing::error!("Failed to reconnect. Retrying...");
+        }
+    }
     });
     });
-    tracing::info!("what");
 }

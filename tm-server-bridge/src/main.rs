@@ -20,7 +20,7 @@ use tm_server_manager_api_rs::{
 };
 use tm_server_types::event::Event;
 use tokio::{signal, sync::Mutex};
-use tracing::{instrument, warn};
+use tracing::instrument;
 
 use crate::{
     chat::setup_chat,
@@ -69,21 +69,6 @@ pub(crate) fn init_tracing_subscriber() {
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
-}
-
-/// Load credentials from a file and connect to the database.
-#[instrument(level = "debug")]
-fn connect_to_db() -> DbConnection {
-    DbConnection::builder()
-        .on_connect_error(on_stdb_connect_error)
-        .on_disconnect(on_stdb_disconnected)
-        .with_database_name(std::env::var("SPACETIMEDB_MODULE").unwrap_or("tmservers".to_string()))
-        .with_uri(
-            std::env::var("SPACETIMEDB_URL")
-                .unwrap_or("wss://maincloud.spacetimedb.com".to_string()),
-        )
-        .build()
-        .expect("Failed to connect to SpacetimeDB. Aborting.")
 }
 
 #[tokio::main]
@@ -181,12 +166,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-fn on_stdb_connect_error(_ctx: &ErrorContext, err: Error) {
+/* fn on_stdb_connect_error(_ctx: &ErrorContext, err: Error) {
     tracing::error!("SpacetimeDB connection error: {:?}", err);
     std::process::exit(1);
-}
+} */
 
-fn on_stdb_disconnected(ctx: &ErrorContext, err: Option<Error>) {
+fn on_stdb_disconnected(_: &ErrorContext, err: Option<Error>) {
     if let Some(err) = err {
         tracing::error!(
             "Forcefully disconnected from SpacetimeDB with Error: {}",
@@ -195,12 +180,25 @@ fn on_stdb_disconnected(ctx: &ErrorContext, err: Option<Error>) {
         //let connection = DbConnection::custom_new(ctx.imp());
         return;
     }
-    tracing::error!("Spacetime database exited.");
+    tracing::error!("Disconnected from spacetimedb.");
     spacetime_disconnected();
 }
 
-async fn spacetime_connect(seamless: bool) {
-    let spacetime = connect_to_db();
+#[instrument(level = "debug")]
+async fn spacetime_connect(seamless: bool) -> bool {
+    let Ok(spacetime) = DbConnection::builder()
+        //.on_connect_error(on_stdb_connect_error)
+        .on_disconnect(on_stdb_disconnected)
+        .with_database_name(std::env::var("SPACETIMEDB_MODULE").unwrap_or("tmservers".to_string()))
+        .with_uri(
+            std::env::var("SPACETIMEDB_URL")
+                .unwrap_or("wss://maincloud.spacetimedb.com".to_string()),
+        )
+        .build()
+    else {
+        tracing::error!("Server could not be connected successfully");
+        return false;
+    };
 
     let tm_server_login = std::env::var("TM_MASTERSERVER_LOGIN").unwrap();
     let tm_server_password = std::env::var("TM_MASTERSERVER_PASSWORD").unwrap();
@@ -216,13 +214,16 @@ async fn spacetime_connect(seamless: bool) {
         }
     });
 
-    let server_id = SPACETIME
+    let Ok(server_id) = SPACETIME
         .wait()
         .procedures()
         .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, seamless)
         .await
         .unwrap()
-        .expect("Server could not be authenticated successfully");
+    else {
+        tracing::error!("Server could not be authenticated successfully");
+        return false;
+    };
 
     tracing::info!("Successfully connected to tmservers.live!");
 
@@ -268,4 +269,6 @@ async fn spacetime_connect(seamless: bool) {
         .db
         .raw_server_player_destination()
         .on_insert(|_, _| check_players_have_destination());
+
+    true
 }
