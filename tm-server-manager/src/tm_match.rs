@@ -15,22 +15,22 @@ use crate::{
     },
     raw_server::{
         TabRawServerRead, TabRawServerWrite,
-        config::{RawServerConfig, tab_raw_server_config},
+        config::RawServerContigWrite,
         destination::TabRawServerDestinationWrite,
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
         tab_raw_server,
     },
     tm_match::{
+        auto_recovery::RecoveryWrite,
         leaderboard::{tab_match_round_player, tab_match_round_player_ext},
-        recovery::RecoveryWrite,
         state::{MatchState, tab_match_state},
         template::match_template_instantiate,
     },
 };
 
+mod auto_recovery;
 pub mod event;
 pub mod leaderboard;
-mod recovery;
 pub mod replay;
 pub mod state;
 pub mod template;
@@ -81,7 +81,7 @@ pub struct MatchV1 {
     // Used for force restart. If status changes this should get set to true and false again
     // to trigger a config refresh on the raw_server.
     // TODOMaybe just send an event mhm.
-    dirty: bool,
+    //dirty: bool,
 }
 
 impl MatchV1 {
@@ -158,9 +158,9 @@ impl MatchV1 {
         self.status = MatchStatus::Recovery;
     }
 
-    pub(crate) fn force_restart(&self) -> bool {
+    /* pub(crate) fn force_restart(&self) -> bool {
         self.dirty
-    }
+    } */
 }
 
 #[derive(Debug, PartialEq, Eq, SpacetimeType, Clone, Copy)]
@@ -231,7 +231,7 @@ pub fn match_create(
             auto_provision_server: true,
             template: false,
             open: false,
-            dirty: false,
+            //dirty: false,
         };
 
         let tm_match = ctx.db.tab_match().try_insert(tm_match)?;
@@ -344,11 +344,8 @@ pub fn match_override_config(
 
     //TODO cleanup old/orphaned configs. Should i do this with a mapping table or just always instantiate the config or keep track of this in the match?
     //TODO also check if it is empty (0) or if smth was there before.
-    let cfg = ctx
-        .db
-        .tab_raw_server_config()
-        .try_insert(RawServerConfig::new(config))?;
-    tm_match.config = cfg.id;
+    let new_id = ctx.raw_server_match_config_override(tm_match.id, config)?;
+    tm_match.config = new_id;
     ctx.db.tab_match().id().update(tm_match);
     Ok(())
 }
@@ -386,26 +383,29 @@ pub fn authorized_match_set_preparation(ctx: &ReducerContext, match_id: u32) -> 
         );
     }
 
-    if ctx
-        .occupation_with_occupier(NodeHandle::MatchV1(match_id))
-        .is_some()
+    let server_id = if let Some(server_id) =
+        ctx.occupation_with_occupier(NodeHandle::MatchV1(match_id))
     {
         tm_match.status = MatchStatus::Preparation;
+        server_id
     } else if tm_match.auto_provision_server {
-        ctx.raw_server_pool_assign(NodeHandle::MatchV1(match_id))?;
+        let server_id = ctx.raw_server_pool_assign(NodeHandle::MatchV1(match_id))?;
 
         tm_match.status = MatchStatus::Preparation;
+        server_id
     } else {
         return Err("Match has auto provisioning turned off and no server assigned! Cannot start the match!".into());
     };
 
     ctx.db.tab_match().id().update(tm_match);
 
-    let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
-    state.set_live();
-    ctx.db.tab_match_state().match_id().update(state);
+    ctx.db
+        .tab_match_state()
+        .try_insert(MatchState::new(match_id))?;
 
     ctx.destination_claim(NodeHandle::MatchV1(match_id))?;
+
+    ctx.emit_raw_server_config(server_id, false);
 
     Ok(())
 }
@@ -430,10 +430,7 @@ pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    if ctx
-        .occupation_with_occupier(NodeHandle::MatchV1(match_id))
-        .is_none()
-    {
+    let Some(server_id) = ctx.occupation_with_occupier(NodeHandle::MatchV1(match_id)) else {
         return Err("No server is assigned to the match.".into());
     };
 
@@ -441,11 +438,11 @@ pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String
     tm_match.status = MatchStatus::Live;
     ctx.db.tab_match().id().update(tm_match);
 
-    let result = ctx
-        .db
-        .tab_match_state()
-        .try_insert(MatchState::new(match_id));
-    log::error!("{result:?}");
+    let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
+    state.set_live();
+    ctx.db.tab_match_state().match_id().update(state);
+
+    ctx.emit_raw_server_config(server_id, false);
 
     Ok(())
 }
@@ -493,11 +490,12 @@ pub(crate) trait MatchRead {}
 impl<Db: spacetimedb::DbContext> MatchRead for Db {}
 
 pub(crate) trait MatchWrite: MatchRead {
-    fn match_enter_recovery(&self, match_id: u32);
-    fn match_exit_recovery(&self, match_id: u32);
+    fn match_recovery_enter(&self, match_id: u32);
+    fn match_recovery_exit_seamless(&self, match_id: u32);
+    fn match_recovery_exit_forced(&self, match_id: u32);
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
-    fn match_enter_recovery(&self, match_id: u32) {
+    fn match_recovery_enter(&self, match_id: u32) {
         //SAFETY: if a occupation is inserted it must also exist.
         let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
 
@@ -528,7 +526,9 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 
             self.db().tab_match_state().match_id().update(state);
 
-            let raw_server = self.occupation_get_server(NodeHandle::MatchV1(match_id));
+            let raw_server = self
+                .occupation_with_occupier(NodeHandle::MatchV1(match_id))
+                .unwrap();
             if let Err(err) = self.match_auto_recovery_insert(
                 match_id,
                 self.raw_server_last_connection(raw_server),
@@ -539,9 +539,28 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         }
     }
 
-    fn match_exit_recovery(&self, match_id: u32) {
+    fn match_recovery_exit_seamless(&self, match_id: u32) {
         //SAFETY: if a occupation is inserted it must also exist.
         let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
+
+        if tm_match.is_recovery() {
+            log::error!(
+                "TODO: MATCH {} EXITING RECOVERY BECAUSE SERVER CAME BACK.",
+                tm_match.id
+            );
+
+            //TODO SO what do we have to do here?
+        } else {
+            log::error!(
+                "MATCH {} WANTED TO EXIT RECOVERY SEAMLESSLY BUT WAS NOT IN RECOVERY MODE.",
+                tm_match.id
+            );
+        }
+    }
+
+    fn match_recovery_exit_forced(&self, match_id: u32) {
+        //SAFETY: if a occupation is inserted it must also exist.
+        /* let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
 
         if tm_match.is_recovery() {
             log::error!(
@@ -552,7 +571,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             //TODO
             //tm_match.exit_recovery();
             //self.db().tab_match().id().update(tm_match);
-        }
+        } */
     }
 }
 

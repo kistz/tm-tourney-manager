@@ -48,6 +48,7 @@ pub enum MethodCall {
 #[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
 pub enum MethodResponse {
+    Pending,
     /// Sucessfully executed the method call.
     /// All methods whic return a bool are covered with this.
     Success,

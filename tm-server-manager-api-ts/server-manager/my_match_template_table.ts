@@ -26,5 +26,4 @@ export default __t.row({
   autoProvisionServer: __t.bool().name("auto_provision_server"),
   open: __t.bool(),
   template: __t.bool(),
-  dirty: __t.bool(),
 });

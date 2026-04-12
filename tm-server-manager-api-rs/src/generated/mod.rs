@@ -49,6 +49,9 @@ pub mod end_server_type;
 pub mod end_turn_end_type;
 pub mod end_turn_start_type;
 pub mod env_type;
+pub mod event_raw_server_method_table;
+pub mod event_raw_server_method_type;
+pub mod event_raw_server_state_table;
 pub mod event_raw_server_state_type;
 pub mod event_type;
 pub mod finish_timeout_type;
@@ -124,11 +127,9 @@ pub mod project_kind_type;
 pub mod project_status_type;
 pub mod project_update_status_reducer;
 pub mod project_v_1_type;
-pub mod raw_server_config_table;
 pub mod raw_server_config_type;
 pub mod raw_server_current_players_table;
-pub mod raw_server_method_call_table;
-pub mod raw_server_method_call_type;
+pub mod raw_server_method_type;
 pub mod raw_server_occupation_type;
 pub mod raw_server_permitted_players_table;
 pub mod raw_server_player_add_reducer;
@@ -171,7 +172,6 @@ pub mod server_assign_raw_server_reducer;
 pub mod server_config_type;
 pub mod server_configured_reducer;
 pub mod server_create_reducer;
-pub mod server_metadata_type;
 pub mod server_method_call_reducer;
 pub mod server_method_response_reducer;
 pub mod server_mode_info_type;
@@ -188,6 +188,7 @@ pub mod start_turn_type;
 pub mod tab_competition_node_position_type;
 pub mod tab_connection_action_type;
 pub mod tab_connection_type;
+pub mod tab_match_auto_recovery_type;
 pub mod tab_player_destination_type;
 pub mod tab_tm_map_type;
 pub mod team_type;
@@ -195,7 +196,6 @@ pub mod temp_match_leaderboard_table;
 pub mod temp_registration_player_table;
 pub mod this_raw_server_table;
 pub mod time_attack_type;
-pub mod tm_server_method_response_type;
 pub mod tm_server_v_1_type;
 pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
@@ -256,6 +256,9 @@ pub use end_server_type::EndServer;
 pub use end_turn_end_type::EndTurnEnd;
 pub use end_turn_start_type::EndTurnStart;
 pub use env_type::Env;
+pub use event_raw_server_method_table::*;
+pub use event_raw_server_method_type::EventRawServerMethod;
+pub use event_raw_server_state_table::*;
 pub use event_raw_server_state_type::EventRawServerState;
 pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
@@ -331,11 +334,9 @@ pub use project_kind_type::ProjectKind;
 pub use project_status_type::ProjectStatus;
 pub use project_update_status_reducer::project_update_status;
 pub use project_v_1_type::ProjectV1;
-pub use raw_server_config_table::*;
 pub use raw_server_config_type::RawServerConfig;
 pub use raw_server_current_players_table::*;
-pub use raw_server_method_call_table::*;
-pub use raw_server_method_call_type::RawServerMethodCall;
+pub use raw_server_method_type::RawServerMethod;
 pub use raw_server_occupation_type::RawServerOccupation;
 pub use raw_server_permitted_players_table::*;
 pub use raw_server_player_add_reducer::raw_server_player_add;
@@ -378,7 +379,6 @@ pub use server_assign_raw_server_reducer::server_assign_raw_server;
 pub use server_config_type::ServerConfig;
 pub use server_configured_reducer::server_configured;
 pub use server_create_reducer::server_create;
-pub use server_metadata_type::ServerMetadata;
 pub use server_method_call_reducer::server_method_call;
 pub use server_method_response_reducer::server_method_response;
 pub use server_mode_info_type::ServerModeInfo;
@@ -395,6 +395,7 @@ pub use start_turn_type::StartTurn;
 pub use tab_competition_node_position_type::TabCompetitionNodePosition;
 pub use tab_connection_action_type::TabConnectionAction;
 pub use tab_connection_type::TabConnection;
+pub use tab_match_auto_recovery_type::TabMatchAutoRecovery;
 pub use tab_player_destination_type::TabPlayerDestination;
 pub use tab_tm_map_type::TabTmMap;
 pub use team_type::Team;
@@ -402,7 +403,6 @@ pub use temp_match_leaderboard_table::*;
 pub use temp_registration_player_table::*;
 pub use this_raw_server_table::*;
 pub use time_attack_type::TimeAttack;
-pub use tm_server_method_response_type::TmServerMethodResponse;
 pub use tm_server_v_1_type::TmServerV1;
 pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
@@ -1065,6 +1065,8 @@ pub struct DbUpdate {
     competition: __sdk::TableUpdate<CompetitionV1>,
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
     competition_connection_data: __sdk::TableUpdate<ConnectionData>,
+    event_raw_server_method: __sdk::TableUpdate<EventRawServerMethod>,
+    event_raw_server_state: __sdk::TableUpdate<EventRawServerState>,
     match_round: __sdk::TableUpdate<MatchRoundPlayer>,
     match_round_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
     match_round_users: __sdk::TableUpdate<UserV1>,
@@ -1075,9 +1077,7 @@ pub struct DbUpdate {
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
     my_projects: __sdk::TableUpdate<MyProjectV1>,
     my_user: __sdk::TableUpdate<UserV1>,
-    raw_server_config: __sdk::TableUpdate<ServerMetadata>,
     raw_server_current_players: __sdk::TableUpdate<RawServerPlayer>,
-    raw_server_method_call: __sdk::TableUpdate<RawServerMethodCall>,
     raw_server_permitted_players: __sdk::TableUpdate<PermittedPlayer>,
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
     temp_match_leaderboard: __sdk::TableUpdate<MatchRoundPlayer>,
@@ -1109,6 +1109,12 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "competition_connection_data" => db_update.competition_connection_data.append(
                     competition_connection_data_table::parse_table_update(table_update)?,
                 ),
+                "event_raw_server_method" => db_update.event_raw_server_method.append(
+                    event_raw_server_method_table::parse_table_update(table_update)?,
+                ),
+                "event_raw_server_state" => db_update.event_raw_server_state.append(
+                    event_raw_server_state_table::parse_table_update(table_update)?,
+                ),
                 "match_round" => db_update
                     .match_round
                     .append(match_round_table::parse_table_update(table_update)?),
@@ -1139,14 +1145,8 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(my_user_table::parse_table_update(table_update)?),
-                "raw_server_config" => db_update
-                    .raw_server_config
-                    .append(raw_server_config_table::parse_table_update(table_update)?),
                 "raw_server_current_players" => db_update.raw_server_current_players.append(
                     raw_server_current_players_table::parse_table_update(table_update)?,
-                ),
-                "raw_server_method_call" => db_update.raw_server_method_call.append(
-                    raw_server_method_call_table::parse_table_update(table_update)?,
                 ),
                 "raw_server_permitted_players" => db_update.raw_server_permitted_players.append(
                     raw_server_permitted_players_table::parse_table_update(table_update)?,
@@ -1203,6 +1203,8 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
+        diff.event_raw_server_method = self.event_raw_server_method.into_event_diff();
+        diff.event_raw_server_state = self.event_raw_server_state.into_event_diff();
         diff.comeptition_schedules = cache
             .apply_diff_to_table::<ScheduleV1>("comeptition_schedules", &self.comeptition_schedules)
             .with_updates_by_pk(|row| &row.id);
@@ -1243,18 +1245,12 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.my_projects =
             cache.apply_diff_to_table::<MyProjectV1>("my_projects", &self.my_projects);
         diff.my_user = cache.apply_diff_to_table::<UserV1>("my_user", &self.my_user);
-        diff.raw_server_config = cache
-            .apply_diff_to_table::<ServerMetadata>("raw_server_config", &self.raw_server_config);
         diff.raw_server_current_players = cache
             .apply_diff_to_table::<RawServerPlayer>(
                 "raw_server_current_players",
                 &self.raw_server_current_players,
             )
             .with_updates_by_pk(|row| &row.account_id);
-        diff.raw_server_method_call = cache.apply_diff_to_table::<RawServerMethodCall>(
-            "raw_server_method_call",
-            &self.raw_server_method_call,
-        );
         diff.raw_server_permitted_players = cache.apply_diff_to_table::<PermittedPlayer>(
             "raw_server_permitted_players",
             &self.raw_server_permitted_players,
@@ -1305,6 +1301,12 @@ impl __sdk::DbUpdate for DbUpdate {
                 "competition_connection_data" => db_update
                     .competition_connection_data
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "event_raw_server_method" => db_update
+                    .event_raw_server_method
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "event_raw_server_state" => db_update
+                    .event_raw_server_state
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "match_round" => db_update
                     .match_round
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -1335,14 +1337,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "raw_server_config" => db_update
-                    .raw_server_config
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "raw_server_current_players" => db_update
                     .raw_server_current_players
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "raw_server_method_call" => db_update
-                    .raw_server_method_call
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "raw_server_permitted_players" => db_update
                     .raw_server_permitted_players
@@ -1396,6 +1392,12 @@ impl __sdk::DbUpdate for DbUpdate {
                 "competition_connection_data" => db_update
                     .competition_connection_data
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "event_raw_server_method" => db_update
+                    .event_raw_server_method
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "event_raw_server_state" => db_update
+                    .event_raw_server_state
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "match_round" => db_update
                     .match_round
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1426,14 +1428,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "raw_server_config" => db_update
-                    .raw_server_config
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "raw_server_current_players" => db_update
                     .raw_server_current_players
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "raw_server_method_call" => db_update
-                    .raw_server_method_call
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "raw_server_permitted_players" => db_update
                     .raw_server_permitted_players
@@ -1481,6 +1477,8 @@ pub struct AppliedDiff<'r> {
     competition: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
     competition_connection_data: __sdk::TableAppliedDiff<'r, ConnectionData>,
+    event_raw_server_method: __sdk::TableAppliedDiff<'r, EventRawServerMethod>,
+    event_raw_server_state: __sdk::TableAppliedDiff<'r, EventRawServerState>,
     match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
     match_round_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
     match_round_users: __sdk::TableAppliedDiff<'r, UserV1>,
@@ -1491,9 +1489,7 @@ pub struct AppliedDiff<'r> {
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
     my_projects: __sdk::TableAppliedDiff<'r, MyProjectV1>,
     my_user: __sdk::TableAppliedDiff<'r, UserV1>,
-    raw_server_config: __sdk::TableAppliedDiff<'r, ServerMetadata>,
     raw_server_current_players: __sdk::TableAppliedDiff<'r, RawServerPlayer>,
-    raw_server_method_call: __sdk::TableAppliedDiff<'r, RawServerMethodCall>,
     raw_server_permitted_players: __sdk::TableAppliedDiff<'r, PermittedPlayer>,
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
     temp_match_leaderboard: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
@@ -1536,6 +1532,16 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.competition_connection_data,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<EventRawServerMethod>(
+            "event_raw_server_method",
+            &self.event_raw_server_method,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<EventRawServerState>(
+            "event_raw_server_state",
+            &self.event_raw_server_state,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
             "match_round",
             &self.match_round,
@@ -1574,19 +1580,9 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<UserV1>("my_user", &self.my_user, event);
-        callbacks.invoke_table_row_callbacks::<ServerMetadata>(
-            "raw_server_config",
-            &self.raw_server_config,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<RawServerPlayer>(
             "raw_server_current_players",
             &self.raw_server_current_players,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<RawServerMethodCall>(
-            "raw_server_method_call",
-            &self.raw_server_method_call,
             event,
         );
         callbacks.invoke_table_row_callbacks::<PermittedPlayer>(
@@ -2279,6 +2275,8 @@ impl __sdk::SpacetimeModule for RemoteModule {
         competition_table::register_table(client_cache);
         competition_available_server_pool_table::register_table(client_cache);
         competition_connection_data_table::register_table(client_cache);
+        event_raw_server_method_table::register_table(client_cache);
+        event_raw_server_state_table::register_table(client_cache);
         match_round_table::register_table(client_cache);
         match_round_ext_table::register_table(client_cache);
         match_round_users_table::register_table(client_cache);
@@ -2289,9 +2287,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         my_node_positions_table::register_table(client_cache);
         my_projects_table::register_table(client_cache);
         my_user_table::register_table(client_cache);
-        raw_server_config_table::register_table(client_cache);
         raw_server_current_players_table::register_table(client_cache);
-        raw_server_method_call_table::register_table(client_cache);
         raw_server_permitted_players_table::register_table(client_cache);
         raw_server_player_destination_table::register_table(client_cache);
         temp_match_leaderboard_table::register_table(client_cache);
@@ -2307,6 +2303,8 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "competition",
         "competition_available_server_pool",
         "competition_connection_data",
+        "event_raw_server_method",
+        "event_raw_server_state",
         "match_round",
         "match_round_ext",
         "match_round_users",
@@ -2317,9 +2315,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "my_node_positions",
         "my_projects",
         "my_user",
-        "raw_server_config",
         "raw_server_current_players",
-        "raw_server_method_call",
         "raw_server_permitted_players",
         "raw_server_player_destination",
         "temp_match_leaderboard",

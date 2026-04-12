@@ -97,6 +97,8 @@ import ComeptitionSchedulesRow from "./comeptition_schedules_table";
 import CompetitionRow from "./competition_table";
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
 import CompetitionConnectionDataRow from "./competition_connection_data_table";
+import EventRawServerMethodRow from "./event_raw_server_method_table";
+import EventRawServerStateRow from "./event_raw_server_state_table";
 import MatchRoundRow from "./match_round_table";
 import MatchRoundExtRow from "./match_round_ext_table";
 import MatchRoundUsersRow from "./match_round_users_table";
@@ -107,9 +109,7 @@ import MyMatchesRow from "./my_matches_table";
 import MyNodePositionsRow from "./my_node_positions_table";
 import MyProjectsRow from "./my_projects_table";
 import MyUserRow from "./my_user_table";
-import RawServerConfigRow from "./raw_server_config_table";
 import RawServerCurrentPlayersRow from "./raw_server_current_players_table";
-import RawServerMethodCallRow from "./raw_server_method_call_table";
 import RawServerPermittedPlayersRow from "./raw_server_permitted_players_table";
 import RawServerPlayerDestinationRow from "./raw_server_player_destination_table";
 import TempMatchLeaderboardRow from "./temp_match_leaderboard_table";
@@ -124,6 +124,33 @@ import UsersRow from "./users_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  event_raw_server_method: __table({
+    name: 'event_raw_server_method',
+    indexes: [
+      { accessor: 'id', name: 'event_raw_server_method_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'server_id', name: 'event_raw_server_method_server_id_idx_hash', algorithm: 'btree', columns: [
+        'serverId',
+      ] },
+    ],
+    constraints: [
+      { name: 'event_raw_server_method_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+    event: true,
+  }, EventRawServerMethodRow),
+  event_raw_server_state: __table({
+    name: 'event_raw_server_state',
+    indexes: [
+      { accessor: 'server_id', name: 'event_raw_server_state_server_id_idx_btree', algorithm: 'btree', columns: [
+        'serverId',
+      ] },
+    ],
+    constraints: [
+      { name: 'event_raw_server_state_server_id_key', constraint: 'unique', columns: ['serverId'] },
+    ],
+    event: true,
+  }, EventRawServerStateRow),
   comeptition_schedules: __table({
     name: 'comeptition_schedules',
     indexes: [
@@ -222,13 +249,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyUserRow),
-  raw_server_config: __table({
-    name: 'raw_server_config',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, RawServerConfigRow),
   raw_server_current_players: __table({
     name: 'raw_server_current_players',
     indexes: [
@@ -236,13 +256,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, RawServerCurrentPlayersRow),
-  raw_server_method_call: __table({
-    name: 'raw_server_method_call',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, RawServerMethodCallRow),
   raw_server_permitted_players: __table({
     name: 'raw_server_permitted_players',
     indexes: [

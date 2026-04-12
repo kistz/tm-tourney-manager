@@ -5,16 +5,17 @@ use std::{
 
 use nadeo_api::NadeoClient;
 
-use spacetimedb_sdk::{DbContext, Error, Table, Uuid};
+use spacetimedb_sdk::{DbContext, Error, EventTable, Table, Uuid};
 
 use tm_server_controller::{
     TrackmaniaServer,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
 };
 use tm_server_manager_api_rs::{
-    DbConnection, ErrorContext, RawServerConfigTableAccess, RawServerMethodCallTableAccess,
-    RawServerPermittedPlayersTableAccess, RawServerPlayerDestinationTableAccess, ServerMetadata,
-    login_as_server, raw_server_configQueryTableAccess, raw_server_method_callQueryTableAccess,
+    DbConnection, ErrorContext, EventRawServerMethodTableAccess, EventRawServerState,
+    EventRawServerStateTableAccess, RawServerPermittedPlayersTableAccess,
+    RawServerPlayerDestinationTableAccess, event_raw_server_methodQueryTableAccess,
+    event_raw_server_stateQueryTableAccess, login_as_server,
     raw_server_permitted_playersQueryTableAccess, raw_server_player_destinationQueryTableAccess,
 };
 use tm_server_types::event::Event;
@@ -29,14 +30,12 @@ use crate::{
         check_allowed_players, check_players_have_destination, setup_state_synchronization,
         spacetime_disconnected,
     },
-    telemetry::init_tracing_subscriber,
 };
 
 mod chat;
 mod config;
 mod methods;
 mod state;
-mod telemetry;
 
 #[cfg(test)]
 mod test;
@@ -53,9 +52,24 @@ static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
 /// Path to the Filesystem of the trackmnia server UserData.
 static TRACKMANIA_FILES: OnceLock<String> = OnceLock::new();
 
-static SERVER_METADATA: OnceLock<Mutex<ServerMetadata>> = OnceLock::new();
+static SERVER_METADATA: OnceLock<Mutex<EventRawServerState>> = OnceLock::new();
 static EVENT_CACHE: LazyLock<StdMutex<VecDeque<Event>>> =
     LazyLock::new(|| StdMutex::new(VecDeque::with_capacity(1000)));
+
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::{EnvFilter, layer::SubscriberExt as _, util::SubscriberInitExt};
+
+pub(crate) fn init_tracing_subscriber() {
+    tracing_subscriber::registry()
+        .with(
+            EnvFilter::builder()
+                .with_default_directive(LevelFilter::INFO.into())
+                .with_env_var("DEBUG_LOG_LEVEL")
+                .from_env_lossy(),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+}
 
 /// Load credentials from a file and connect to the database.
 #[instrument(level = "debug")]
@@ -185,7 +199,7 @@ fn on_stdb_disconnected(ctx: &ErrorContext, err: Option<Error>) {
     spacetime_disconnected();
 }
 
-async fn spacetime_connect(force_ful: bool) {
+async fn spacetime_connect(seamless: bool) {
     let spacetime = connect_to_db();
 
     let tm_server_login = std::env::var("TM_MASTERSERVER_LOGIN").unwrap();
@@ -202,10 +216,10 @@ async fn spacetime_connect(force_ful: bool) {
         }
     });
 
-    SPACETIME
+    let server_id = SPACETIME
         .wait()
         .procedures()
-        .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, false)
+        .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, seamless)
         .await
         .unwrap()
         .expect("Server could not be authenticated successfully");
@@ -220,14 +234,25 @@ async fn spacetime_connect(force_ful: bool) {
         .subscription_builder()
         .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
         .on_error(|_, error| tracing::error!("Subscription failed: {error:?}"))
-        .add_query(|ctx| ctx.from.raw_server_method_call())
-        .add_query(|ctx| ctx.from.raw_server_config())
+        .add_query(|ctx| {
+            ctx.from
+                .event_raw_server_method()
+                .r#where(|s| s.server_id.eq(server_id))
+        })
+        .add_query(|ctx| {
+            ctx.from
+                .event_raw_server_state()
+                .r#where(|s| s.server_id.eq(server_id))
+        })
         .add_query(|ctx| ctx.from.raw_server_permitted_players())
         .add_query(|ctx| ctx.from.raw_server_player_destination())
         .subscribe();
 
     //TODO switch to this_server if on_update callbacks are there
-    spacetime.db.raw_server_config().on_insert(metadata_update);
+    spacetime
+        .db
+        .event_raw_server_state()
+        .on_insert(metadata_update);
 
     spacetime
         .db
@@ -236,7 +261,7 @@ async fn spacetime_connect(force_ful: bool) {
 
     spacetime
         .db
-        .raw_server_method_call()
+        .event_raw_server_method()
         .on_insert(method_call_received);
 
     spacetime

@@ -87,7 +87,7 @@ pub fn login_as_server(
     password: String,
     user_account_id: Uuid,
     seamless: bool,
-) -> Result<(), String> {
+) -> Result<u32, String> {
     let request = Request::builder()
         .method("POST")
         .uri("https://prod.trackmania.core.nadeo.online/v2/authentication/token/basic")
@@ -136,7 +136,7 @@ pub fn login_as_server(
     let server_account_id = Uuid::parse_str(&claims.sub).unwrap();
     let identity = ctx.sender();
 
-    ctx.try_with_tx::<(), String>(|ctx| {
+    let id = ctx.try_with_tx::<u32, String>(|ctx| {
         if let Some(mut server) = ctx.db.tab_raw_server().server_login().find(&login) {
             let server_id = server.id;
             if ctx.user_account_from_id(server.user_id) != user_account_id {
@@ -152,11 +152,16 @@ pub fn login_as_server(
             {
                 let match_id = occupation.id();
 
-                ctx.match_exit_recovery(match_id);
+                if seamless {
+                    ctx.match_recovery_exit_seamless(match_id);
+                } else {
+                    ctx.match_recovery_exit_forced(match_id);
+                }
             }
+            Ok(server_id)
         } else {
             // Server has never been seen before so create a new one.
-            ctx.db.tab_raw_server().try_insert(RawServerV1 {
+            let server = ctx.db.tab_raw_server().try_insert(RawServerV1 {
                 id: 0,
                 server_login: login.clone(),
                 server_account_id,
@@ -167,12 +172,11 @@ pub fn login_as_server(
                 online: true,
                 last_connection: ctx.timestamp,
             })?;
+            Ok(server.id)
         }
-
-        Ok(())
     })?;
 
-    Ok(())
+    Ok(id)
 }
 
 #[view(accessor= this_raw_server, public)]
@@ -294,7 +298,7 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
         {
             let match_id = occupation.id();
 
-            self.match_enter_recovery(match_id);
+            self.match_recovery_enter(match_id);
         }
     }
 }

@@ -9,6 +9,8 @@ use super::method_error_type::MethodError;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub enum MethodResponse {
+    Pending,
+
     Success,
 
     Error(MethodError),

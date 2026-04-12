@@ -228,13 +228,25 @@ pub(crate) fn handle_match_event(
         Event::Pause(pause) => {
             let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
 
-            state.set_pause(pause.active);
+            // If we just entered a pause we need to delete the current ongoing round.
+            if pause.active && !state.paused() {
+                ctx.db
+                    .tab_match_round_player()
+                    .match_round()
+                    .delete((match_id, state.get_round()));
+                ctx.db
+                    .tab_match_round_player_ext()
+                    .match_round()
+                    .delete((match_id, state.get_round()));
+            }
 
+            state.set_pause(pause.active);
             ctx.db.tab_match_state().match_id().update(state);
         }
         Event::Scores(scores) => {
             let state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
             if state.live_round() && scores.section == "PreEndRound" {
+                // Because we delete after a pause this is empty and hence does not modify anything.
                 let player_rounds = ctx
                     .db
                     .tab_match_round_player()

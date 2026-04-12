@@ -37,10 +37,10 @@ impl MatchState {
     }
 
     pub(crate) fn set_pause(&mut self, paused: bool) {
+        if !self.paused && paused {
+            self.round -= 1;
+        }
         self.paused = paused;
-        //rollback the current round.
-        //TODO check if this is correct.
-        self.round -= 1;
     }
 
     pub(crate) fn new_wu_round(&mut self) {
@@ -57,6 +57,10 @@ impl MatchState {
 
     pub(super) fn get_round(&self) -> u16 {
         self.round
+    }
+
+    pub(super) fn paused(&self) -> bool {
+        self.paused
     }
 
     pub(super) fn live_round(&self) -> bool {

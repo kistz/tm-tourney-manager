@@ -56,7 +56,5 @@ fn on_match_auto_recovery(ctx: &ReducerContext, args: TabMatchAutoRecovery) {
     // -> Bridge did not come back online in the duration so we are still in recovery
     // -> We need to switch server now.
 
-    //TODO we need to assign a new server and then exit the recovery.
-    //This might also be the wrong method because we would need another preparation state.
-    ctx.match_exit_recovery(args.match_id);
+    ctx.match_recovery_exit_forced(args.match_id);
 }

@@ -29,8 +29,8 @@ impl RawServerOccupation {
 pub(crate) trait TabRawServerOccupationRead {
     fn raw_server_is_occupied(&self, server_id: u32) -> bool;
     fn raw_server_occupation(&self, server_id: u32) -> Option<NodeHandle>;
-    fn occupation_with_occupier(&self, node_handle: NodeHandle) -> Option<NodeHandle>;
-    fn occupation_get_server(&self, node_handle: NodeHandle) -> u32;
+    fn occupation_with_occupier(&self, node_handle: NodeHandle) -> Option<u32>;
+    //fn occupation_get_server(&self, node_handle: NodeHandle) -> u32;
 }
 pub(crate) trait TabRawServerOccupationWrite: TabRawServerOccupationRead {
     fn raw_server_occupation_add(
@@ -58,16 +58,17 @@ impl<Db: DbContext> TabRawServerOccupationRead for Db {
             .map(|o| NodeHandle::combine(o.node_variant, o.node_id))
     }
 
-    fn occupation_with_occupier(&self, node_handle: NodeHandle) -> Option<NodeHandle> {
+    /// Returns the server that is occupied by the occupier
+    fn occupation_with_occupier(&self, node_handle: NodeHandle) -> Option<u32> {
         self.db_read_only()
             .tab_raw_server_occupation()
             .node_handle()
             .filter(node_handle.split())
             .next()
-            .map(|o| NodeHandle::combine(o.node_variant, o.node_id))
+            .map(|o| o.server_id)
     }
 
-    fn occupation_get_server(&self, node_handle: NodeHandle) -> u32 {
+    /* fn occupation_get_server(&self, node_handle: NodeHandle) -> u32 {
         self.db_read_only()
             .tab_raw_server_occupation()
             .node_handle()
@@ -75,7 +76,7 @@ impl<Db: DbContext> TabRawServerOccupationRead for Db {
             .next()
             .unwrap()
             .server_id
-    }
+    } */
 }
 
 impl<Db: DbContext<DbView = Local>> TabRawServerOccupationWrite for Db {

@@ -21,6 +21,8 @@ pub enum MatchStatus {
     Locked,
 
     Recovery,
+
+    RecoveryPreparation,
 }
 
 impl __sdk::InModule for MatchStatus {

@@ -1,12 +1,12 @@
 use nadeo_api::{NadeoRequest, auth::AuthType, request::Method};
 use serde::{Deserialize, Serialize};
 use tm_server_controller::method::XmlRpcMethods;
-use tm_server_manager_api_rs::{EventContext, ServerMetadata};
+use tm_server_manager_api_rs::{EventContext, EventRawServerState};
 use tokio::sync::Mutex;
 
 use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES};
 
-pub fn metadata_update(_: &EventContext, new_metadata: &tm_server_manager_api_rs::ServerMetadata) {
+pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tokio::task::block_in_place(move || {
         let old_metadata = SERVER_METADATA.get();
         tokio::runtime::Handle::current().block_on(async move {
@@ -17,9 +17,10 @@ pub fn metadata_update(_: &EventContext, new_metadata: &tm_server_manager_api_rs
                 .await;
             if old_metadata.is_some()
                 && old_metadata.unwrap().lock().await.config == new_metadata.config
+            //&& new_metadata.recovery_section
             {
+                //_ = server.restart_map().await;
                 _ = server.restart_map().await;
-                _ = server.next_map().await;
                 _ = server
                     .chat_send_server_massage(
                         "[tmservers.live] Configuration stayed the same restarting regardless.",
@@ -29,17 +30,18 @@ pub fn metadata_update(_: &EventContext, new_metadata: &tm_server_manager_api_rs
             }
             if configure(new_metadata.clone()).await {
                 _ = server.restart_map().await;
-                _ = server.next_map().await;
+                //_ = server.next_map().await;
+                _ = server
+                    .chat_send_server_massage("[tmservers.live] New configuration loaded.")
+                    .await;
+            } else {
+                tracing::error!("We did not reconfigure TODO")
             }
-
-            _ = server
-                .chat_send_server_massage("[tmservers.live] New configuration loaded.")
-                .await;
         });
     });
 }
 
-pub async fn configure(server_metadata: ServerMetadata) -> bool {
+pub async fn configure(server_metadata: EventRawServerState) -> bool {
     let local_server = TRACKMANIA.wait();
 
     let server_config = unsafe {

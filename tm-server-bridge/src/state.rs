@@ -134,7 +134,6 @@ pub async fn setup_state_synchronization() {
     });
 
     server.on_start_server_start(async |event: &StartServer| {
-        //if event.mode.updated {
         let config = unsafe {
             std::mem::transmute::<
                 tm_server_manager_api_rs::ServerConfig,
@@ -146,16 +145,19 @@ pub async fn setup_state_synchronization() {
         if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
             tracing::error!("{error}")
         };
-        /*  } else {
-            //We should be fine because the settings already loaded correctly.
-        } */
+        if event.mode.updated {
+            tracing::error!("Mode Script was updated");
+        } else {
+            tracing::error!("Mode Script stayed the same");
+        }
     });
 
     server.on_start_map_end(async |map: &StartMap| {
         //We need to load the settings again because we changed the script.
-        /* if !map.restarted {
+        if !map.restarted {
             return;
-        } */
+        }
+        tracing::info!("The start map ended and we have not restarted. Applying config again.");
 
         let config = unsafe {
             std::mem::transmute::<
@@ -167,6 +169,9 @@ pub async fn setup_state_synchronization() {
         if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
             tracing::error!("{error}")
         };
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
     });
 }
 
@@ -201,7 +206,8 @@ pub(super) async fn sync_players() {
 }
 
 pub fn check_allowed_players() {
-    spawn_blocking(async move || {
+    tokio::task::block_in_place(move || {
+        tokio::runtime::Handle::current().block_on(async move {
         if !SERVER_METADATA.wait().lock().await.open {
             let server = TRACKMANIA.wait();
             if let Ok(players) = server.get_player_list().await {
@@ -245,41 +251,46 @@ pub fn check_allowed_players() {
             }
         }
     });
+    });
 }
 
 pub fn check_players_have_destination() {
-    spawn_blocking(async move || {
-        let server = TRACKMANIA.wait();
-        if let Ok(players) = server.get_player_list().await {
-            for server_player in players {
-                if let Some(player) = SPACETIME
-                    .wait()
-                    .db
-                    .raw_server_player_destination()
-                    .iter()
-                    .find(|p| Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id)
-                    && let Err(error) = server
-                        .send_open_link_to_account(
-                            server_player.account_id.to_string(),
-                            format!(
-                                "#qjoin={}@Trackmania",
-                                account_id_to_login(&player.server_account_id.to_string())
-                            ),
-                            1,
-                        )
-                        .await
-                {
-                    tracing::error!("Could not send link: {error}")
-                };
+    tokio::task::block_in_place(move || {
+        tokio::runtime::Handle::current().block_on(async move {
+            let server = TRACKMANIA.wait();
+            if let Ok(players) = server.get_player_list().await {
+                for server_player in players {
+                    if let Some(player) = SPACETIME
+                        .wait()
+                        .db
+                        .raw_server_player_destination()
+                        .iter()
+                        .find(|p| {
+                            Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id
+                        })
+                        && let Err(error) = server
+                            .send_open_link_to_account(
+                                server_player.account_id.to_string(),
+                                format!(
+                                    "#qjoin={}@Trackmania",
+                                    account_id_to_login(&player.server_account_id.to_string())
+                                ),
+                                1,
+                            )
+                            .await
+                    {
+                        tracing::error!("Could not send link: {error}")
+                    };
+                }
             }
-        }
-    });
+        });
+    })
 }
 
 pub fn spacetime_disconnected() {
     tracing::info!("start.");
-    /* spawn_blocking */
-    tokio::spawn(/* async move || */ async {
+    tokio::task::block_in_place(move || {
+        tokio::runtime::Handle::current().block_on(async move {
         let server = TRACKMANIA.wait();
         if let Err(err) = server.pause_set_active(true).await {
             tracing::error!(
@@ -294,6 +305,7 @@ pub fn spacetime_disconnected() {
         {
             tracing::error!("Error sending disconnect message. Reason: {}", err)
         };
+    });
     });
     tracing::info!("what");
 }

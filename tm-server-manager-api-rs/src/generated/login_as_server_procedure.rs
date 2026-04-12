@@ -10,7 +10,7 @@ struct LoginAsServerArgs {
     pub login: String,
     pub password: String,
     pub user_account_id: __sdk::Uuid,
-    pub request_recovery: bool,
+    pub seamless: bool,
 }
 
 impl __sdk::InModule for LoginAsServerArgs {
@@ -27,15 +27,9 @@ pub trait login_as_server {
         login: String,
         password: String,
         user_account_id: __sdk::Uuid,
-        request_recovery: bool,
+        seamless: bool,
     ) {
-        self.login_as_server_then(
-            login,
-            password,
-            user_account_id,
-            request_recovery,
-            |_, _| {},
-        );
+        self.login_as_server_then(login, password, user_account_id, seamless, |_, _| {});
     }
 
     fn login_as_server_then(
@@ -43,9 +37,9 @@ pub trait login_as_server {
         login: String,
         password: String,
         user_account_id: __sdk::Uuid,
-        request_recovery: bool,
+        seamless: bool,
 
-        __callback: impl FnOnce(&super::ProcedureEventContext, Result<Result<(), String>, __sdk::InternalError>)
+        __callback: impl FnOnce(&super::ProcedureEventContext, Result<Result<u32, String>, __sdk::InternalError>)
             + Send
             + 'static,
     );
@@ -56,8 +50,8 @@ pub trait login_as_server {
         login: String,
         password: String,
         user_account_id: __sdk::Uuid,
-        request_recovery: bool,
-    ) -> Result<Result<(), String>, __sdk::InternalError>;
+        seamless: bool,
+    ) -> Result<Result<u32, String>, __sdk::InternalError>;
 }
 
 impl login_as_server for super::RemoteProcedures {
@@ -66,20 +60,20 @@ impl login_as_server for super::RemoteProcedures {
         login: String,
         password: String,
         user_account_id: __sdk::Uuid,
-        request_recovery: bool,
+        seamless: bool,
 
-        __callback: impl FnOnce(&super::ProcedureEventContext, Result<Result<(), String>, __sdk::InternalError>)
+        __callback: impl FnOnce(&super::ProcedureEventContext, Result<Result<u32, String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) {
         self.imp
-            .invoke_procedure_with_callback::<_, Result<(), String>>(
+            .invoke_procedure_with_callback::<_, Result<u32, String>>(
                 "login_as_server",
                 LoginAsServerArgs {
                     login,
                     password,
                     user_account_id,
-                    request_recovery,
+                    seamless,
                 },
                 __callback,
             );
@@ -90,16 +84,16 @@ impl login_as_server for super::RemoteProcedures {
         login: String,
         password: String,
         user_account_id: __sdk::Uuid,
-        request_recovery: bool,
-    ) -> Result<Result<(), String>, __sdk::InternalError> {
+        seamless: bool,
+    ) -> Result<Result<u32, String>, __sdk::InternalError> {
         self.imp
-            .invoke_procedure_async::<_, Result<(), String>>(
+            .invoke_procedure_async::<_, Result<u32, String>>(
                 "login_as_server",
                 LoginAsServerArgs {
                     login,
                     password,
                     user_account_id,
-                    request_recovery,
+                    seamless,
                 },
             )
             .await

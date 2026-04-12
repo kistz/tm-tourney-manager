@@ -1,8 +1,8 @@
-use tm_server_manager_api_rs::{EventContext, RawServerMethodCall, server_method_response};
+use tm_server_manager_api_rs::{EventContext, EventRawServerMethod, server_method_response};
 
 use crate::{SPACETIME, TRACKMANIA};
 
-pub fn method_call_received(_: &EventContext, method: &RawServerMethodCall) {
+pub fn method_call_received(_: &EventContext, method: &EventRawServerMethod) {
     tracing::error!("{method:#?}");
     let new = method.clone();
     tokio::spawn(async move {

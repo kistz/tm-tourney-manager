@@ -18,7 +18,6 @@ pub struct MatchV1 {
     pub auto_provision_server: bool,
     pub open: bool,
     pub template: bool,
-    pub dirty: bool,
 }
 
 impl __sdk::InModule for MatchV1 {
@@ -38,7 +37,6 @@ pub struct MatchV1Cols {
     pub auto_provision_server: __sdk::__query_builder::Col<MatchV1, bool>,
     pub open: __sdk::__query_builder::Col<MatchV1, bool>,
     pub template: __sdk::__query_builder::Col<MatchV1, bool>,
-    pub dirty: __sdk::__query_builder::Col<MatchV1, bool>,
 }
 
 impl __sdk::__query_builder::HasCols for MatchV1 {
@@ -57,7 +55,6 @@ impl __sdk::__query_builder::HasCols for MatchV1 {
             ),
             open: __sdk::__query_builder::Col::new(table_name, "open"),
             template: __sdk::__query_builder::Col::new(table_name, "template"),
-            dirty: __sdk::__query_builder::Col::new(table_name, "dirty"),
         }
     }
 }

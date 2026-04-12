@@ -10,14 +10,14 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 import {
-  ServerConfig,
+  MethodCall,
 } from "./types";
 
 
 export default __t.row({
-  get config() {
-    return ServerConfig;
+  id: __t.u32().primaryKey(),
+  serverId: __t.u32().name("server_id"),
+  get call() {
+    return MethodCall;
   },
-  open: __t.bool(),
-  forceRestart: __t.bool().name("force_restart"),
 });

@@ -9,10 +9,11 @@ use super::server_config_type::ServerConfig;
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct EventRawServerState {
+    pub server_id: u32,
     pub config: ServerConfig,
     pub open: bool,
     pub recovery_section: bool,
-    pub force_restart: bool,
+    pub seamless: bool,
 }
 
 impl __sdk::InModule for EventRawServerState {
@@ -23,20 +24,22 @@ impl __sdk::InModule for EventRawServerState {
 ///
 /// Provides typed access to columns for query building.
 pub struct EventRawServerStateCols {
+    pub server_id: __sdk::__query_builder::Col<EventRawServerState, u32>,
     pub config: __sdk::__query_builder::Col<EventRawServerState, ServerConfig>,
     pub open: __sdk::__query_builder::Col<EventRawServerState, bool>,
     pub recovery_section: __sdk::__query_builder::Col<EventRawServerState, bool>,
-    pub force_restart: __sdk::__query_builder::Col<EventRawServerState, bool>,
+    pub seamless: __sdk::__query_builder::Col<EventRawServerState, bool>,
 }
 
 impl __sdk::__query_builder::HasCols for EventRawServerState {
     type Cols = EventRawServerStateCols;
     fn cols(table_name: &'static str) -> Self::Cols {
         EventRawServerStateCols {
+            server_id: __sdk::__query_builder::Col::new(table_name, "server_id"),
             config: __sdk::__query_builder::Col::new(table_name, "config"),
             open: __sdk::__query_builder::Col::new(table_name, "open"),
             recovery_section: __sdk::__query_builder::Col::new(table_name, "recovery_section"),
-            force_restart: __sdk::__query_builder::Col::new(table_name, "force_restart"),
+            seamless: __sdk::__query_builder::Col::new(table_name, "seamless"),
         }
     }
 }
@@ -44,11 +47,15 @@ impl __sdk::__query_builder::HasCols for EventRawServerState {
 /// Indexed column accessor struct for the table `EventRawServerState`.
 ///
 /// Provides typed access to indexed columns for query building.
-pub struct EventRawServerStateIxCols {}
+pub struct EventRawServerStateIxCols {
+    pub server_id: __sdk::__query_builder::IxCol<EventRawServerState, u32>,
+}
 
 impl __sdk::__query_builder::HasIxCols for EventRawServerState {
     type IxCols = EventRawServerStateIxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
-        EventRawServerStateIxCols {}
+        EventRawServerStateIxCols {
+            server_id: __sdk::__query_builder::IxCol::new(table_name, "server_id"),
+        }
     }
 }
