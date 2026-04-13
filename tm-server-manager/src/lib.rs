@@ -1,4 +1,4 @@
-use spacetimedb::{CaseConversionPolicy, ReducerContext, Uuid};
+use spacetimedb::{CaseConversionPolicy, Identity, ReducerContext, Uuid};
 
 use crate::{
     raw_server::{TabRawServerWrite, tab_raw_server},
@@ -52,17 +52,35 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
         #[cfg(not(feature = "production"))]
         if jwt.issuer() == "https://auth.spacetimedb.com" {
             use crate::user::UserWrite;
+            if ctx.sender()
+                == Identity::from_hex(
+                    "c2007de22c53d985f0a30b8614f640dc56aded1401a230b3a48ae4c0d9a399e3",
+                )
+                .unwrap()
+            {
+                log::warn!("Connected as test user Marijntje04 in a development environment!");
+                let account_id: Uuid =
+                    Uuid::parse_str("3bfcbe019-bc7f-4ee2-a405-a6c0ca7ee7b1").unwrap();
 
-            log::warn!("Connected as test user Mr.Joermungandr in a development environment!");
-            let account_id: Uuid = Uuid::parse_str("3467014a-c1cc-4aae-99fe-6beb5eca232a").unwrap();
+                let preferred_username = String::from("Marijntje04");
+                let mut user = UserStruct::new(account_id);
+                user.set_name(preferred_username);
+                let user_id = ctx.user_insert(user)?;
+                ctx.user_login(user_id, ctx.sender())?;
+                return Ok(());
+            } else {
+                log::warn!("Connected as test user Mr.Joermungandr in a development environment!");
+                let account_id: Uuid =
+                    Uuid::parse_str("3467014a-c1cc-4aae-99fe-6beb5eca232a").unwrap();
 
-            let preferred_username = String::from("Mr.Joermungandr");
-            let mut user = UserStruct::new(account_id);
-            user.set_name(preferred_username);
-            let user_id = ctx.user_insert(user)?;
-            ctx.user_login(user_id, ctx.sender())?;
+                let preferred_username = String::from("Mr.Joermungandr");
+                let mut user = UserStruct::new(account_id);
+                user.set_name(preferred_username);
+                let user_id = ctx.user_insert(user)?;
+                ctx.user_login(user_id, ctx.sender())?;
 
-            return Ok(());
+                return Ok(());
+            }
         }
 
         if jwt.issuer() == "https://auth.spacetimedb.com/oidc" {
