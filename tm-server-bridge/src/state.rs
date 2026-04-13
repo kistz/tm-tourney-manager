@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use spacetimedb_sdk::{Table, Uuid};
 use tm_server_controller::{
     callbacks::TypedCallbacks,
@@ -11,6 +13,7 @@ use tm_server_types::{
     base::account_id_to_login,
     event::{EndRoundStart, PlayerConnect, StartMap, StartServer},
 };
+use tokio::time::sleep;
 
 use crate::{
     EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES, spacetime_connect,
@@ -311,16 +314,50 @@ pub fn spacetime_disconnected() {
             let connected=spacetime_connect(true).await;
         if connected {
             tracing::info!("Sucessfully reconnected.");
-            if let Err(err) = server.pause_set_active(false).await {
-            tracing::error!(
-                "Error unpausing the match because spacetime reconnected. Reson: {}",
-                err
-            )
-        }
-            break;} else {
+            if let Err(err) = server
+            .chat_send_server_massage("$0f0[tmservers.live] Reconnected. Initiating seamless recovery. Match will resume in 20 seconds.")
+            .await
+        {
+            tracing::error!("Error sending resume message. Reason: {}", err)
+        };
+           if let Err(err)= tokio::spawn(seamless_recovery()).await {
+                tracing::error!("Error spawning seamless recovery. {err}")
+           };
+            return;
+        } else {
             tracing::error!("Failed to reconnect. Retrying...");
         }
     }
     });
     });
+}
+
+async fn seamless_recovery() {
+    let server = TRACKMANIA.wait();
+    let mut seconds = 20;
+    while seconds > 0 {
+        if let Err(err) = server
+            .chat_send_server_massage(format!(
+                "[tmservers.live] Match will resume in {seconds} seconds."
+            ))
+            .await
+        {
+            tracing::error!("Error sending resume message. Reason: {}", err)
+        };
+        seconds -= 2;
+        sleep(Duration::from_secs(2)).await;
+    }
+
+    if let Err(err) = server
+        .chat_send_server_massage("[tmservers.live] Match resuming. GLHF.")
+        .await
+    {
+        tracing::error!("Error sending resume message. Reason: {}", err)
+    };
+    if let Err(err) = server.pause_set_active(false).await {
+        tracing::error!(
+            "Error unpausing the match because spacetime reconnected. Reson: {}",
+            err
+        )
+    }
 }

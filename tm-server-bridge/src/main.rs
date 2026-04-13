@@ -249,7 +249,6 @@ async fn spacetime_connect(seamless: bool) -> bool {
         .add_query(|ctx| ctx.from.raw_server_player_destination())
         .subscribe();
 
-    //TODO switch to this_server if on_update callbacks are there
     spacetime
         .db
         .event_raw_server_state()

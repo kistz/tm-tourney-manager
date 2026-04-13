@@ -177,7 +177,10 @@ pub trait XmlRpcMethods {
 
     async fn load_match_settings(&self, path: &str) -> Result<i32, ClientError>;
 
-    async fn chat_send_server_massage(&self, message: &str) -> Result<bool, ClientError>;
+    async fn chat_send_server_massage(
+        &self,
+        message: impl Into<String>,
+    ) -> Result<bool, ClientError>;
 
     async fn chat_manual_routing(
         &self,
@@ -272,8 +275,11 @@ impl XmlRpcMethods for TrackmaniaServer {
         self.call("LoadMatchSettings", path).await
     }
 
-    async fn chat_send_server_massage(&self, message: &str) -> Result<bool, ClientError> {
-        self.call("ChatSendServerMessage", message).await
+    async fn chat_send_server_massage(
+        &self,
+        message: impl Into<String>,
+    ) -> Result<bool, ClientError> {
+        self.call("ChatSendServerMessage", message.into()).await
     }
 
     async fn insert_map_list(&self, maps: Vec<String>) -> Result<i32, ClientError> {
@@ -381,34 +387,32 @@ pub(crate) trait TypeMethodCall {
 impl TypeMethodCall for MethodCall {
     async fn call_with_server(self, server: &TrackmaniaServer) -> MethodResponse {
         match self {
-            MethodCall::ListMethods => todo!(),
+            /* MethodCall::ListMethods => todo!(),
             MethodCall::MethodSignature(_) => todo!(),
-            MethodCall::MethodHelp(_) => todo!(),
+            MethodCall::MethodHelp(_) => todo!(), */
             MethodCall::ChatSendServerMessage(msg) => {
                 match server.chat_send_server_massage(&msg).await {
                     Ok(_) => MethodResponse::Success,
                     Err(err) => err.into(),
                 }
             }
-            MethodCall::ChatSendServerMessageToUser(chat_send_server_message_to_user_args) => {
-                todo!()
-            }
-            MethodCall::ChatSend(msg) =>
-            /*  server.chat_send(msg).await */
-            {
-                todo!()
-            }
-            MethodCall::ChatSendToUser(chat_send_to_user_args) => todo!(),
-            MethodCall::Kick(kick_args) => todo!(),
-            MethodCall::Ban(ban_args) => todo!(),
-            MethodCall::UnBan(_) => todo!(),
-            MethodCall::Ignore(_) => todo!(),
-            MethodCall::UnIgnore(_) => todo!(),
-            MethodCall::SetPlayerPassword(_) => todo!(),
-            MethodCall::SetSpectatorPassword(_) => todo!(),
-            MethodCall::SendToServerAfterMatchEnd(_) => todo!(),
-            MethodCall::GetMethodsList => todo!(),
-
+            /* MethodCall::ChatSendServerMessageToUser(chat_send_server_message_to_user_args) => {
+                           todo!()
+                       }
+                       MethodCall::ChatSend(msg) =>
+                       /*  server.chat_send(msg).await */
+                       {
+                           todo!()
+                       }
+                       MethodCall::ChatSendToUser(chat_send_to_user_args) => todo!(),
+                       MethodCall::Kick(kick_args) => todo!(),
+                       MethodCall::Ban(ban_args) => todo!(),
+                       MethodCall::UnBan(_) => todo!(),
+                       MethodCall::Ignore(_) => todo!(),
+                       MethodCall::UnIgnore(_) => todo!(),
+                       MethodCall::SendToServerAfterMatchEnd(_) => todo!(),
+                       MethodCall::GetMethodsList => todo!(),
+            */
             MethodCall::PauseSetActive(active) => match server.pause_set_active(active).await {
                 Ok(_) => MethodResponse::Success,
                 Err(err) => err.into(),

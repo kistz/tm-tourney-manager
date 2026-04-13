@@ -149,10 +149,10 @@ impl TrackmaniaServer {
 
         info!("Connected to: {call}");
 
-        let (sender, rx) = tachyonix::channel::<GbxMessage>(32);
+        let (sender, rx) = tachyonix::channel::<GbxMessage>(128);
 
         // With many players trackmania can dump a shitload of events so the capacity is very large to prevent overflows.
-        let (global_callback_sender, global_callback) = broadcast::channel(222);
+        let (global_callback_sender, global_callback) = broadcast::channel(500);
 
         let client = Self {
             global_callback,
