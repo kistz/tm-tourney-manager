@@ -545,7 +545,9 @@ export const MatchState = __t.object("MatchState", {
   warmup: __t.u16(),
   isWarmup: __t.bool(),
   paused: __t.bool(),
-  preparation: __t.bool(),
+  get status() {
+    return MatchStatus;
+  },
 });
 export type MatchState = __Infer<typeof MatchState>;
 
@@ -849,6 +851,7 @@ export const ProjectV1 = __t.object("ProjectV1", {
   get status() {
     return ProjectStatus;
   },
+  rootCompetition: __t.u32(),
 });
 export type ProjectV1 = __Infer<typeof ProjectV1>;
 

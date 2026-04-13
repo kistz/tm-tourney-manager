@@ -1,10 +1,14 @@
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType, Table, reducer, table,
-    view,
+    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer,
+    table, view,
 };
 
 use crate::{
-    authorization::Authorization, competition::template::competition_template_instantiate,
+    authorization::Authorization,
+    competition::{
+        roles::{CompetitionMember, tab_competition_member},
+        template::competition_template_instantiate,
+    },
 };
 
 pub(super) mod connection;
@@ -55,7 +59,7 @@ impl CompetitionV1 {
     /// # Safety
     /// The new competition has to be commited to spacetime db through the `competition_create` reducer.
     /// Otherwise the id is invalid.
-    pub unsafe fn new(name: String, parent_id: u32) -> Self {
+    fn new(name: String, parent_id: u32) -> Self {
         Self {
             id: 0,
             parent_id,
@@ -93,7 +97,7 @@ pub enum CompetitionStatus {
 
 /// Adds a new Competition to the specified project.
 #[reducer]
-pub fn competition_create(
+fn competition_create(
     ctx: &ReducerContext,
     name: String,
     parent_id: u32,
@@ -120,7 +124,7 @@ pub fn competition_create(
 }
 
 #[reducer]
-pub fn competition_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+fn competition_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut competition) = ctx.db.tab_competition().id().find(id) else {
         return Err("Competition was mot found!".into());
     };
@@ -166,7 +170,7 @@ pub(crate) fn authorized_competition_ongoing(ctx: &ReducerContext, id: u32) -> R
 }
 
 #[reducer]
-pub fn competition_edit_name(
+fn competition_edit_name(
     ctx: &ReducerContext,
     competition_id: u32,
     name: String,
@@ -187,7 +191,7 @@ pub fn competition_edit_name(
 }
 
 #[view(accessor=competition,public)]
-pub fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
+fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
     ctx.from
         .tab_competition()
         //TODO this equality doesnt work atm because of enum
@@ -221,5 +225,21 @@ impl<Db: DbContext> CompetitionRead for Db {
         }
 
         tree
+    }
+}
+
+pub(crate) trait CompetitionWrite: CompetitionRead {
+    fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String>;
+}
+impl<Db: DbContext<DbView = Local>> CompetitionWrite for Db {
+    fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String> {
+        let comp = self
+            .db()
+            .tab_competition()
+            .try_insert(CompetitionV1::new(name, 0))?;
+        self.db()
+            .tab_competition_member()
+            .try_insert(CompetitionMember::new_owner(user_id, comp.id))?;
+        Ok(comp.id)
     }
 }

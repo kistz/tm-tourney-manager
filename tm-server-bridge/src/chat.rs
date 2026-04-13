@@ -16,8 +16,6 @@ pub async fn setup_chat() {
     });
 
     _ = server
-        .chat_send_server_massage(
-            "[tmservers.live] Finished connecting the server to the tmservers.live backend.",
-        )
+        .chat_send_server_massage("[tmservers.live] Finished connecting the server to the backend.")
         .await;
 }

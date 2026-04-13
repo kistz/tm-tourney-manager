@@ -37,7 +37,7 @@ impl CompetitionRoleMember {
     }
 }
 
-#[table(accessor= tab_competition_member,index(accessor= user_roles , hash(columns= [competition_id,user_id])))]
+#[table(accessor= tab_competition_member,index(accessor= user_member , hash(columns= [competition_id,user_id])))]
 pub struct CompetitionMember {
     permissions: u64,
 
@@ -52,12 +52,23 @@ pub struct CompetitionMember {
     user_id: u32,
 }
 
+impl CompetitionMember {
+    pub(crate) fn new_owner(user_id: u32, competition_id: u32) -> Self {
+        CompetitionMember {
+            permissions: CompetitionPermissionsV1::OWNER.0,
+            id: 0,
+            competition_id,
+            user_id,
+        }
+    }
+
+    pub(crate) fn get_permissions(&self) -> CompetitionPermissionsV1 {
+        CompetitionPermissionsV1(self.permissions)
+    }
+}
+
 #[reducer]
-pub fn member_add(
-    ctx: &ReducerContext,
-    competition_id: u32,
-    account_id: Uuid,
-) -> Result<(), String> {
+fn member_add(ctx: &ReducerContext, competition_id: u32, account_id: Uuid) -> Result<(), String> {
     let user_id = ctx
         .auth_builder(competition_id)
         //.permission(ProjectPermissionsV1::Pro)
@@ -76,7 +87,7 @@ pub fn member_add(
 }
 
 #[reducer]
-pub fn member_remove(ctx: &ReducerContext, member_id: u32) -> Result<(), String> {
+fn member_remove(ctx: &ReducerContext, member_id: u32) -> Result<(), String> {
     let Some(project_member) = ctx.db.tab_competition_member().id().find(member_id) else {
         return Err("Member with id not found!".into());
     };

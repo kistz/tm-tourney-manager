@@ -5,7 +5,7 @@ use spacetimedb::{
 
 use crate::{
     authorization::Authorization,
-    competition::{CompetitionV1, tab_competition},
+    competition::{CompetitionV1, CompetitionWrite, tab_competition},
 };
 
 /// A project is a logical grouping of competitions and also the only way to obtain a competition in the first place.
@@ -30,6 +30,8 @@ pub struct ProjectV1 {
     verified: bool,
     kind: ProjectKind,
     status: ProjectStatus,
+
+    root_competition: u32,
 }
 
 impl ProjectV1 {}
@@ -74,9 +76,11 @@ fn create_project(
 ) -> Result<(), String> {
     let user_id = ctx.user_id()?;
 
-    let project = ctx.db.tab_project().try_insert(ProjectV1 {
+    let root_id = ctx.competition_root_create(user_id, name.clone())?;
+
+    ctx.db.tab_project().try_insert(ProjectV1 {
         id: 0,
-        name: name.clone(),
+        name,
         user_id,
         status: ProjectStatus::Planning,
         description,
@@ -84,11 +88,8 @@ fn create_project(
         ending_at,
         verified: false,
         kind,
+        root_competition: root_id,
     })?;
-
-    //SAFETY: Comitted afterwards
-    let competition = unsafe { CompetitionV1::new(name, 0) };
-    ctx.db.tab_competition().try_insert(competition)?;
 
     Ok(())
 }

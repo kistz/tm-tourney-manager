@@ -1,4 +1,6 @@
-use spacetimedb::{AnonymousViewContext, Query, Uuid, table, view};
+use spacetimedb::{AnonymousViewContext, table, view};
+
+use crate::tm_match::MatchStatus;
 
 #[derive(Debug, Copy, Clone)]
 #[table(accessor=tab_match_state)]
@@ -11,7 +13,7 @@ pub struct MatchState {
     warmup: u16,
     is_warmup: bool,
     paused: bool,
-    preparation: bool,
+    status: MatchStatus,
 }
 
 impl MatchState {
@@ -24,7 +26,7 @@ impl MatchState {
             is_warmup: false,
             paused: false,
             map_id: 0,
-            preparation: true,
+            status: MatchStatus::Preparation,
         }
     }
 
@@ -52,7 +54,7 @@ impl MatchState {
     }
 
     pub(crate) fn set_live(&mut self) {
-        self.preparation = false;
+        self.status = MatchStatus::Live;
     }
 
     pub(super) fn get_round(&self) -> u16 {

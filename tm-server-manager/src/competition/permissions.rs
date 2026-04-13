@@ -49,15 +49,13 @@ impl PermissionType for CompetitionPermissionsV1 {
     }
 
     fn passed(self) -> bool {
-        //TODO make this correct.
-        //TODO how to ideally handle the OWNER
-        self.0 == 0
-    }
+        // Owner bypass
+        if get_bit_at(self.0, 0) {
+            return true;
+        }
 
-    fn bypass(&self) -> bool {
-        //TODO make this correct
-        // self.0 & 0b1 == 0b1
-        true
+        //TODO make this correct.
+        self.0 == 0
     }
 }
 
@@ -91,4 +89,8 @@ impl BitOr for CompetitionPermissionsV1 {
     fn bitor(self, rhs: Self) -> Self::Output {
         CompetitionPermissionsV1(self.0 | rhs.0)
     }
+}
+
+fn get_bit_at(input: u64, n: u8) -> bool {
+    if n < 64 { input & (1 << n) != 0 } else { false }
 }
