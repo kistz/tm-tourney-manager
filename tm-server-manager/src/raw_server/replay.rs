@@ -9,7 +9,7 @@ use crate::{
 #[procedure]
 pub fn post_round_replay(
     ctx: &mut ProcedureContext,
-    count: u16,
+    ending_round_timestamp: u32,
     replay: Vec<u8>,
 ) -> Result<(), String> {
     let sender = ctx.sender();
@@ -25,8 +25,7 @@ pub fn post_round_replay(
         };
 
         if occupation.is_match() {
-            //occupation.id()
-            //ctx.insert_match_round_replay(occupation.id(), round, map_id, replay);
+            ctx.insert_match_round_replay(occupation.id(), ending_round_timestamp, replay.clone())?;
         }
 
         Ok(())

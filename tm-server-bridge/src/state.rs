@@ -69,7 +69,7 @@ pub async fn setup_state_synchronization() {
                 SPACETIME
                     .wait()
                     .procedures
-                    .post_round_replay(event.count as u16, file);
+                    .post_round_replay(event.time, file);
             }
             Err(error) => {
                 tracing::error!("Failed to read replay file. Reason: {error}")

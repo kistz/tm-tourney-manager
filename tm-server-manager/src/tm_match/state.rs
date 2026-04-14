@@ -61,6 +61,10 @@ impl MatchState {
         self.round
     }
 
+    pub(super) fn get_map(&self) -> u32 {
+        self.map_id
+    }
+
     pub(super) fn paused(&self) -> bool {
         self.paused
     }

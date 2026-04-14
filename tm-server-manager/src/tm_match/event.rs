@@ -10,6 +10,7 @@ use crate::{
             MatchRoundPlayer, MatchRoundPlayerExt, tab_match_round_player,
             tab_match_round_player_ext,
         },
+        replay::MatchReplayWrite,
         state::tab_match_state,
         tab_match,
     },
@@ -166,6 +167,28 @@ pub(crate) fn handle_match_event(
             state.set_map(map.id);
 
             ctx.db.tab_match_state().match_id().update(state);
+        }
+        Event::EndRoundStart(event) => {
+            let state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
+            if state.live_round() {
+                if let Err(err) = ctx.match_round_replay_time_update(
+                    match_id,
+                    event.time,
+                    state.get_map(),
+                    state.get_round(),
+                    true,
+                ) {
+                    log::error!("Could not update match_round_replay_time. Reason: {err}");
+                }
+            } else if let Err(err) = ctx.match_round_replay_time_update(
+                match_id,
+                event.time,
+                state.get_map(),
+                state.get_round(),
+                false,
+            ) {
+                log::error!("Could not update match_round_replay_time. Reason: {err}");
+            }
         }
         Event::StartRoundStart(_) => {
             let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
