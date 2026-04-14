@@ -33,13 +33,6 @@ pub trait post_round_replay {
             + Send
             + 'static,
     );
-
-    #[allow(async_fn_in_trait)]
-    async fn post_round_replay_async(
-        &self,
-        count: u16,
-        replay: Vec<u8>,
-    ) -> Result<Result<(), String>, __sdk::InternalError>;
 }
 
 impl post_round_replay for super::RemoteProcedures {
@@ -58,18 +51,5 @@ impl post_round_replay for super::RemoteProcedures {
                 PostRoundReplayArgs { count, replay },
                 __callback,
             );
-    }
-
-    async fn post_round_replay_async(
-        &self,
-        count: u16,
-        replay: Vec<u8>,
-    ) -> Result<Result<(), String>, __sdk::InternalError> {
-        self.imp
-            .invoke_procedure_async::<_, Result<(), String>>(
-                "post_round_replay",
-                PostRoundReplayArgs { count, replay },
-            )
-            .await
     }
 }

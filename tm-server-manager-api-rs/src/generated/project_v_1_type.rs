@@ -19,6 +19,7 @@ pub struct ProjectV1 {
     pub verified: bool,
     pub kind: ProjectKind,
     pub status: ProjectStatus,
+    pub root_competition: u32,
 }
 
 impl __sdk::InModule for ProjectV1 {
@@ -38,6 +39,7 @@ pub struct ProjectV1Cols {
     pub verified: __sdk::__query_builder::Col<ProjectV1, bool>,
     pub kind: __sdk::__query_builder::Col<ProjectV1, ProjectKind>,
     pub status: __sdk::__query_builder::Col<ProjectV1, ProjectStatus>,
+    pub root_competition: __sdk::__query_builder::Col<ProjectV1, u32>,
 }
 
 impl __sdk::__query_builder::HasCols for ProjectV1 {
@@ -53,6 +55,7 @@ impl __sdk::__query_builder::HasCols for ProjectV1 {
             verified: __sdk::__query_builder::Col::new(table_name, "verified"),
             kind: __sdk::__query_builder::Col::new(table_name, "kind"),
             status: __sdk::__query_builder::Col::new(table_name, "status"),
+            root_competition: __sdk::__query_builder::Col::new(table_name, "root_competition"),
         }
     }
 }

@@ -60,7 +60,7 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
             {
                 log::warn!("Connected as test user Marijntje04 in a development environment!");
                 let account_id: Uuid =
-                    Uuid::parse_str("3bfcbe019-bc7f-4ee2-a405-a6c0ca7ee7b1").unwrap();
+                    Uuid::parse_str("bfcbe019-bc7f-4ee2-a405-a6c0ca7ee7b1").unwrap();
 
                 let preferred_username = String::from("Marijntje04");
                 let mut user = UserStruct::new(account_id);
