@@ -32,7 +32,7 @@ services:
       - UserData:/server/UserData
   # The bridge required to connect. Acts as the server controller.
   tm1bridge:
-    image: # TODO its not published yet
+    image: kistz/tmservers-bridge:latest
     restart: unless-stopped
     environment:
       # The url used to connect to the trackmania server. (match name to service name)
