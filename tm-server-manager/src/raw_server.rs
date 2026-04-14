@@ -176,6 +176,8 @@ pub fn login_as_server(
         }
     })?;
 
+    log::info!("Server {} successfully authorized!", login);
+
     Ok(id)
 }
 

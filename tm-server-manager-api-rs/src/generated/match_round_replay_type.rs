@@ -7,10 +7,10 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct MatchRoundReplay {
+    pub replay: Vec<u8>,
     pub map_id: u32,
     pub match_id: u32,
-    pub round: u8,
-    pub replay: Vec<u8>,
+    pub round: u16,
 }
 
 impl __sdk::InModule for MatchRoundReplay {
@@ -21,20 +21,20 @@ impl __sdk::InModule for MatchRoundReplay {
 ///
 /// Provides typed access to columns for query building.
 pub struct MatchRoundReplayCols {
+    pub replay: __sdk::__query_builder::Col<MatchRoundReplay, Vec<u8>>,
     pub map_id: __sdk::__query_builder::Col<MatchRoundReplay, u32>,
     pub match_id: __sdk::__query_builder::Col<MatchRoundReplay, u32>,
-    pub round: __sdk::__query_builder::Col<MatchRoundReplay, u8>,
-    pub replay: __sdk::__query_builder::Col<MatchRoundReplay, Vec<u8>>,
+    pub round: __sdk::__query_builder::Col<MatchRoundReplay, u16>,
 }
 
 impl __sdk::__query_builder::HasCols for MatchRoundReplay {
     type Cols = MatchRoundReplayCols;
     fn cols(table_name: &'static str) -> Self::Cols {
         MatchRoundReplayCols {
+            replay: __sdk::__query_builder::Col::new(table_name, "replay"),
             map_id: __sdk::__query_builder::Col::new(table_name, "map_id"),
             match_id: __sdk::__query_builder::Col::new(table_name, "match_id"),
             round: __sdk::__query_builder::Col::new(table_name, "round"),
-            replay: __sdk::__query_builder::Col::new(table_name, "replay"),
         }
     }
 }
@@ -43,6 +43,7 @@ impl __sdk::__query_builder::HasCols for MatchRoundReplay {
 ///
 /// Provides typed access to indexed columns for query building.
 pub struct MatchRoundReplayIxCols {
+    pub map_id: __sdk::__query_builder::IxCol<MatchRoundReplay, u32>,
     pub match_id: __sdk::__query_builder::IxCol<MatchRoundReplay, u32>,
 }
 
@@ -50,6 +51,7 @@ impl __sdk::__query_builder::HasIxCols for MatchRoundReplay {
     type IxCols = MatchRoundReplayIxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         MatchRoundReplayIxCols {
+            map_id: __sdk::__query_builder::IxCol::new(table_name, "map_id"),
             match_id: __sdk::__query_builder::IxCol::new(table_name, "match_id"),
         }
     }

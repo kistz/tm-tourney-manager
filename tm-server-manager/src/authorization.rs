@@ -84,7 +84,7 @@ pub(crate) trait PermissionType:
 {
     fn initial() -> Self;
 
-    fn passed(self) -> bool;
+    fn bypass(self) -> bool;
 }
 pub(crate) struct AuthBuilder<'a, Item: PermissionType, Ctx: DbContext> {
     //got: Item,
@@ -147,7 +147,8 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
             .into_iter()
             .fold(CompetitionPermissionsV1::default(), |acc, acc2| acc | acc2);
 
-        if (self.expected & !permissions).passed() {
+        if permissions.bypass() || (self.expected & !permissions) == CompetitionPermissionsV1::NONE
+        {
             Ok(user_id)
         } else {
             Err("Not sufficient permissions to perform this action.".into())
@@ -209,7 +210,8 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
             .into_iter()
             .fold(CompetitionPermissionsV1::default(), |acc, acc2| acc | acc2);
 
-        if (self.expected & !permissions).passed() {
+        if permissions.bypass() || (self.expected & !permissions) == CompetitionPermissionsV1::NONE
+        {
             Ok(user_id)
         } else {
             Err("Not sufficient permissions to perform this action.".into())

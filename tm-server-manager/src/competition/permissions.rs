@@ -6,6 +6,8 @@ use crate::authorization::PermissionType;
 pub(crate) struct CompetitionPermissionsV1(pub(super) u64);
 
 impl CompetitionPermissionsV1 {
+    pub const NONE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0);
+
     pub const OWNER: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1);
 
     //pub const PROJECT_EDIT_NAME: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b10);
@@ -48,14 +50,13 @@ impl PermissionType for CompetitionPermissionsV1 {
         Self(0)
     }
 
-    fn passed(self) -> bool {
+    fn bypass(self) -> bool {
         // Owner bypass
         if get_bit_at(self.0, 0) {
             return true;
         }
 
-        //TODO make this correct.
-        self.0 == 0
+        false
     }
 }
 

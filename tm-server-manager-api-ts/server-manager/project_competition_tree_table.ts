@@ -9,9 +9,17 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
+import {
+  CompetitionStatus,
+} from "./types";
 
-export const params = {
-  endingRoundTimestamp: __t.u32(),
-  replay: __t.byteArray(),
-};
-export const returnType = __t.result(__t.unit(), __t.string())
+
+export default __t.row({
+  name: __t.string(),
+  id: __t.u32(),
+  parentId: __t.u32().name("parent_id"),
+  get status() {
+    return CompetitionStatus;
+  },
+  template: __t.bool(),
+});

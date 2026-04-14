@@ -1,39 +1,24 @@
 use std::{
     collections::VecDeque,
+    process::exit,
     sync::{LazyLock, Mutex as StdMutex, OnceLock},
 };
 
 use nadeo_api::NadeoClient;
 
-use spacetimedb_sdk::{DbContext, Error, EventTable, Table, Uuid};
-
 use tm_server_controller::{
     TrackmaniaServer,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
 };
-use tm_server_manager_api_rs::{
-    DbConnection, ErrorContext, EventRawServerMethodTableAccess, EventRawServerState,
-    EventRawServerStateTableAccess, RawServerPermittedPlayersTableAccess,
-    RawServerPlayerDestinationTableAccess, event_raw_server_methodQueryTableAccess,
-    event_raw_server_stateQueryTableAccess, login_as_server,
-    raw_server_permitted_playersQueryTableAccess, raw_server_player_destinationQueryTableAccess,
-};
+
+use crate::connection::{MyDbConnection, spacetime_connect};
+use tm_server_manager_api_rs::EventRawServerState;
 use tm_server_types::event::Event;
 use tokio::{signal, sync::Mutex};
-use tracing::instrument;
-
-use crate::{
-    chat::setup_chat,
-    config::metadata_update,
-    methods::method_call_received,
-    state::{
-        check_allowed_players, check_players_have_destination, setup_state_synchronization,
-        spacetime_disconnected,
-    },
-};
 
 mod chat;
 mod config;
+mod connection;
 mod methods;
 mod state;
 
@@ -44,7 +29,7 @@ mod test;
 static TRACKMANIA: OnceLock<TrackmaniaServer> = OnceLock::new();
 
 /// Exposes the SpacetimeDB connection.
-static SPACETIME: OnceLock<DbConnection> = OnceLock::new();
+static SPACETIME: MyDbConnection = MyDbConnection::new();
 
 /// Exposes the NadeoAPI with server auth.
 static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
@@ -147,7 +132,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         server.chat_manual_routing(true, false).await?;
     }
 
-    spacetime_connect(false).await;
+    if !spacetime_connect(false).await {
+        tracing::error!("Could not connect to SpacetimeDB server");
+        exit(1);
+    };
 
     match signal::ctrl_c().await {
         Ok(()) => {}
@@ -158,108 +146,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     }
 
     Ok(())
-}
-
-fn on_stdb_disconnected(_: &ErrorContext, err: Option<Error>) {
-    if let Some(err) = err {
-        tracing::error!(
-            "Forcefully disconnected from SpacetimeDB with Error: {}",
-            err
-        );
-        //let connection = DbConnection::custom_new(ctx.imp());
-        // return;
-    }
-    tracing::error!("Disconnected from spacetimedb.");
-    spacetime_disconnected();
-}
-
-#[instrument(level = "debug")]
-async fn spacetime_connect(seamless: bool) -> bool {
-    let Ok(spacetime) = DbConnection::builder()
-        //.on_connect_error(on_stdb_connect_error)
-        .on_disconnect(on_stdb_disconnected)
-        .with_database_name(std::env::var("SPACETIMEDB_MODULE").unwrap_or("tmservers".to_string()))
-        .with_uri(
-            std::env::var("SPACETIMEDB_URL")
-                .unwrap_or("wss://maincloud.spacetimedb.com".to_string()),
-        )
-        .build()
-    else {
-        tracing::error!("Server could not be connected successfully");
-        return false;
-    };
-
-    let tm_server_login = std::env::var("TM_MASTERSERVER_LOGIN").unwrap();
-    let tm_server_password = std::env::var("TM_MASTERSERVER_PASSWORD").unwrap();
-    let tm_account_id = std::env::var("TM_ACCOUNT_ID").unwrap();
-    let tm_account_id = Uuid::parse_str(&tm_account_id).unwrap();
-
-    _ = SPACETIME.set(spacetime);
-
-    tokio::spawn(async move {
-        let connection = SPACETIME.wait();
-        loop {
-            _ = connection.run_async().await;
-        }
-    });
-
-    let Ok(server_id) = SPACETIME
-        .wait()
-        .procedures()
-        .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, seamless)
-        .await
-        .unwrap()
-    else {
-        tracing::error!("Server could not be authenticated successfully");
-        return false;
-    };
-
-    tracing::info!("Successfully connected to tmservers.live!");
-
-    // Initialize state subscriptions for the server.
-
-    let spacetime = SPACETIME.wait();
-
-    _ = spacetime
-        .subscription_builder()
-        .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
-        .on_error(|_, error| tracing::error!("Subscription failed: {error:?}"))
-        .add_query(|ctx| {
-            ctx.from
-                .event_raw_server_method()
-                .r#where(|s| s.server_id.eq(server_id))
-        })
-        .add_query(|ctx| {
-            ctx.from
-                .event_raw_server_state()
-                .r#where(|s| s.server_id.eq(server_id))
-        })
-        .add_query(|ctx| ctx.from.raw_server_permitted_players())
-        .add_query(|ctx| ctx.from.raw_server_player_destination())
-        .subscribe();
-
-    spacetime
-        .db
-        .event_raw_server_state()
-        .on_insert(metadata_update);
-
-    spacetime
-        .db
-        .raw_server_permitted_players()
-        .on_delete(|_, _| check_allowed_players());
-
-    spacetime
-        .db
-        .event_raw_server_method()
-        .on_insert(method_call_received);
-
-    spacetime
-        .db
-        .raw_server_player_destination()
-        .on_insert(|_, _| check_players_have_destination());
-
-    setup_state_synchronization().await;
-    setup_chat().await;
-
-    true
 }

@@ -4,6 +4,8 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::match_status_type::MatchStatus;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct MatchState {
@@ -14,7 +16,7 @@ pub struct MatchState {
     pub warmup: u16,
     pub is_warmup: bool,
     pub paused: bool,
-    pub preparation: bool,
+    pub status: MatchStatus,
 }
 
 impl __sdk::InModule for MatchState {
@@ -32,7 +34,7 @@ pub struct MatchStateCols {
     pub warmup: __sdk::__query_builder::Col<MatchState, u16>,
     pub is_warmup: __sdk::__query_builder::Col<MatchState, bool>,
     pub paused: __sdk::__query_builder::Col<MatchState, bool>,
-    pub preparation: __sdk::__query_builder::Col<MatchState, bool>,
+    pub status: __sdk::__query_builder::Col<MatchState, MatchStatus>,
 }
 
 impl __sdk::__query_builder::HasCols for MatchState {
@@ -46,7 +48,7 @@ impl __sdk::__query_builder::HasCols for MatchState {
             warmup: __sdk::__query_builder::Col::new(table_name, "warmup"),
             is_warmup: __sdk::__query_builder::Col::new(table_name, "is_warmup"),
             paused: __sdk::__query_builder::Col::new(table_name, "paused"),
-            preparation: __sdk::__query_builder::Col::new(table_name, "preparation"),
+            status: __sdk::__query_builder::Col::new(table_name, "status"),
         }
     }
 }

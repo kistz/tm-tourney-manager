@@ -3,6 +3,7 @@
 
 #![allow(unused, clippy::all)]
 use super::match_state_type::MatchState;
+use super::match_status_type::MatchStatus;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 /// Table handle for the table `match_state`.

@@ -74,6 +74,7 @@ pub mod match_override_config_reducer;
 pub mod match_round_ext_table;
 pub mod match_round_player_ext_type;
 pub mod match_round_player_type;
+pub mod match_round_replay_time_type;
 pub mod match_round_replay_type;
 pub mod match_round_table;
 pub mod match_round_users_table;
@@ -120,6 +121,7 @@ pub mod portal_create_reducer;
 pub mod portal_type;
 pub mod post_event_reducer;
 pub mod post_round_replay_procedure;
+pub mod project_competition_tree_table;
 pub mod project_edit_dates_reducer;
 pub mod project_edit_description_reducer;
 pub mod project_edit_name_reducer;
@@ -281,6 +283,7 @@ pub use match_override_config_reducer::match_override_config;
 pub use match_round_ext_table::*;
 pub use match_round_player_ext_type::MatchRoundPlayerExt;
 pub use match_round_player_type::MatchRoundPlayer;
+pub use match_round_replay_time_type::MatchRoundReplayTime;
 pub use match_round_replay_type::MatchRoundReplay;
 pub use match_round_table::*;
 pub use match_round_users_table::*;
@@ -327,6 +330,7 @@ pub use portal_create_reducer::portal_create;
 pub use portal_type::Portal;
 pub use post_event_reducer::post_event;
 pub use post_round_replay_procedure::post_round_replay;
+pub use project_competition_tree_table::*;
 pub use project_edit_dates_reducer::project_edit_dates;
 pub use project_edit_description_reducer::project_edit_description;
 pub use project_edit_name_reducer::project_edit_name;
@@ -1077,6 +1081,7 @@ pub struct DbUpdate {
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
     my_projects: __sdk::TableUpdate<MyProjectV1>,
     my_user: __sdk::TableUpdate<UserV1>,
+    project_competition_tree: __sdk::TableUpdate<CompetitionV1>,
     raw_server_current_players: __sdk::TableUpdate<RawServerPlayer>,
     raw_server_permitted_players: __sdk::TableUpdate<PermittedPlayer>,
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
@@ -1145,6 +1150,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(my_user_table::parse_table_update(table_update)?),
+                "project_competition_tree" => db_update.project_competition_tree.append(
+                    project_competition_tree_table::parse_table_update(table_update)?,
+                ),
                 "raw_server_current_players" => db_update.raw_server_current_players.append(
                     raw_server_current_players_table::parse_table_update(table_update)?,
                 ),
@@ -1245,6 +1253,10 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.my_projects =
             cache.apply_diff_to_table::<MyProjectV1>("my_projects", &self.my_projects);
         diff.my_user = cache.apply_diff_to_table::<UserV1>("my_user", &self.my_user);
+        diff.project_competition_tree = cache.apply_diff_to_table::<CompetitionV1>(
+            "project_competition_tree",
+            &self.project_competition_tree,
+        );
         diff.raw_server_current_players = cache
             .apply_diff_to_table::<RawServerPlayer>(
                 "raw_server_current_players",
@@ -1337,6 +1349,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "project_competition_tree" => db_update
+                    .project_competition_tree
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "raw_server_current_players" => db_update
                     .raw_server_current_players
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -1428,6 +1443,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "project_competition_tree" => db_update
+                    .project_competition_tree
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "raw_server_current_players" => db_update
                     .raw_server_current_players
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1489,6 +1507,7 @@ pub struct AppliedDiff<'r> {
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
     my_projects: __sdk::TableAppliedDiff<'r, MyProjectV1>,
     my_user: __sdk::TableAppliedDiff<'r, UserV1>,
+    project_competition_tree: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     raw_server_current_players: __sdk::TableAppliedDiff<'r, RawServerPlayer>,
     raw_server_permitted_players: __sdk::TableAppliedDiff<'r, PermittedPlayer>,
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
@@ -1580,6 +1599,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<UserV1>("my_user", &self.my_user, event);
+        callbacks.invoke_table_row_callbacks::<CompetitionV1>(
+            "project_competition_tree",
+            &self.project_competition_tree,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<RawServerPlayer>(
             "raw_server_current_players",
             &self.raw_server_current_players,
@@ -2287,6 +2311,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         my_node_positions_table::register_table(client_cache);
         my_projects_table::register_table(client_cache);
         my_user_table::register_table(client_cache);
+        project_competition_tree_table::register_table(client_cache);
         raw_server_current_players_table::register_table(client_cache);
         raw_server_permitted_players_table::register_table(client_cache);
         raw_server_player_destination_table::register_table(client_cache);
@@ -2315,6 +2340,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "my_node_positions",
         "my_projects",
         "my_user",
+        "project_competition_tree",
         "raw_server_current_players",
         "raw_server_permitted_players",
         "raw_server_player_destination",
