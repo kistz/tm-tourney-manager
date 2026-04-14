@@ -147,7 +147,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
             .into_iter()
             .fold(CompetitionPermissionsV1::default(), |acc, acc2| acc | acc2);
 
-        if (permissions & !self.expected).passed() {
+        if (self.expected & !permissions).passed() {
             Ok(user_id)
         } else {
             Err("Not sufficient permissions to perform this action.".into())
@@ -209,7 +209,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
             .into_iter()
             .fold(CompetitionPermissionsV1::default(), |acc, acc2| acc | acc2);
 
-        if (permissions & !self.expected).passed() {
+        if (self.expected & !permissions).passed() {
             Ok(user_id)
         } else {
             Err("Not sufficient permissions to perform this action.".into())
