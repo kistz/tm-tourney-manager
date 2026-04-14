@@ -405,7 +405,7 @@ pub fn authorized_match_set_preparation(ctx: &ReducerContext, match_id: u32) -> 
 
     ctx.destination_claim(NodeHandle::MatchV1(match_id))?;
 
-    ctx.emit_raw_server_config(server_id, false);
+    ctx.emit_raw_server_config(server_id, false)?;
 
     Ok(())
 }
@@ -442,7 +442,7 @@ pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String
     state.set_live();
     ctx.db.tab_match_state().match_id().update(state);
 
-    ctx.emit_raw_server_config(server_id, false);
+    ctx.emit_raw_server_config(server_id, false)?;
 
     Ok(())
 }
@@ -514,6 +514,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
                 .unwrap();
 
             state.set_pause(true);
+            state.set_recovery();
 
             self.db()
                 .tab_match_round_player()
@@ -545,11 +546,23 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 
         if tm_match.is_recovery() {
             log::error!(
-                "TODO: MATCH {} EXITING RECOVERY BECAUSE SERVER CAME BACK.",
+                "MATCH {} EXITING RECOVERY SEAMLESSLY BECAUSE SERVER CAME BACK.",
                 tm_match.id
             );
 
-            //TODO SO what do we have to do here?
+            tm_match.status = MatchStatus::Live;
+            self.db().tab_match().id().update(tm_match);
+
+            let mut state = self
+                .db()
+                .tab_match_state()
+                .match_id()
+                .find(match_id)
+                .unwrap();
+
+            state.set_live();
+
+            self.db().tab_match_state().match_id().update(state);
         } else {
             log::error!(
                 "MATCH {} WANTED TO EXIT RECOVERY SEAMLESSLY BUT WAS NOT IN RECOVERY MODE.",

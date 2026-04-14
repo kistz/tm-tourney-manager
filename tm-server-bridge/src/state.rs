@@ -15,9 +15,7 @@ use tm_server_types::{
 };
 use tokio::time::sleep;
 
-use crate::{
-    EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES, spacetime_connect,
-};
+use crate::{EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.wait();
@@ -26,7 +24,7 @@ pub async fn setup_state_synchronization() {
 
     // Sync all events to spacetimedb.
     server.on_event(|event| {
-        let spacetime = SPACETIME.wait();
+        let spacetime = SPACETIME.read();
         EVENT_CACHE.lock().unwrap().push_back(event.clone());
         if spacetime
             .reducers
@@ -67,9 +65,9 @@ pub async fn setup_state_synchronization() {
         match std::fs::read(&full_path) {
             Ok(file) => {
                 SPACETIME
-                    .wait()
+                    .read()
                     .procedures
-                    .post_round_replay(event.count as u16, file);
+                    .post_round_replay(event.time, file);
             }
             Err(error) => {
                 tracing::error!("Failed to read replay file. Reason: {error}")
@@ -83,7 +81,7 @@ pub async fn setup_state_synchronization() {
     server.on_player_connect(async |event: &PlayerConnect| {
         // Player destination
         if let Some(player) = SPACETIME
-            .wait()
+            .read()
             .db
             .raw_server_player_destination()
             .iter()
@@ -105,7 +103,7 @@ pub async fn setup_state_synchronization() {
         // Server allowlist.
         if !SERVER_METADATA.wait().lock().await.open {
             let Some(player) = SPACETIME
-                .wait()
+                .read()
                 .db
                 .raw_server_permitted_players()
                 .iter()
@@ -182,7 +180,7 @@ pub async fn setup_state_synchronization() {
 /// Synchronizes all the state already present on the server with spacetime db.
 pub(super) async fn sync_players() {
     let server = TRACKMANIA.wait();
-    let spacetime = SPACETIME.wait();
+    let spacetime = SPACETIME.read();
     if let Ok(players) = server.get_player_list().await {
         for player in players {
             // This is the server itself so skip the sync.
@@ -217,7 +215,7 @@ pub fn check_allowed_players() {
             if let Ok(players) = server.get_player_list().await {
                 for server_player in players {
                     let Some(player) = SPACETIME
-                        .wait()
+                        .read()
                         .db
                         .raw_server_permitted_players()
                         .iter()
@@ -265,7 +263,7 @@ pub fn check_players_have_destination() {
             if let Ok(players) = server.get_player_list().await {
                 for server_player in players {
                     if let Some(player) = SPACETIME
-                        .wait()
+                        .read()
                         .db
                         .raw_server_player_destination()
                         .iter()
@@ -291,48 +289,7 @@ pub fn check_players_have_destination() {
     })
 }
 
-pub fn spacetime_disconnected() {
-    tokio::task::block_in_place(move || {
-        tokio::runtime::Handle::current().block_on(async move {
-        let server = TRACKMANIA.wait();
-        if let Err(err) = server.pause_set_active(true).await {
-            tracing::error!(
-                "Error pausing the match in a critical disconnect section. Reason: {}",
-                err
-            )
-        }else{
-            tracing::info!("Server paused because of spacetime disconnect.");
-        }
-        if let Err(err) = server
-            .chat_send_server_massage("$f00[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
-            .await
-        {
-            tracing::error!("Error sending disconnect message. Reason: {}", err)
-        };
-
-        loop {
-            let connected=spacetime_connect(true).await;
-        if connected {
-            tracing::info!("Sucessfully reconnected.");
-            if let Err(err) = server
-            .chat_send_server_massage("$0f0[tmservers.live] Reconnected. Initiating seamless recovery. Match will resume in 20 seconds.")
-            .await
-        {
-            tracing::error!("Error sending resume message. Reason: {}", err)
-        };
-           if let Err(err)= tokio::spawn(seamless_recovery()).await {
-                tracing::error!("Error spawning seamless recovery. {err}")
-           };
-            return;
-        } else {
-            tracing::error!("Failed to reconnect. Retrying...");
-        }
-    }
-    });
-    });
-}
-
-async fn seamless_recovery() {
+pub async fn seamless_recovery() {
     let server = TRACKMANIA.wait();
     let mut seconds = 20;
     while seconds > 0 {

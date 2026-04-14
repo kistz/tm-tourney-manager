@@ -19,7 +19,7 @@ pub fn method_call_received(_: &EventContext, method: &EventRawServerMethod) {
             )
             .await;
 
-        SPACETIME.wait().reducers.server_method_response(
+        SPACETIME.read().reducers.server_method_response(
             new.id, //SAFETY: Its the same type but rust cant know that.
             unsafe {
                 std::mem::transmute::<

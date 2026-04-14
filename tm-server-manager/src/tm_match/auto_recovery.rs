@@ -48,6 +48,10 @@ fn on_match_auto_recovery(ctx: &ReducerContext, args: TabMatchAutoRecovery) {
     let tm_match = ctx.db.tab_match().id().find(args.match_id).unwrap();
     if !tm_match.is_recovery() {
         //Match is no longer in recovery so it was brought back some other way.
+        log::info!(
+            "Auto Recovery: Match {} is no longer in recovery so it was brought back some other way.",
+            tm_match.id
+        );
         return;
     }
     // If this is triggered we are in the following path:
