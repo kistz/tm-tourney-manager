@@ -56,6 +56,9 @@ impl MatchState {
     pub(crate) fn set_live(&mut self) {
         self.status = MatchStatus::Live;
     }
+    pub(crate) fn set_recovery(&mut self) {
+        self.status = MatchStatus::Recovery;
+    }
 
     pub(super) fn get_round(&self) -> u16 {
         self.round

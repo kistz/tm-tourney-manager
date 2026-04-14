@@ -126,8 +126,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         }
     }
 
-    spacetime_connect(false).await;
-
     // Initial Configuration for the Trackmania server connection.
     {
         let server = TRACKMANIA.wait();
@@ -149,11 +147,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         server.chat_manual_routing(true, false).await?;
     }
 
-    setup_state_synchronization().await;
-    setup_chat().await;
-
-    // Initialize state subscriptions for the server.
-    {}
+    spacetime_connect(false).await;
 
     match signal::ctrl_c().await {
         Ok(()) => {}
@@ -166,11 +160,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-/* fn on_stdb_connect_error(_ctx: &ErrorContext, err: Error) {
-    tracing::error!("SpacetimeDB connection error: {:?}", err);
-    std::process::exit(1);
-} */
-
 fn on_stdb_disconnected(_: &ErrorContext, err: Option<Error>) {
     if let Some(err) = err {
         tracing::error!(
@@ -178,7 +167,7 @@ fn on_stdb_disconnected(_: &ErrorContext, err: Option<Error>) {
             err
         );
         //let connection = DbConnection::custom_new(ctx.imp());
-        return;
+        // return;
     }
     tracing::error!("Disconnected from spacetimedb.");
     spacetime_disconnected();
@@ -268,6 +257,9 @@ async fn spacetime_connect(seamless: bool) -> bool {
         .db
         .raw_server_player_destination()
         .on_insert(|_, _| check_players_have_destination());
+
+    setup_state_synchronization().await;
+    setup_chat().await;
 
     true
 }
