@@ -22,5 +22,4 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: true
-          tags: 
-            - kistz/tmservers-bridge:${{ github.ref_name }}, kistz/tmservers-bridge:latest
+          tags: kistz/tmservers-bridge:${{ github.ref_name }}, kistz/tmservers-bridge:latest
