@@ -1,4 +1,3 @@
-use std::sync::Mutex;
 use std::sync::OnceLock;
 use std::time::Duration;
 
@@ -20,9 +19,7 @@ use tm_server_manager_api_rs::login_as_server;
 use tm_server_manager_api_rs::raw_server_permitted_playersQueryTableAccess;
 use tm_server_manager_api_rs::raw_server_player_destinationQueryTableAccess;
 use tokio::sync::RwLock;
-use tokio::sync::oneshot;
 use tokio::time::sleep;
-use tracing::instrument;
 
 use crate::SPACETIME;
 use crate::TRACKMANIA;
@@ -36,26 +33,18 @@ use crate::state::setup_state_synchronization;
 
 pub struct MyDbConnection {
     db: OnceLock<RwLock<DbConnection>>,
-    //cleanup: Mutex<Option<oneshot::Sender<()>>>,
 }
 
 impl MyDbConnection {
     pub const fn new() -> Self {
         MyDbConnection {
             db: OnceLock::new(),
-            //cleanup: Mutex::new(None),
         }
     }
 
     pub fn read(&self) -> tokio::sync::RwLockReadGuard<'_, DbConnection> {
         tokio::task::block_in_place(move || self.db.wait().blocking_read())
     }
-
-    /* async fn set(&self, db: DbConnection) {
-        tokio::task::block_in_place(move || {
-
-        })
-    } */
 
     pub async fn connect(&self, seamless: bool) -> bool {
         let Ok(spacetime) = DbConnection::builder()
@@ -79,36 +68,28 @@ impl MyDbConnection {
         let tm_account_id = std::env::var("TM_ACCOUNT_ID").unwrap();
         let tm_account_id = Uuid::parse_str(&tm_account_id).unwrap();
 
-        tracing::error!("huh");
-        // let (sender, receiver) = oneshot::channel();
         if let Some(val) = self.db.get() {
-            // let disconnect = self.cleanup.lock().unwrap().unwrap().send(());
-
-            tracing::error!("dfgnpiudfgpinuhj");
-            let mut waited = val.blocking_write();
-            tracing::error!("dddd");
+            let mut waited = val.write().await;
             *waited = spacetime;
-            tracing::error!("sdegin");
         } else {
-            //let (sender, receiver) = oneshot::channel();
             _ = self.db.set(RwLock::new(spacetime));
         }
 
-        tracing::error!("guh");
-
         tokio::spawn(async move {
-            let connection = &*SPACETIME.read();
-            if let Err(err) = connection.run_async().await {
-                tracing::error!(
-                    "Spacetime stopped the run_async function unexpectedly. Reason: {err}"
-                )
-            };
+            loop {
+                let connection = SPACETIME.read();
+                if let Err(err) = connection.advance_one_message_async().await {
+                    tracing::error!(
+                        "Spacetime stopped the run_async function unexpectedly. Reason: {err}"
+                    );
+                    break;
+                };
+            }
         });
 
-        tracing::error!("bang");
+        let spacetime = self.read();
 
-        let Ok(server_id) = SPACETIME
-            .read()
+        let Ok(server_id) = spacetime
             .procedures()
             .login_as_server_async(tm_server_login, tm_server_password, tm_account_id, seamless)
             .await
@@ -121,8 +102,6 @@ impl MyDbConnection {
         tracing::info!("Successfully connected to tmservers.live!");
 
         // Initialize state subscriptions for the server.
-        let spacetime = SPACETIME.read();
-
         _ = spacetime
             .subscription_builder()
             .on_applied(|_| tracing::debug!("Subscription successfully applied!"))
@@ -173,45 +152,36 @@ fn on_connection_error(ctx: &ErrorContext, error: spacetimedb_sdk::Error) {
     tracing::error!("{error:?}");
 }
 
-/* #[instrument(level = "debug")]
-pub async fn spacetime_connect(seamless: bool) -> bool {
-
-} */
-
 fn on_stdb_disconnected(_: &ErrorContext, err: Option<spacetimedb_sdk::Error>) {
     if let Some(err) = err {
         tracing::error!(
             "Forcefully disconnected from SpacetimeDB with Error: {}",
             err
         );
-        //let connection = DbConnection::custom_new(ctx.imp());
-        // return;
     }
     tracing::error!("Disconnected from spacetimedb.");
-    spacetime_disconnected();
+    tokio::spawn(spacetime_disconnected());
 }
 
-pub fn spacetime_disconnected() {
-    tokio::task::block_in_place(move || {
-        tokio::runtime::Handle::current().block_on(async move {
-        let server = TRACKMANIA.wait();
-        if let Err(err) = server.pause_set_active(true).await {
-            tracing::error!(
-                "Error pausing the match in a critical disconnect section. Reason: {}",
-                err
-            )
-        }else{
-            tracing::info!("Server paused because of spacetime disconnect.");
-        }
-        if let Err(err) = server
+pub async fn spacetime_disconnected() {
+    let server = TRACKMANIA.wait();
+    if let Err(err) = server.pause_set_active(true).await {
+        tracing::error!(
+            "Error pausing the match in a critical disconnect section. Reason: {}",
+            err
+        )
+    } else {
+        tracing::info!("Server paused because of spacetime disconnect.");
+    }
+    if let Err(err) = server
             .chat_send_server_massage("$f00[tmservers.live] Disconnected abnormally. Entering recovery mode. An admin was notified and we are trying to reconnect ASAP. The match will resume once the situation is resolved. Sorry for the inconvenience.")
             .await
         {
             tracing::error!("Error sending disconnect message. Reason: {}", err)
         };
 
-        loop {
-            let connected=SPACETIME.connect(true).await;
+    loop {
+        let connected = SPACETIME.connect(true).await;
         if connected {
             tracing::info!("Sucessfully reconnected.");
             if let Err(err) = server
@@ -220,15 +190,13 @@ pub fn spacetime_disconnected() {
         {
             tracing::error!("Error sending resume message. Reason: {}", err)
         };
-           if let Err(err)= tokio::spawn(seamless_recovery()).await {
+            if let Err(err) = tokio::spawn(seamless_recovery()).await {
                 tracing::error!("Error spawning seamless recovery. {err}")
-           };
+            };
             return;
         } else {
             tracing::error!("Failed to reconnect. Retrying...");
         }
         sleep(Duration::from_secs(5)).await;
     }
-    });
-    });
 }

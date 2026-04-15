@@ -1,12 +1,12 @@
 use spacetimedb::{
-    reducer, table, view, AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType,
-    Table, Timestamp, Uuid, ViewContext,
+    AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType, Table, Timestamp, Uuid,
+    ViewContext, reducer, table, view,
 };
 
 use crate::{
     authorization::Authorization,
     competition::{
-        tab_competition, tab_competition__view, CompetitionRead, CompetitionV1, CompetitionWrite,
+        CompetitionRead, CompetitionV1, CompetitionWrite, tab_competition, tab_competition__view,
     },
 };
 
@@ -294,8 +294,6 @@ impl<Db: DbContext> ProjectRead for Db {
             return Vec::new();
         };
 
-        let descendants = self.competition_descendants(project.root_competition);
-
-        descendants
+        self.competition_descendants(project.root_competition)
     }
 }

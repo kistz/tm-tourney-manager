@@ -80,6 +80,7 @@ import ScheduleConfiguredReducer from "./schedule_configured_reducer";
 import ScheduleCreateReducer from "./schedule_create_reducer";
 import ScheduleTryRunReducer from "./schedule_try_run_reducer";
 import ServerAssignRawServerReducer from "./server_assign_raw_server_reducer";
+import ServerConfigOverrideReducer from "./server_config_override_reducer";
 import ServerConfiguredReducer from "./server_configured_reducer";
 import ServerCreateReducer from "./server_create_reducer";
 import ServerMethodCallReducer from "./server_method_call_reducer";
@@ -377,6 +378,7 @@ const reducersSchema = __reducers(
   __reducerSchema("schedule_create", ScheduleCreateReducer),
   __reducerSchema("schedule_try_run", ScheduleTryRunReducer),
   __reducerSchema("server_assign_raw_server", ServerAssignRawServerReducer),
+  __reducerSchema("server_config_override", ServerConfigOverrideReducer),
   __reducerSchema("server_configured", ServerConfiguredReducer),
   __reducerSchema("server_create", ServerCreateReducer),
   __reducerSchema("server_method_call", ServerMethodCallReducer),

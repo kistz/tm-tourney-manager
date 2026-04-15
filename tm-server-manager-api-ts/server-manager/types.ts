@@ -1121,6 +1121,18 @@ export const ServerStatus = __t.enum("ServerStatus", {
 });
 export type ServerStatus = __Infer<typeof ServerStatus>;
 
+export const ServerV1 = __t.object("ServerV1", {
+  name: __t.string(),
+  id: __t.u32(),
+  parentId: __t.u32(),
+  config: __t.u32(),
+  get status() {
+    return ServerStatus;
+  },
+  open: __t.bool(),
+});
+export type ServerV1 = __Infer<typeof ServerV1>;
+
 export const StartLine = __t.object("StartLine", {
   accountId: __t.string(),
   time: __t.u32(),
@@ -1243,18 +1255,6 @@ export const TimeAttack = __t.object("TimeAttack", {
   timeLimit: __t.i32(),
 });
 export type TimeAttack = __Infer<typeof TimeAttack>;
-
-export const TmServerV1 = __t.object("TmServerV1", {
-  name: __t.string(),
-  id: __t.u32(),
-  parentId: __t.u32(),
-  config: __t.u32(),
-  get status() {
-    return ServerStatus;
-  },
-  open: __t.bool(),
-});
-export type TmServerV1 = __Infer<typeof TmServerV1>;
 
 export const UnloadingMapEnd = __t.object("UnloadingMapEnd", {
   time: __t.u32(),

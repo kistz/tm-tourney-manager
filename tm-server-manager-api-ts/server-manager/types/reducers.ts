@@ -52,6 +52,7 @@ import ScheduleConfiguredReducer from "../schedule_configured_reducer";
 import ScheduleCreateReducer from "../schedule_create_reducer";
 import ScheduleTryRunReducer from "../schedule_try_run_reducer";
 import ServerAssignRawServerReducer from "../server_assign_raw_server_reducer";
+import ServerConfigOverrideReducer from "../server_config_override_reducer";
 import ServerConfiguredReducer from "../server_configured_reducer";
 import ServerCreateReducer from "../server_create_reducer";
 import ServerMethodCallReducer from "../server_method_call_reducer";
@@ -106,6 +107,7 @@ export type ScheduleConfiguredParams = __Infer<typeof ScheduleConfiguredReducer>
 export type ScheduleCreateParams = __Infer<typeof ScheduleCreateReducer>;
 export type ScheduleTryRunParams = __Infer<typeof ScheduleTryRunReducer>;
 export type ServerAssignRawServerParams = __Infer<typeof ServerAssignRawServerReducer>;
+export type ServerConfigOverrideParams = __Infer<typeof ServerConfigOverrideReducer>;
 export type ServerConfiguredParams = __Infer<typeof ServerConfiguredReducer>;
 export type ServerCreateParams = __Infer<typeof ServerCreateReducer>;
 export type ServerMethodCallParams = __Infer<typeof ServerMethodCallReducer>;

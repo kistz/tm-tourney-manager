@@ -8,7 +8,7 @@ use super::server_status_type::ServerStatus;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct TmServerV1 {
+pub struct ServerV1 {
     pub name: String,
     pub id: u32,
     pub parent_id: u32,
@@ -17,26 +17,26 @@ pub struct TmServerV1 {
     pub open: bool,
 }
 
-impl __sdk::InModule for TmServerV1 {
+impl __sdk::InModule for ServerV1 {
     type Module = super::RemoteModule;
 }
 
-/// Column accessor struct for the table `TmServerV1`.
+/// Column accessor struct for the table `ServerV1`.
 ///
 /// Provides typed access to columns for query building.
-pub struct TmServerV1Cols {
-    pub name: __sdk::__query_builder::Col<TmServerV1, String>,
-    pub id: __sdk::__query_builder::Col<TmServerV1, u32>,
-    pub parent_id: __sdk::__query_builder::Col<TmServerV1, u32>,
-    pub config: __sdk::__query_builder::Col<TmServerV1, u32>,
-    pub status: __sdk::__query_builder::Col<TmServerV1, ServerStatus>,
-    pub open: __sdk::__query_builder::Col<TmServerV1, bool>,
+pub struct ServerV1Cols {
+    pub name: __sdk::__query_builder::Col<ServerV1, String>,
+    pub id: __sdk::__query_builder::Col<ServerV1, u32>,
+    pub parent_id: __sdk::__query_builder::Col<ServerV1, u32>,
+    pub config: __sdk::__query_builder::Col<ServerV1, u32>,
+    pub status: __sdk::__query_builder::Col<ServerV1, ServerStatus>,
+    pub open: __sdk::__query_builder::Col<ServerV1, bool>,
 }
 
-impl __sdk::__query_builder::HasCols for TmServerV1 {
-    type Cols = TmServerV1Cols;
+impl __sdk::__query_builder::HasCols for ServerV1 {
+    type Cols = ServerV1Cols;
     fn cols(table_name: &'static str) -> Self::Cols {
-        TmServerV1Cols {
+        ServerV1Cols {
             name: __sdk::__query_builder::Col::new(table_name, "name"),
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             parent_id: __sdk::__query_builder::Col::new(table_name, "parent_id"),
@@ -47,22 +47,22 @@ impl __sdk::__query_builder::HasCols for TmServerV1 {
     }
 }
 
-/// Indexed column accessor struct for the table `TmServerV1`.
+/// Indexed column accessor struct for the table `ServerV1`.
 ///
 /// Provides typed access to indexed columns for query building.
-pub struct TmServerV1IxCols {
-    pub id: __sdk::__query_builder::IxCol<TmServerV1, u32>,
-    pub parent_id: __sdk::__query_builder::IxCol<TmServerV1, u32>,
+pub struct ServerV1IxCols {
+    pub id: __sdk::__query_builder::IxCol<ServerV1, u32>,
+    pub parent_id: __sdk::__query_builder::IxCol<ServerV1, u32>,
 }
 
-impl __sdk::__query_builder::HasIxCols for TmServerV1 {
-    type IxCols = TmServerV1IxCols;
+impl __sdk::__query_builder::HasIxCols for ServerV1 {
+    type IxCols = ServerV1IxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
-        TmServerV1IxCols {
+        ServerV1IxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
             parent_id: __sdk::__query_builder::IxCol::new(table_name, "parent_id"),
         }
     }
 }
 
-impl __sdk::__query_builder::CanBeLookupTable for TmServerV1 {}
+impl __sdk::__query_builder::CanBeLookupTable for ServerV1 {}
