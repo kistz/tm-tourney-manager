@@ -204,4 +204,4 @@ pub fn server_config_override(
 
 // Problem: what if there are matches in progress for a config update?
 // -> does the update just fail?
-// -> 
+// -> or does the update go through and override for live and finished matches?
