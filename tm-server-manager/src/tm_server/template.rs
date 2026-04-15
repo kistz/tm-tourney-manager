@@ -4,7 +4,7 @@ use crate::{
     authorization::Authorization,
     competition::{CompetitionPermissionsV1, tab_competition},
     tm_match::{MatchStatus, MatchV1, tab_match, tab_match__query},
-    tm_server::{TmServerV1, tab_server},
+    tm_server::{ServerV1, tab_server},
 };
 
 #[reducer]
@@ -17,7 +17,7 @@ fn server_template_create(
         .permission(CompetitionPermissionsV1::MATCH_CREATE)
         .authorize()?;
 
-    ctx.db.tab_server().try_insert(TmServerV1 {
+    ctx.db.tab_server().try_insert(ServerV1 {
         name,
         id: 0,
         parent_id,

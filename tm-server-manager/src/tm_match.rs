@@ -572,19 +572,20 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
     }
 
     fn match_recovery_exit_forced(&self, match_id: u32) {
-        //SAFETY: if a occupation is inserted it must also exist.
-        /* let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
+        let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
+        log::error!(
+            "MATCH {} EXITING RECOVERY BECAUSE SERVER CAME BACK. NOT SEAMLESS THO",
+            tm_match.id
+        );
 
         if tm_match.is_recovery() {
-            log::error!(
-                "TODO: MATCH {} EXITING RECOVERY BECAUSE SERVER CAME BACK.",
-                tm_match.id
-            );
+            /* self.raw_server_occupation_remove(NodeHandle::MatchV1(match_id))
+            .unwrap(); */
 
             //TODO
             //tm_match.exit_recovery();
             //self.db().tab_match().id().update(tm_match);
-        } */
+        }
     }
 }
 

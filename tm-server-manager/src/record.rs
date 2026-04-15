@@ -8,12 +8,8 @@ use spacetimedb::{SpacetimeType, Timestamp, Uuid};
 /// All entries to a leaderboard should have a replay or ghost associated with it.
 #[derive(Debug /* SpacetimeType */)]
 pub struct TmRecord {
-    pub map_uid: String,
-    pub zone: String,
-    pub player_name: String,
-
-    pub account_id: Uuid,
-    pub ghost: Uuid,
+    pub map_id: u32,
+    pub user_id: u32,
 
     pub timestamp: Timestamp,
     pub time: u32,

@@ -1,7 +1,6 @@
-use spacetimedb::{ProcedureContext, Table, Uuid, http::Request, procedure, table};
+use spacetimedb::{ProcedureContext, procedure};
 
 use crate::{
-    env::env,
     raw_server::{occupation::TabRawServerOccupationRead, tab_raw_server},
     tm_match::replay::MatchReplayWrite,
 };

@@ -8,41 +8,33 @@ pub(crate) struct CompetitionPermissionsV1(pub(super) u64);
 impl CompetitionPermissionsV1 {
     pub const NONE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0);
 
-    pub const OWNER: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1);
+    pub const OWNER: CompetitionPermissionsV1 = CompetitionPermissionsV1(1);
 
-    //pub const PROJECT_EDIT_NAME: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b10);
-    //pub const PROJECT_EDIT_DATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b100);
-    //pub const PROJECT_EDIT_DESCRIPTION: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1000);
-
-    pub const COMPETITION_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b100000);
-    pub const COMPETITION_EDIT_NAME: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1000000);
-    pub const COMPETITION_DELETE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b10000000);
+    pub const COMPETITION_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 4);
+    pub const COMPETITION_EDIT_NAME: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 5);
+    pub const COMPETITION_DELETE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 6);
     pub const COMPETITION_CONNECTION_EDIT: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b100000000);
-    pub const COMPETITION_LAYOUT_EDIT: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b10000000000);
+        CompetitionPermissionsV1(1 << 7);
+    pub const COMPETITION_LAYOUT_EDIT: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 18);
     pub const COMPETITION_EDIT_REGISTRATION: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b100000000000);
+        CompetitionPermissionsV1(1 << 9);
 
-    pub const MATCH_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b10000);
-    pub const MATCH_DELETE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1000000000);
-    pub const MATCH_CONFIGURE: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b1000000000000);
+    pub const MATCH_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 10);
+    pub const MATCH_DELETE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 11);
+    pub const MATCH_CONFIGURE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 12);
 
-    pub const RAW_SERVER_ADD: CompetitionPermissionsV1 = CompetitionPermissionsV1(0b10000000000000);
-    pub const RAW_SERVER_REVOKE: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b100000000000000);
+    pub const RAW_SERVER_ADD: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 13);
+    pub const RAW_SERVER_REVOKE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 14);
 
-    pub const MATCH_ASSIGN_SERVER: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b1000000000000000);
+    pub const MATCH_ASSIGN_SERVER: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 15);
 
-    pub const REGISTRATION_CREATE: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b10000000000000000);
+    pub const REGISTRATION_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 16);
 
-    pub const SCHEDULE_CREATE: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b100000000000000000);
+    pub const SCHEDULE_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 17);
 
-    pub const PORTAL_CREATE: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(0b1000000000000000000);
+    pub const PORTAL_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 18);
+
+    pub const SERVER_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 19);
 }
 
 impl PermissionType for CompetitionPermissionsV1 {
