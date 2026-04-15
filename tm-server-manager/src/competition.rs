@@ -201,6 +201,7 @@ fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
 
 pub(crate) trait CompetitionRead {
     fn competition_tree(&self, competition_id: u32) -> Vec<u32>;
+    fn competition_descendants(&self, competition_id: u32) -> Vec<CompetitionV1>;
 }
 impl<Db: DbContext> CompetitionRead for Db {
     fn competition_tree(&self, competition_id: u32) -> Vec<u32> {
@@ -225,6 +226,26 @@ impl<Db: DbContext> CompetitionRead for Db {
         }
 
         tree
+    }
+
+    fn competition_descendants(&self, competition_id: u32) -> Vec<CompetitionV1> {
+        let mut descendants = Vec::new();
+        let mut to_visit = vec![competition_id];
+
+        while let Some(current_id) = to_visit.pop() {
+            if let Some(competition) = self.db_read_only().tab_competition().id().find(current_id) {
+                descendants.push(competition.clone());
+                to_visit.extend(
+                    self.db_read_only()
+                        .tab_competition()
+                        .parent_id()
+                        .filter(current_id)
+                        .map(|t| t.id),
+                );
+            }
+        }
+
+        descendants
     }
 }
 

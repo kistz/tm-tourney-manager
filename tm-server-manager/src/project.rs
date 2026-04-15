@@ -1,12 +1,12 @@
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType, Table, Timestamp, Uuid,
-    ViewContext, reducer, table, view,
+    reducer, table, view, AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType,
+    Table, Timestamp, Uuid, ViewContext,
 };
 
 use crate::{
     authorization::Authorization,
     competition::{
-        CompetitionRead, CompetitionV1, CompetitionWrite, tab_competition, tab_competition__view,
+        tab_competition, tab_competition__view, CompetitionRead, CompetitionV1, CompetitionWrite,
     },
 };
 
@@ -276,34 +276,26 @@ pub fn my_projects(ctx: &ViewContext) -> Vec<MyProjectV1> {
         .collect()
 }
 
-#[view(accessor=project_competition_tree,public)]
-fn view_project_competition_tree(
+#[view(accessor=project_competition_descendants,public)]
+fn view_project_competition_descendants(
     ctx: &ViewContext, /* TODO project_id: u32 */
 ) -> Vec<CompetitionV1> {
     let project_id = 1u32;
 
-    ctx.project_competition_tree(project_id)
+    ctx.project_competition_descendants(project_id)
 }
 
 trait ProjectRead {
-    fn project_competition_tree(&self, project_id: u32) -> Vec<CompetitionV1>;
+    fn project_competition_descendants(&self, project_id: u32) -> Vec<CompetitionV1>;
 }
 impl<Db: DbContext> ProjectRead for Db {
-    fn project_competition_tree(&self, project_id: u32) -> Vec<CompetitionV1> {
+    fn project_competition_descendants(&self, project_id: u32) -> Vec<CompetitionV1> {
         let Some(project) = self.db_read_only().tab_project().id().find(project_id) else {
             return Vec::new();
         };
 
-        let tree = self.competition_tree(project.root_competition);
+        let descendants = self.competition_descendants(project.root_competition);
 
-        let mut comps = Vec::with_capacity(tree.len());
-
-        for item in tree {
-            if let Some(comp) = self.db_read_only().tab_competition().id().find(item) {
-                comps.push(comp);
-            }
-        }
-
-        comps
+        descendants
     }
 }
