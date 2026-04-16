@@ -141,7 +141,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         Ok(()) => {}
         Err(err) => {
             tracing::error!("Unable to listen for shutdown signal: {}", err);
-            // we also shut down in case of error
         }
     }
 

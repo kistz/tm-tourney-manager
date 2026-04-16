@@ -15,7 +15,7 @@ use crate::{
     portal::{tab_portal, tab_portal__view},
     raw_server::player::PermittedPlayer,
     registration::{tab_registration, tab_registration__view},
-    schedule::{tab_schedule, tab_schedule__view},
+    schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
     tm_match::{authorized_match_set_preparation, tab_match, tab_match__view},
 };
 mod position;
@@ -126,9 +126,9 @@ impl NodeType for NodeHandle {
             NodeHandle::CompetitionV1(c) => authorized_competition_ongoing(ctx, *c),
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
-            NodeHandle::ScheduleV1(_) => todo!(),
+            NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),
             NodeHandle::PortalV1(_) => todo!(),
-            NodeHandle::RegistrationV1(_) => todo!(),
+            NodeHandle::RegistrationV1(r) => unreachable!(),
         }
     }
 }
