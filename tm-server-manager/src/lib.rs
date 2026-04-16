@@ -8,6 +8,7 @@ use crate::{
 pub mod authorization;
 pub mod competition;
 pub mod env;
+pub mod input;
 pub mod maps;
 pub mod monitoring;
 pub mod portal;

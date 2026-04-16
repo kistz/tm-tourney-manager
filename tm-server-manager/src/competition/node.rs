@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, Uuid};
-use tm_server_types::config::ServerConfig;
+use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid};
 
 use crate::{
     competition::{
-        authorized_competition_ongoing, competition_ongoing,
         connection::{
             ConnectionRead, action::tab_connection_action, data::tab_connection_data,
             tab_connection, tab_connection__view,
@@ -123,7 +121,7 @@ impl NodeType for NodeHandle {
     fn ready(&self, ctx: &ReducerContext) -> Result<(), String> {
         match self {
             NodeHandle::MatchV1(match_id) => authorized_match_set_preparation(ctx, *match_id),
-            NodeHandle::CompetitionV1(c) => authorized_competition_ongoing(ctx, *c),
+            NodeHandle::CompetitionV1(c) => todo!(), // trigger the input node.
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),

@@ -32,7 +32,7 @@ pub struct CompetitionV1 {
     parent_id: u32,
 
     // Necessary to hide and mark as immutable
-    status: CompetitionStatus,
+    //status: CompetitionStatus,
     template: bool,
 }
 
@@ -64,7 +64,7 @@ impl CompetitionV1 {
             id: 0,
             parent_id,
             name,
-            status: CompetitionStatus::Configuring,
+            //status: CompetitionStatus::Configuring,
             template: false,
         }
     }
@@ -77,13 +77,13 @@ impl CompetitionV1 {
             id: 0,
             parent_id,
             name,
-            status: CompetitionStatus::Configuring,
+            //status: CompetitionStatus::Configuring,
             template: true,
         }
     }
 }
 
-#[derive(Debug, SpacetimeType, Clone, Copy, PartialEq, Eq)]
+/* #[derive(Debug, SpacetimeType, Clone, Copy, PartialEq, Eq)]
 pub enum CompetitionStatus {
     Configuring,
     Configured,
@@ -92,8 +92,8 @@ pub enum CompetitionStatus {
     Ongoing,
     /// The whole competition is now immutable.
     Completed,
-    Locked,
-}
+    //Locked,
+} */
 
 /// Adds a new Competition to the specified project.
 #[reducer]
@@ -123,7 +123,7 @@ fn competition_create(
     Ok(())
 }
 
-#[reducer]
+/* #[reducer]
 fn competition_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut competition) = ctx.db.tab_competition().id().find(id) else {
         return Err("Competition was mot found!".into());
@@ -142,9 +142,9 @@ fn competition_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     ctx.db.tab_competition().id().update(competition);
 
     Ok(())
-}
+} */
 
-#[reducer]
+/* #[reducer]
 fn competition_ongoing(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     //TODO
     ctx.auth_builder(id)
@@ -152,9 +152,9 @@ fn competition_ongoing(ctx: &ReducerContext, id: u32) -> Result<(), String> {
         .authorize()?;
 
     authorized_competition_ongoing(ctx, id)
-}
+} */
 
-pub(crate) fn authorized_competition_ongoing(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+/* pub(crate) fn authorized_competition_ongoing(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut competition) = ctx.db.tab_competition().id().find(id) else {
         return Err("Competition was mot found!".into());
     };
@@ -167,7 +167,7 @@ pub(crate) fn authorized_competition_ongoing(ctx: &ReducerContext, id: u32) -> R
     ctx.db.tab_competition().id().update(competition);
 
     Ok(())
-}
+} */
 
 #[reducer]
 fn competition_edit_name(

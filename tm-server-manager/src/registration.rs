@@ -90,7 +90,7 @@ impl Registration {
         }
     }
 
-    pub(crate) fn team_registration_allowed(&self, ctx: &ReducerContext) -> bool {
+    /* pub(crate) fn team_registration_allowed(&self, ctx: &ReducerContext) -> bool {
         /* self.state == RegistrationState::Ongoing
         && !self.template
         && match &self.settings {
@@ -105,7 +105,7 @@ impl Registration {
             RegistrationSettings::Team(_) => false,
         } */
         todo!()
-    }
+    } */
 
     pub(crate) fn can_change_settings(&self) -> Result<(), String> {
         if !self.status.before_ongoing() {
