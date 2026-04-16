@@ -49,6 +49,13 @@ impl ServerV1 {
         self.open
     }
 
+    pub(crate) fn instantiate(mut self, parent_id: u32, stay_template: bool) -> Self {
+        self.template = stay_template;
+        self.parent_id = parent_id;
+        self.id = 0;
+        self
+    }
+
     pub(crate) fn is_template(&self) -> bool {
         self.template
     }

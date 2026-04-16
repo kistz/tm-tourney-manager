@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, SpacetimeType, Table, TimeDuration, Timestamp, reducer, table};
+use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
 
 use crate::{
     authorization::Authorization,
@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub mod player;
-mod team;
+//mod team;
 mod template;
 
 #[derive(Debug, SpacetimeType)]
@@ -22,12 +22,12 @@ pub struct RegistrationSettingsPlayer {
     player_limit: u32,
 }
 
-#[derive(Debug, SpacetimeType)]
+/* #[derive(Debug, SpacetimeType)]
 pub struct RegistrationSettingsTeam {
     team_limit: u32,
     team_size_min: u8,
     team_size_max: u8,
-}
+} */
 
 #[table(accessor=tab_registration)]
 pub struct Registration {
@@ -108,7 +108,7 @@ impl Registration {
     }
 
     pub(crate) fn can_change_settings(&self) -> Result<(), String> {
-        if !self.status.before_live() {
+        if !self.status.before_ongoing() {
             return Err("Cannot change registration settings.".into());
         }
 
@@ -119,20 +119,20 @@ impl Registration {
 #[derive(Debug, SpacetimeType, PartialEq, Eq)]
 enum RegistrationStatus {
     Configuring,
-    Upcoming,
+    Configured,
     Ongoing,
     Ended,
-    Locked,
+    // Locked,
 }
 
 impl RegistrationStatus {
-    fn before_live(&self) -> bool {
+    fn before_ongoing(&self) -> bool {
         match self {
             RegistrationStatus::Configuring => true,
-            RegistrationStatus::Upcoming => true,
+            RegistrationStatus::Configured => true,
             RegistrationStatus::Ongoing => false,
             RegistrationStatus::Ended => false,
-            RegistrationStatus::Locked => false,
+            //RegistrationStatus::Locked => false,
         }
     }
 }
@@ -182,7 +182,7 @@ fn registration_create(
 }
 
 //TODO codegen bug
-/* #[reducer]
+#[reducer]
 fn registration_settings(
     ctx: &ReducerContext,
     id: u32,
@@ -204,7 +204,6 @@ fn registration_settings(
 
     Ok(())
 }
- */
 
 #[reducer]
 fn registration_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
@@ -216,7 +215,11 @@ fn registration_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> 
         .permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
         .authorize()?;
 
-    registration.status = RegistrationStatus::Upcoming;
+    if registration.status != RegistrationStatus::Configuring {
+        return Err("Is not in configuring state.".into());
+    }
+
+    registration.status = RegistrationStatus::Configured;
 
     ctx.db.tab_registration().id().update(registration);
 
@@ -232,6 +235,14 @@ fn registration_start(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     ctx.auth_builder(registration.parent_id)
         .permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
         .authorize()?;
+
+    if registration.is_template() {
+        return Err("Cannot be called on templates".into());
+    }
+
+    if registration.status != RegistrationStatus::Configured {
+        return Err("Is not in configured state.".into());
+    }
 
     registration.status = RegistrationStatus::Ongoing;
 
@@ -249,6 +260,14 @@ fn registration_end(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     ctx.auth_builder(registration.parent_id)
         .permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
         .authorize()?;
+
+    if registration.is_template() {
+        return Err("Cannot be called on templates".into());
+    }
+
+    if registration.status != RegistrationStatus::Ongoing {
+        return Err("Is not in ongoing state.".into());
+    }
 
     registration.status = RegistrationStatus::Ended;
 

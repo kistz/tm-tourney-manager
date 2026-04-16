@@ -154,6 +154,14 @@ pub(super) fn competition_template_instantiate(
         schedule_map.insert(old_id, new_schedule);
     }
 
+    let mut server_map = HashMap::new();
+    for old_server in servers {
+        let old_id = old_server.id;
+        let new_server = old_server.instantiate(new_comp.id, stay_template);
+        let new_server = ctx.db.tab_server().try_insert(new_server)?;
+        server_map.insert(old_id, new_server);
+    }
+
     // Rewire all connections with the corresponding maps.
     for old_connection in connections {
         let old_origin = old_connection.connection_origin();
