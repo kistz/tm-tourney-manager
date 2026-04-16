@@ -11,7 +11,6 @@ use crate::{
     },
     raw_server::{
         TabRawServerWrite,
-        config::RawServerContigWrite,
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
         tab_raw_server,
     },
@@ -31,11 +30,14 @@ pub struct ServerV1 {
     #[index(hash)]
     parent_id: u32,
 
+    #[index(hash)]
     config: u32,
 
     status: ServerStatus,
 
     open: bool,
+    template: bool,
+    auto_provision: bool,
 }
 
 impl ServerV1 {
@@ -46,6 +48,10 @@ impl ServerV1 {
     pub(crate) fn is_open(&self) -> bool {
         self.open
     }
+
+    pub(crate) fn is_template(&self) -> bool {
+        self.template
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, SpacetimeType, Clone, Copy)]
@@ -55,7 +61,7 @@ pub enum ServerStatus {
 }
 
 #[reducer]
-pub fn server_create(
+fn server_create(
     ctx: &ReducerContext,
     name: String,
     parent_id: u32,
@@ -79,7 +85,7 @@ pub fn server_create(
     if with_template != 0 {
         server_template_instantiate(ctx, with_template)?;
     } else {
-        // Create an uncommitted match
+        // Create an uncommitted server
         let tm_server = ServerV1 {
             name,
             id: 0,
@@ -87,6 +93,8 @@ pub fn server_create(
             config: 0,
             status: ServerStatus::Configuring,
             open: true,
+            template: false,
+            auto_provision: true,
         };
 
         let tm_server = ctx.db.tab_server().try_insert(tm_server)?;
@@ -97,52 +105,92 @@ pub fn server_create(
     Ok(())
 }
 
-// Select 0 for auto provisioning.
 #[reducer]
-pub fn server_assign_raw_server(
-    ctx: &ReducerContext,
-    to: u32,
-    server_id: u32,
-) -> Result<(), String> {
-    let Some(tm_server) = ctx.db.tab_server().id().find(to) else {
+fn server_remove_raw_server(ctx: &ReducerContext, server_id: u32) -> Result<(), String> {
+    let Some(mut tm_server) = ctx.db.tab_server().id().find(server_id) else {
         return Err("Supplied match was not found!".into());
     };
+
+    if tm_server.is_template() {
+        return Err("Cannot do that for a template".into());
+    }
 
     ctx.auth_builder(tm_server.parent_id)
         .permission(CompetitionPermissionsV1::MATCH_ASSIGN_SERVER)
         .authorize()?;
 
-    //auto provision
-    if server_id == 0 {
-        ctx.raw_server_pool_assign(NodeHandle::ServerV1(tm_server.id))?;
+    if ctx.raw_server_is_occupied(server_id) {
+        ctx.raw_server_occupation_remove(NodeHandle::ServerV1(server_id))?;
     } else {
-        if ctx.raw_server_is_occupied(server_id) {
-            return Err("Server is already occupied! Cannot assign!".into());
-        }
-
-        if ctx.db.tab_raw_server().id().find(server_id).is_none() {
-            return Err("Server with id was not found!".into());
-        };
-
-        if ctx
-            .server_pool_available(tm_server.parent_id)
-            .into_iter()
-            .any(|s| s.id == server_id)
-        {
-            return Err("Server is not lended to the project".into());
-        }
-
-        ctx.raw_server_occupation_add(NodeHandle::ServerV1(to), server_id)?;
+        return Err("Server was not occupied!".into());
     }
+
+    if ctx.db.tab_raw_server().id().find(server_id).is_none() {
+        return Err("Server with id was not found!".into());
+    };
+
+    tm_server.status = ServerStatus::Configuring;
+
+    ctx.db.tab_server().id().update(tm_server);
 
     Ok(())
 }
 
 #[reducer]
-pub fn server_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+fn server_assign_raw_server(
+    ctx: &ReducerContext,
+    server_id: u32,
+    raw_server_id: u32,
+) -> Result<(), String> {
+    let Some(tm_server) = ctx.db.tab_server().id().find(server_id) else {
+        return Err("Supplied match was not found!".into());
+    };
+
+    if tm_server.is_template() {
+        return Err("Cannot do that for a template".into());
+    }
+
+    ctx.auth_builder(tm_server.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_ASSIGN_SERVER)
+        .authorize()?;
+
+    if ctx.raw_server_is_occupied(raw_server_id) {
+        return Err("Server is already occupied! Cannot assign!".into());
+    }
+
+    if ctx.db.tab_raw_server().id().find(raw_server_id).is_none() {
+        return Err("Server with id was not found!".into());
+    };
+
+    if ctx
+        .occupation_with_occupier(NodeHandle::ServerV1(server_id))
+        .is_some()
+    {
+        ctx.raw_server_occupation_remove(NodeHandle::ServerV1(server_id))?;
+    }
+
+    if ctx
+        .server_pool_available(tm_server.parent_id)
+        .into_iter()
+        .any(|s| s.id == raw_server_id)
+    {
+        return Err("Server is not lended to the project".into());
+    }
+
+    ctx.raw_server_occupation_add(NodeHandle::ServerV1(server_id), raw_server_id)?;
+
+    Ok(())
+}
+
+#[reducer]
+fn server_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut tm_server) = ctx.db.tab_server().id().find(id) else {
         return Err("Server was mot found!".into());
     };
+
+    if tm_server.is_template() {
+        return Err("Cannot do that for a template".into());
+    }
 
     ctx.auth_builder(tm_server.parent_id)
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
@@ -164,7 +212,33 @@ pub fn server_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 }
 
 #[reducer]
-pub fn server_config_override(
+fn server_configuring(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+    let Some(mut tm_server) = ctx.db.tab_server().id().find(id) else {
+        return Err("Server was mot found!".into());
+    };
+
+    if tm_server.is_template() {
+        return Err("Cannot do that for a template".into());
+    }
+
+    ctx.auth_builder(tm_server.parent_id)
+        //TODO
+        //.permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    if tm_server.status != ServerStatus::Ongoing {
+        return Err("Match is not in configuring state".into());
+    }
+
+    tm_server.status = ServerStatus::Configuring;
+
+    ctx.db.tab_server().id().update(tm_server);
+
+    Ok(())
+}
+
+#[reducer]
+fn server_config_override(
     ctx: &ReducerContext,
     to: u32,
     config: ServerConfig,

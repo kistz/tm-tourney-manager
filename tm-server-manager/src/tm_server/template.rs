@@ -23,6 +23,8 @@ fn server_template_create(
         parent_id,
         config: 0,
         status: crate::tm_server::ServerStatus::Configuring,
+        template: true,
+        auto_provision: true,
         open: true,
     })?;
 
