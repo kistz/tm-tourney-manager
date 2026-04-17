@@ -9,8 +9,8 @@ This has a few advantages:
 
 ## Project Structure
 - `tm-server-types`: Provides type abstractions over GBX Remote 2 for use by all other crates or standalone.
-- `tm-server-client`: General purpose GBX Remote 2 protocol iplementation. Used to interact with a Trackmania server over xml-rpc.
-- `tm-server-bridge`: Implements a so called "sidecar" for spacetimedb taking the role of a "trackmania server as a db client". That means it subscribes to events from the tourney manager instance to synchronize the state and control the associated tm-server.
+- `tm-server-controller`: General purpose GBX Remote 2 protocol implementation. Used to interact with a Trackmania server over xml-rpc.
+- `tm-server-bridge`: Implements a so called "sidecar" for spacetimedb taking the role of a "trackmania server as a db client". That means it subscribes to events from the server manager instance to synchronize the state and control the associated tm-server.
 - `tm-server-manager`: SpacetimeDB module to host and configure Trackmania tournaments in a flexible and as unopinionated interface as possible. 
 - `tm-server-manager-api-{ts|rs|cs}`: Houses the generated types from tm-server-manager in its own package to have a strong versioned dependency for clients developed for the project.
 

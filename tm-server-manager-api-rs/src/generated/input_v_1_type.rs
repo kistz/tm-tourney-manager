@@ -6,31 +6,31 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct CompetitionV1 {
+pub struct InputV1 {
     pub name: String,
     pub id: u32,
     pub parent_id: u32,
     pub template: bool,
 }
 
-impl __sdk::InModule for CompetitionV1 {
+impl __sdk::InModule for InputV1 {
     type Module = super::RemoteModule;
 }
 
-/// Column accessor struct for the table `CompetitionV1`.
+/// Column accessor struct for the table `InputV1`.
 ///
 /// Provides typed access to columns for query building.
-pub struct CompetitionV1Cols {
-    pub name: __sdk::__query_builder::Col<CompetitionV1, String>,
-    pub id: __sdk::__query_builder::Col<CompetitionV1, u32>,
-    pub parent_id: __sdk::__query_builder::Col<CompetitionV1, u32>,
-    pub template: __sdk::__query_builder::Col<CompetitionV1, bool>,
+pub struct InputV1Cols {
+    pub name: __sdk::__query_builder::Col<InputV1, String>,
+    pub id: __sdk::__query_builder::Col<InputV1, u32>,
+    pub parent_id: __sdk::__query_builder::Col<InputV1, u32>,
+    pub template: __sdk::__query_builder::Col<InputV1, bool>,
 }
 
-impl __sdk::__query_builder::HasCols for CompetitionV1 {
-    type Cols = CompetitionV1Cols;
+impl __sdk::__query_builder::HasCols for InputV1 {
+    type Cols = InputV1Cols;
     fn cols(table_name: &'static str) -> Self::Cols {
-        CompetitionV1Cols {
+        InputV1Cols {
             name: __sdk::__query_builder::Col::new(table_name, "name"),
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             parent_id: __sdk::__query_builder::Col::new(table_name, "parent_id"),
@@ -39,22 +39,22 @@ impl __sdk::__query_builder::HasCols for CompetitionV1 {
     }
 }
 
-/// Indexed column accessor struct for the table `CompetitionV1`.
+/// Indexed column accessor struct for the table `InputV1`.
 ///
 /// Provides typed access to indexed columns for query building.
-pub struct CompetitionV1IxCols {
-    pub id: __sdk::__query_builder::IxCol<CompetitionV1, u32>,
-    pub parent_id: __sdk::__query_builder::IxCol<CompetitionV1, u32>,
+pub struct InputV1IxCols {
+    pub id: __sdk::__query_builder::IxCol<InputV1, u32>,
+    pub parent_id: __sdk::__query_builder::IxCol<InputV1, u32>,
 }
 
-impl __sdk::__query_builder::HasIxCols for CompetitionV1 {
-    type IxCols = CompetitionV1IxCols;
+impl __sdk::__query_builder::HasIxCols for InputV1 {
+    type IxCols = InputV1IxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
-        CompetitionV1IxCols {
+        InputV1IxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
             parent_id: __sdk::__query_builder::IxCol::new(table_name, "parent_id"),
         }
     }
 }
 
-impl __sdk::__query_builder::CanBeLookupTable for CompetitionV1 {}
+impl __sdk::__query_builder::CanBeLookupTable for InputV1 {}

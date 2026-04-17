@@ -68,6 +68,10 @@ impl ServerConfig {
         &self.maps
     }
 
+    pub fn script_name(&self) -> &str {
+        self.mode.script_name()
+    }
+
     pub fn iter_maps(&self) -> impl Iterator<Item = &String> {
         self.maps.map_uids.iter()
     }
@@ -135,6 +139,14 @@ impl ModeSettings {
               } */
         }
     }
+
+    pub fn script_name(&self) -> &str {
+        match self {
+            ModeSettings::Rounds(_) => "Trackmania/TM_Rounds_Online",
+            ModeSettings::ReverseCup(_) => "Modes/Trackmania/ReverseCup",
+            ModeSettings::TimeAttack(_) => "Trackmania/TM_TimeAttack_Online",
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -159,6 +171,10 @@ impl MapPoolConfig {
             maps += &format!("<map><file>{}.Map.Gbx</file></map>", map);
         }
         maps
+    }
+
+    pub fn maps(&self) -> Vec<String> {
+        self.map_uids.clone()
     }
 }
 

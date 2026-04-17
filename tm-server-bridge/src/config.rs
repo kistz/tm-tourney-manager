@@ -1,10 +1,11 @@
+use tokio::sync::Mutex;
+
 use nadeo_api::{NadeoRequest, auth::AuthType, request::Method};
 use serde::{Deserialize, Serialize};
 use tm_server_controller::method::XmlRpcMethods;
 use tm_server_manager_api_rs::{EventContext, EventRawServerState};
-use tokio::sync::Mutex;
 
-use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{NADEO, SERVER_METADATA, TRACKMANIA};
 
 pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tokio::task::block_in_place(move || {
@@ -12,79 +13,46 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
         tokio::runtime::Handle::current().block_on(async move {
             let server = TRACKMANIA.wait();
 
+            let config = unsafe {
+                std::mem::transmute::<
+                    tm_server_manager_api_rs::ServerConfig,
+                    tm_server_controller::config::ServerConfig,
+                >(new_metadata.config.clone())
+            };
+
             _ = server
                 .chat_send_server_massage("[tmservers.live] New configuration is loading.")
                 .await;
-            if old_metadata.is_some()
-                && old_metadata.unwrap().lock().await.config == new_metadata.config
-            //&& new_metadata.recovery_section
-            {
-                //_ = server.restart_map().await;
-                _ = server.restart_map().await;
+            let Some(old_metadata) = old_metadata else {
+                get_maps(config.iter_maps()).await;
+                _ = server.set_script_name(config.script_name()).await;
+                _ = server.set_mode_script_settings(config.clone()).await;
+                _ = server.insert_map_list(config.get_maps().maps()).await;
+                _ = server.next_map().await;
                 _ = server
-                    .chat_send_server_massage(
-                        "[tmservers.live] Configuration stayed the same restarting regardless.",
-                    )
+                    .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
                     .await;
                 return;
+            };
+            if config.get_maps().maps() != old_metadata.lock().await.config.maps.map_uids {
+                get_maps(config.iter_maps()).await;
             }
-            if configure(new_metadata.clone()).await {
-                _ = server.restart_map().await;
-                //_ = server.next_map().await;
-                _ = server
-                    .chat_send_server_massage("[tmservers.live] New configuration loaded.")
-                    .await;
-            } else {
-                tracing::error!("We did not reconfigure TODO")
-            }
-        });
-    });
-}
+            _ = server.set_script_name(config.script_name()).await;
+            _ = server.set_mode_script_settings(config.clone()).await;
+            _ = server.insert_map_list(config.get_maps().maps()).await;
+            _ = server.next_map().await;
 
-pub async fn configure(server_metadata: EventRawServerState) -> bool {
-    let local_server = TRACKMANIA.wait();
-
-    let server_config = unsafe {
-        std::mem::transmute::<
-            tm_server_manager_api_rs::ServerConfig,
-            tm_server_controller::config::ServerConfig,
-        >(server_metadata.config.clone())
-    };
-
-    let config = server_config.into_xml();
-
-    tracing::info!("Attempt to load configuration: {config}");
-
-    let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
-
-    if let Err(error) = std::fs::write(&full_path, config) {
-        tracing::error!("Could not write the configuration file: {error}");
-        return false;
-    }
-
-    // Load all maps to make them accessible locally
-    get_maps(server_config.iter_maps()).await;
-
-    let loaded = local_server
-        .load_match_settings("MatchSettings/manager.txt")
-        .await;
-
-    // The i32 is the map count which is not important to verify.
-    if loaded.is_ok() {
-        {
             let mut locked = SERVER_METADATA
-                .get_or_init(|| Mutex::new(server_metadata.clone()))
+                .get_or_init(|| Mutex::new(new_metadata.clone()))
                 .lock()
                 .await;
-            *locked = server_metadata;
-        }
+            *locked = new_metadata.clone();
 
-        tracing::info!("Loaded new configuration");
-        true
-    } else {
-        tracing::error!("There was an error loading the new configuration file. {loaded:?}");
-        false
-    }
+            _ = server
+                .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
+                .await;
+        });
+    });
 }
 
 pub(crate) async fn get_maps(maps: impl Iterator<Item = &String>) {
@@ -127,3 +95,5 @@ pub(crate) async fn get_maps(maps: impl Iterator<Item = &String>) {
             .await;
     }
 }
+
+//SetModeScriptText(string)

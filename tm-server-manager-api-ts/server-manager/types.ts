@@ -114,23 +114,10 @@ export const CompetitionServer = __t.object("CompetitionServer", {
 });
 export type CompetitionServer = __Infer<typeof CompetitionServer>;
 
-// The tagged union or sum type for the algebraic type `CompetitionStatus`.
-export const CompetitionStatus = __t.enum("CompetitionStatus", {
-  Configuring: __t.unit(),
-  Configured: __t.unit(),
-  Ongoing: __t.unit(),
-  Completed: __t.unit(),
-  Locked: __t.unit(),
-});
-export type CompetitionStatus = __Infer<typeof CompetitionStatus>;
-
 export const CompetitionV1 = __t.object("CompetitionV1", {
   name: __t.string(),
   id: __t.u32(),
   parentId: __t.u32(),
-  get status() {
-    return CompetitionStatus;
-  },
   template: __t.bool(),
 });
 export type CompetitionV1 = __Infer<typeof CompetitionV1>;
@@ -429,6 +416,14 @@ export const GiveUp = __t.object("GiveUp", {
   time: __t.u32(),
 });
 export type GiveUp = __Infer<typeof GiveUp>;
+
+export const InputV1 = __t.object("InputV1", {
+  name: __t.string(),
+  id: __t.u32(),
+  parentId: __t.u32(),
+  template: __t.bool(),
+});
+export type InputV1 = __Infer<typeof InputV1>;
 
 export const KickArgs = __t.object("KickArgs", {
   ubiId: __t.string(),
@@ -909,7 +904,6 @@ export const RawServerV1 = __t.object("RawServerV1", {
   userId: __t.u32(),
   id: __t.u32(),
   online: __t.bool(),
-  capturable: __t.bool(),
   verified: __t.bool(),
 });
 export type RawServerV1 = __Infer<typeof RawServerV1>;
@@ -935,14 +929,6 @@ export const Registration = __t.object("Registration", {
 });
 export type Registration = __Infer<typeof Registration>;
 
-// The tagged union or sum type for the algebraic type `RegistrationSettings`.
-export const RegistrationSettings = __t.enum("RegistrationSettings", {
-  get Player() {
-    return RegistrationSettingsPlayer;
-  },
-});
-export type RegistrationSettings = __Infer<typeof RegistrationSettings>;
-
 export const RegistrationSettingsPlayer = __t.object("RegistrationSettingsPlayer", {
   playerLimit: __t.u32(),
 });
@@ -951,10 +937,9 @@ export type RegistrationSettingsPlayer = __Infer<typeof RegistrationSettingsPlay
 // The tagged union or sum type for the algebraic type `RegistrationStatus`.
 export const RegistrationStatus = __t.enum("RegistrationStatus", {
   Configuring: __t.unit(),
-  Upcoming: __t.unit(),
+  Configured: __t.unit(),
   Ongoing: __t.unit(),
   Ended: __t.unit(),
-  Locked: __t.unit(),
 });
 export type RegistrationStatus = __Infer<typeof RegistrationStatus>;
 
@@ -1039,21 +1024,15 @@ export type RoundsPerMap = __Infer<typeof RoundsPerMap>;
 
 export const ScheduleExecV1 = __t.object("ScheduleExecV1", {
   scheduledId: __t.u64(),
+  scheduleId: __t.u32(),
   scheduledAt: __t.scheduleAt(),
 });
 export type ScheduleExecV1 = __Infer<typeof ScheduleExecV1>;
 
-// The tagged union or sum type for the algebraic type `ScheduleSettings`.
-export const ScheduleSettings = __t.enum("ScheduleSettings", {
-  Manual: __t.unit(),
-  Absolute: __t.timestamp(),
-  Relative: __t.timeDuration(),
-});
-export type ScheduleSettings = __Infer<typeof ScheduleSettings>;
-
 // The tagged union or sum type for the algebraic type `ScheduleStatus`.
 export const ScheduleStatus = __t.enum("ScheduleStatus", {
   Configuring: __t.unit(),
+  Configured: __t.unit(),
   Waiting: __t.unit(),
   Finished: __t.unit(),
   Locked: __t.unit(),
@@ -1130,6 +1109,8 @@ export const ServerV1 = __t.object("ServerV1", {
     return ServerStatus;
   },
   open: __t.bool(),
+  template: __t.bool(),
+  autoProvision: __t.bool(),
 });
 export type ServerV1 = __Infer<typeof ServerV1>;
 

@@ -13,6 +13,6 @@ import {
 export default __t.row({
   name: __t.string(),
   id: __t.u32().primaryKey(),
-  parentId: __t.u32().name("parent_id"),
-  template: __t.bool(),
+  competitionId: __t.u32().name("competition_id"),
+  permissions: __t.u64(),
 });

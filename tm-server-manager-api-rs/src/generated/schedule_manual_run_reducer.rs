@@ -6,49 +6,44 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct CompetitionEditNameArgs {
-    pub competition_id: u32,
-    pub name: String,
+pub(super) struct ScheduleManualRunArgs {
+    pub id: u32,
 }
 
-impl From<CompetitionEditNameArgs> for super::Reducer {
-    fn from(args: CompetitionEditNameArgs) -> Self {
-        Self::CompetitionEditName {
-            competition_id: args.competition_id,
-            name: args.name,
-        }
+impl From<ScheduleManualRunArgs> for super::Reducer {
+    fn from(args: ScheduleManualRunArgs) -> Self {
+        Self::ScheduleManualRun { id: args.id }
     }
 }
 
-impl __sdk::InModule for CompetitionEditNameArgs {
+impl __sdk::InModule for ScheduleManualRunArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `competition_edit_name`.
+/// Extension trait for access to the reducer `schedule_manual_run`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait competition_edit_name {
-    /// Request that the remote module invoke the reducer `competition_edit_name` to run as soon as possible.
+pub trait schedule_manual_run {
+    /// Request that the remote module invoke the reducer `schedule_manual_run` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`competition_edit_name:competition_edit_name_then`] to run a callback after the reducer completes.
-    fn competition_edit_name(&self, competition_id: u32, name: String) -> __sdk::Result<()> {
-        self.competition_edit_name_then(competition_id, name, |_, _| {})
+    /// /// Use [`schedule_manual_run:schedule_manual_run_then`] to run a callback after the reducer completes.
+    fn schedule_manual_run(&self, id: u32) -> __sdk::Result<()> {
+        self.schedule_manual_run_then(id, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `competition_edit_name` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `schedule_manual_run` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn competition_edit_name_then(
+    fn schedule_manual_run_then(
         &self,
-        competition_id: u32,
-        name: String,
+        id: u32,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -56,22 +51,16 @@ pub trait competition_edit_name {
     ) -> __sdk::Result<()>;
 }
 
-impl competition_edit_name for super::RemoteReducers {
-    fn competition_edit_name_then(
+impl schedule_manual_run for super::RemoteReducers {
+    fn schedule_manual_run_then(
         &self,
-        competition_id: u32,
-        name: String,
+        id: u32,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
-        self.imp.invoke_reducer_with_callback(
-            CompetitionEditNameArgs {
-                competition_id,
-                name,
-            },
-            callback,
-        )
+        self.imp
+            .invoke_reducer_with_callback(ScheduleManualRunArgs { id }, callback)
     }
 }

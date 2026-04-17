@@ -188,6 +188,12 @@ pub trait XmlRpcMethods {
         auto_forward: bool,
     ) -> Result<bool, ClientError>;
 
+    async fn chat_send_to_account(
+        &self,
+        message: impl Into<String>,
+        receivers: Vec<String>,
+    ) -> Result<bool, ClientError>;
+
     async fn restart_map(&self) -> Result<bool, ClientError>;
 
     async fn next_map(&self) -> Result<bool, ClientError>;
@@ -217,6 +223,7 @@ pub trait XmlRpcMethods {
         receivers: Option<Vec<String>>,
     ) -> Result<bool, ClientError>;
 
+    async fn set_script_name(&self, name: impl Into<String>) -> Result<bool, ClientError>;
     async fn set_mode_script_settings(&self, settings: ServerConfig) -> Result<bool, ClientError>;
 
     async fn insert_map_list(&self, maps: Vec<String>) -> Result<i32, ClientError>;
@@ -361,6 +368,25 @@ impl XmlRpcMethods for TrackmaniaServer {
         .await
     }
 
+    async fn chat_send_to_account(
+        &self,
+        message: impl Into<String>,
+        receivers: Vec<String>,
+    ) -> Result<bool, ClientError> {
+        self.call(
+            "ChatSendToLogin",
+            (message.into(), {
+                let mut players = String::new();
+                for player in receivers {
+                    players += &account_id_to_login(&player);
+                    players += ",";
+                }
+                players
+            }),
+        )
+        .await
+    }
+
     async fn enable_callbacks(&self, enable: bool) -> Result<bool, ClientError> {
         self.call("EnableCallbacks", enable).await
     }
@@ -377,6 +403,10 @@ impl XmlRpcMethods for TrackmaniaServer {
     async fn set_mode_script_settings(&self, settings: ServerConfig) -> Result<bool, ClientError> {
         self.call("SetModeScriptSettings", settings.get_mode_settings_struct())
             .await
+    }
+
+    async fn set_script_name(&self, name: impl Into<String>) -> Result<bool, ClientError> {
+        self.call("SetScriptName", name.into()).await
     }
 }
 

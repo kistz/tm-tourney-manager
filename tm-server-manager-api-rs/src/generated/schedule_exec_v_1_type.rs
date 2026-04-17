@@ -8,6 +8,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub struct ScheduleExecV1 {
     pub scheduled_id: u64,
+    pub schedule_id: u32,
     pub scheduled_at: __sdk::ScheduleAt,
 }
 
@@ -20,6 +21,7 @@ impl __sdk::InModule for ScheduleExecV1 {
 /// Provides typed access to columns for query building.
 pub struct ScheduleExecV1Cols {
     pub scheduled_id: __sdk::__query_builder::Col<ScheduleExecV1, u64>,
+    pub schedule_id: __sdk::__query_builder::Col<ScheduleExecV1, u32>,
     pub scheduled_at: __sdk::__query_builder::Col<ScheduleExecV1, __sdk::ScheduleAt>,
 }
 
@@ -28,6 +30,7 @@ impl __sdk::__query_builder::HasCols for ScheduleExecV1 {
     fn cols(table_name: &'static str) -> Self::Cols {
         ScheduleExecV1Cols {
             scheduled_id: __sdk::__query_builder::Col::new(table_name, "scheduled_id"),
+            schedule_id: __sdk::__query_builder::Col::new(table_name, "schedule_id"),
             scheduled_at: __sdk::__query_builder::Col::new(table_name, "scheduled_at"),
         }
     }

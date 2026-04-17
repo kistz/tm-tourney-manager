@@ -6,44 +6,46 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct ScheduleTryRunArgs {
-    pub id: u32,
+pub(super) struct ServerRemoveRawServerArgs {
+    pub server_id: u32,
 }
 
-impl From<ScheduleTryRunArgs> for super::Reducer {
-    fn from(args: ScheduleTryRunArgs) -> Self {
-        Self::ScheduleTryRun { id: args.id }
+impl From<ServerRemoveRawServerArgs> for super::Reducer {
+    fn from(args: ServerRemoveRawServerArgs) -> Self {
+        Self::ServerRemoveRawServer {
+            server_id: args.server_id,
+        }
     }
 }
 
-impl __sdk::InModule for ScheduleTryRunArgs {
+impl __sdk::InModule for ServerRemoveRawServerArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `schedule_try_run`.
+/// Extension trait for access to the reducer `server_remove_raw_server`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait schedule_try_run {
-    /// Request that the remote module invoke the reducer `schedule_try_run` to run as soon as possible.
+pub trait server_remove_raw_server {
+    /// Request that the remote module invoke the reducer `server_remove_raw_server` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`schedule_try_run:schedule_try_run_then`] to run a callback after the reducer completes.
-    fn schedule_try_run(&self, id: u32) -> __sdk::Result<()> {
-        self.schedule_try_run_then(id, |_, _| {})
+    /// /// Use [`server_remove_raw_server:server_remove_raw_server_then`] to run a callback after the reducer completes.
+    fn server_remove_raw_server(&self, server_id: u32) -> __sdk::Result<()> {
+        self.server_remove_raw_server_then(server_id, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `schedule_try_run` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `server_remove_raw_server` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn schedule_try_run_then(
+    fn server_remove_raw_server_then(
         &self,
-        id: u32,
+        server_id: u32,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -51,16 +53,16 @@ pub trait schedule_try_run {
     ) -> __sdk::Result<()>;
 }
 
-impl schedule_try_run for super::RemoteReducers {
-    fn schedule_try_run_then(
+impl server_remove_raw_server for super::RemoteReducers {
+    fn server_remove_raw_server_then(
         &self,
-        id: u32,
+        server_id: u32,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(ScheduleTryRunArgs { id }, callback)
+            .invoke_reducer_with_callback(ServerRemoveRawServerArgs { server_id }, callback)
     }
 }

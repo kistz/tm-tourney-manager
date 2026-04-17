@@ -15,6 +15,8 @@ pub struct ServerV1 {
     pub config: u32,
     pub status: ServerStatus,
     pub open: bool,
+    pub template: bool,
+    pub auto_provision: bool,
 }
 
 impl __sdk::InModule for ServerV1 {
@@ -31,6 +33,8 @@ pub struct ServerV1Cols {
     pub config: __sdk::__query_builder::Col<ServerV1, u32>,
     pub status: __sdk::__query_builder::Col<ServerV1, ServerStatus>,
     pub open: __sdk::__query_builder::Col<ServerV1, bool>,
+    pub template: __sdk::__query_builder::Col<ServerV1, bool>,
+    pub auto_provision: __sdk::__query_builder::Col<ServerV1, bool>,
 }
 
 impl __sdk::__query_builder::HasCols for ServerV1 {
@@ -43,6 +47,8 @@ impl __sdk::__query_builder::HasCols for ServerV1 {
             config: __sdk::__query_builder::Col::new(table_name, "config"),
             status: __sdk::__query_builder::Col::new(table_name, "status"),
             open: __sdk::__query_builder::Col::new(table_name, "open"),
+            template: __sdk::__query_builder::Col::new(table_name, "template"),
+            auto_provision: __sdk::__query_builder::Col::new(table_name, "auto_provision"),
         }
     }
 }
@@ -51,6 +57,7 @@ impl __sdk::__query_builder::HasCols for ServerV1 {
 ///
 /// Provides typed access to indexed columns for query building.
 pub struct ServerV1IxCols {
+    pub config: __sdk::__query_builder::IxCol<ServerV1, u32>,
     pub id: __sdk::__query_builder::IxCol<ServerV1, u32>,
     pub parent_id: __sdk::__query_builder::IxCol<ServerV1, u32>,
 }
@@ -59,6 +66,7 @@ impl __sdk::__query_builder::HasIxCols for ServerV1 {
     type IxCols = ServerV1IxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         ServerV1IxCols {
+            config: __sdk::__query_builder::IxCol::new(table_name, "config"),
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
             parent_id: __sdk::__query_builder::IxCol::new(table_name, "parent_id"),
         }

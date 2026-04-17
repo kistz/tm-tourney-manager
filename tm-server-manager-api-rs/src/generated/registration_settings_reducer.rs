@@ -4,51 +4,53 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::registration_settings_type::RegistrationSettings;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct ServerAssignRawServerArgs {
-    pub server_id: u32,
-    pub raw_server_id: u32,
+pub(super) struct RegistrationSettingsArgs {
+    pub id: u32,
+    pub settings: RegistrationSettings,
 }
 
-impl From<ServerAssignRawServerArgs> for super::Reducer {
-    fn from(args: ServerAssignRawServerArgs) -> Self {
-        Self::ServerAssignRawServer {
-            server_id: args.server_id,
-            raw_server_id: args.raw_server_id,
+impl From<RegistrationSettingsArgs> for super::Reducer {
+    fn from(args: RegistrationSettingsArgs) -> Self {
+        Self::RegistrationSettings {
+            id: args.id,
+            settings: args.settings,
         }
     }
 }
 
-impl __sdk::InModule for ServerAssignRawServerArgs {
+impl __sdk::InModule for RegistrationSettingsArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `server_assign_raw_server`.
+/// Extension trait for access to the reducer `registration_settings`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait server_assign_raw_server {
-    /// Request that the remote module invoke the reducer `server_assign_raw_server` to run as soon as possible.
+pub trait registration_settings {
+    /// Request that the remote module invoke the reducer `registration_settings` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`server_assign_raw_server:server_assign_raw_server_then`] to run a callback after the reducer completes.
-    fn server_assign_raw_server(&self, server_id: u32, raw_server_id: u32) -> __sdk::Result<()> {
-        self.server_assign_raw_server_then(server_id, raw_server_id, |_, _| {})
+    /// /// Use [`registration_settings:registration_settings_then`] to run a callback after the reducer completes.
+    fn registration_settings(&self, id: u32, settings: RegistrationSettings) -> __sdk::Result<()> {
+        self.registration_settings_then(id, settings, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `server_assign_raw_server` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `registration_settings` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn server_assign_raw_server_then(
+    fn registration_settings_then(
         &self,
-        server_id: u32,
-        raw_server_id: u32,
+        id: u32,
+        settings: RegistrationSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -56,22 +58,17 @@ pub trait server_assign_raw_server {
     ) -> __sdk::Result<()>;
 }
 
-impl server_assign_raw_server for super::RemoteReducers {
-    fn server_assign_raw_server_then(
+impl registration_settings for super::RemoteReducers {
+    fn registration_settings_then(
         &self,
-        server_id: u32,
-        raw_server_id: u32,
+        id: u32,
+        settings: RegistrationSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
-        self.imp.invoke_reducer_with_callback(
-            ServerAssignRawServerArgs {
-                server_id,
-                raw_server_id,
-            },
-            callback,
-        )
+        self.imp
+            .invoke_reducer_with_callback(RegistrationSettingsArgs { id, settings }, callback)
     }
 }

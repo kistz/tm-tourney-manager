@@ -80,25 +80,7 @@ pub async fn setup_state_synchronization() {
 
     server.on_player_connect(async |event: &PlayerConnect| {
         // Player destination
-        if let Some(player) = SPACETIME
-            .read()
-            .db
-            .raw_server_player_destination()
-            .iter()
-            .find(|p| Uuid::parse_str(&event.account_id).unwrap() == p.account_id)
-            && let Err(error) = server
-                .send_open_link_to_account(
-                    player.account_id.to_string(),
-                    format!(
-                        "#qjoin={}@Trackmania",
-                        account_id_to_login(&player.server_account_id.to_string())
-                    ),
-                    1,
-                )
-                .await
-        {
-            tracing::error!("Could not send link: {error}")
-        };
+        move_player_to_destination(Uuid::parse_str(&event.account_id).unwrap()).await;
 
         // Server allowlist.
         if !SERVER_METADATA.wait().lock().await.open {
@@ -262,27 +244,8 @@ pub fn check_players_have_destination() {
             let server = TRACKMANIA.wait();
             if let Ok(players) = server.get_player_list().await {
                 for server_player in players {
-                    if let Some(player) = SPACETIME
-                        .read()
-                        .db
-                        .raw_server_player_destination()
-                        .iter()
-                        .find(|p| {
-                            Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id
-                        })
-                        && let Err(error) = server
-                            .send_open_link_to_account(
-                                server_player.account_id.to_string(),
-                                format!(
-                                    "#qjoin={}@Trackmania",
-                                    account_id_to_login(&player.server_account_id.to_string())
-                                ),
-                                1,
-                            )
-                            .await
-                    {
-                        tracing::error!("Could not send link: {error}")
-                    };
+                    move_player_to_destination(Uuid::parse_str(&server_player.account_id).unwrap())
+                        .await;
                 }
             }
         });
@@ -317,4 +280,44 @@ pub async fn seamless_recovery() {
             err
         )
     }
+}
+
+async fn move_player_to_destination(account_id: Uuid) {
+    let server = TRACKMANIA.wait();
+
+    if let Some(player) = SPACETIME
+        .read()
+        .db
+        .raw_server_player_destination()
+        .iter()
+        .find(|p| account_id == p.account_id)
+    {
+        let mut seconds = 10;
+        while seconds > 0 {
+            if let Err(err) = server
+                .chat_send_to_account(format!(
+                    "[tmservers.live] Found a destination for you you will be automatically moved to a new server in {seconds} seconds."
+                ),vec![account_id.to_string()])
+                .await
+            {
+                tracing::error!("Error sending resume message. Reason: {}", err)
+            };
+            seconds -= 2;
+            sleep(Duration::from_secs(2)).await;
+        }
+
+        if let Err(error) = server
+            .send_open_link_to_account(
+                player.account_id.to_string(),
+                format!(
+                    "#qjoin={}@Trackmania",
+                    account_id_to_login(&player.server_account_id.to_string())
+                ),
+                1,
+            )
+            .await
+        {
+            tracing::error!("Could not send link: {error}")
+        };
+    };
 }

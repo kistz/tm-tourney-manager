@@ -14,7 +14,6 @@ pub struct RawServerV1 {
     pub user_id: u32,
     pub id: u32,
     pub online: bool,
-    pub capturable: bool,
     pub verified: bool,
 }
 
@@ -33,7 +32,6 @@ pub struct RawServerV1Cols {
     pub user_id: __sdk::__query_builder::Col<RawServerV1, u32>,
     pub id: __sdk::__query_builder::Col<RawServerV1, u32>,
     pub online: __sdk::__query_builder::Col<RawServerV1, bool>,
-    pub capturable: __sdk::__query_builder::Col<RawServerV1, bool>,
     pub verified: __sdk::__query_builder::Col<RawServerV1, bool>,
 }
 
@@ -48,7 +46,6 @@ impl __sdk::__query_builder::HasCols for RawServerV1 {
             user_id: __sdk::__query_builder::Col::new(table_name, "user_id"),
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             online: __sdk::__query_builder::Col::new(table_name, "online"),
-            capturable: __sdk::__query_builder::Col::new(table_name, "capturable"),
             verified: __sdk::__query_builder::Col::new(table_name, "verified"),
         }
     }

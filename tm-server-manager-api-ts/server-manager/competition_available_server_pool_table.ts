@@ -18,6 +18,5 @@ export default __t.row({
   userId: __t.u32().name("user_id"),
   id: __t.u32(),
   online: __t.bool(),
-  capturable: __t.bool(),
   verified: __t.bool(),
 });

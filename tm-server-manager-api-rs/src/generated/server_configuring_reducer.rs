@@ -6,42 +6,42 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct CompetitionConfiguredArgs {
+pub(super) struct ServerConfiguringArgs {
     pub id: u32,
 }
 
-impl From<CompetitionConfiguredArgs> for super::Reducer {
-    fn from(args: CompetitionConfiguredArgs) -> Self {
-        Self::CompetitionConfigured { id: args.id }
+impl From<ServerConfiguringArgs> for super::Reducer {
+    fn from(args: ServerConfiguringArgs) -> Self {
+        Self::ServerConfiguring { id: args.id }
     }
 }
 
-impl __sdk::InModule for CompetitionConfiguredArgs {
+impl __sdk::InModule for ServerConfiguringArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `competition_configured`.
+/// Extension trait for access to the reducer `server_configuring`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait competition_configured {
-    /// Request that the remote module invoke the reducer `competition_configured` to run as soon as possible.
+pub trait server_configuring {
+    /// Request that the remote module invoke the reducer `server_configuring` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`competition_configured:competition_configured_then`] to run a callback after the reducer completes.
-    fn competition_configured(&self, id: u32) -> __sdk::Result<()> {
-        self.competition_configured_then(id, |_, _| {})
+    /// /// Use [`server_configuring:server_configuring_then`] to run a callback after the reducer completes.
+    fn server_configuring(&self, id: u32) -> __sdk::Result<()> {
+        self.server_configuring_then(id, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `competition_configured` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `server_configuring` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn competition_configured_then(
+    fn server_configuring_then(
         &self,
         id: u32,
 
@@ -51,8 +51,8 @@ pub trait competition_configured {
     ) -> __sdk::Result<()>;
 }
 
-impl competition_configured for super::RemoteReducers {
-    fn competition_configured_then(
+impl server_configuring for super::RemoteReducers {
+    fn server_configuring_then(
         &self,
         id: u32,
 
@@ -61,6 +61,6 @@ impl competition_configured for super::RemoteReducers {
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(CompetitionConfiguredArgs { id }, callback)
+            .invoke_reducer_with_callback(ServerConfiguringArgs { id }, callback)
     }
 }

@@ -4,46 +4,53 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::schedule_settings_type::ScheduleSettings;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct CompetitionOngoingArgs {
+pub(super) struct ScheduleSettingsArgs {
     pub id: u32,
+    pub settings: ScheduleSettings,
 }
 
-impl From<CompetitionOngoingArgs> for super::Reducer {
-    fn from(args: CompetitionOngoingArgs) -> Self {
-        Self::CompetitionOngoing { id: args.id }
+impl From<ScheduleSettingsArgs> for super::Reducer {
+    fn from(args: ScheduleSettingsArgs) -> Self {
+        Self::ScheduleSettings {
+            id: args.id,
+            settings: args.settings,
+        }
     }
 }
 
-impl __sdk::InModule for CompetitionOngoingArgs {
+impl __sdk::InModule for ScheduleSettingsArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `competition_ongoing`.
+/// Extension trait for access to the reducer `schedule_settings`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait competition_ongoing {
-    /// Request that the remote module invoke the reducer `competition_ongoing` to run as soon as possible.
+pub trait schedule_settings {
+    /// Request that the remote module invoke the reducer `schedule_settings` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`competition_ongoing:competition_ongoing_then`] to run a callback after the reducer completes.
-    fn competition_ongoing(&self, id: u32) -> __sdk::Result<()> {
-        self.competition_ongoing_then(id, |_, _| {})
+    /// /// Use [`schedule_settings:schedule_settings_then`] to run a callback after the reducer completes.
+    fn schedule_settings(&self, id: u32, settings: ScheduleSettings) -> __sdk::Result<()> {
+        self.schedule_settings_then(id, settings, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `competition_ongoing` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `schedule_settings` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn competition_ongoing_then(
+    fn schedule_settings_then(
         &self,
         id: u32,
+        settings: ScheduleSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -51,16 +58,17 @@ pub trait competition_ongoing {
     ) -> __sdk::Result<()>;
 }
 
-impl competition_ongoing for super::RemoteReducers {
-    fn competition_ongoing_then(
+impl schedule_settings for super::RemoteReducers {
+    fn schedule_settings_then(
         &self,
         id: u32,
+        settings: ScheduleSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(CompetitionOngoingArgs { id }, callback)
+            .invoke_reducer_with_callback(ScheduleSettingsArgs { id, settings }, callback)
     }
 }

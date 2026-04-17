@@ -34,13 +34,10 @@ import {
 } from "spacetimedb";
 
 // Import all reducer arg schemas
-import CompetitionConfiguredReducer from "./competition_configured_reducer";
 import CompetitionConnectionDataUpdateReducer from "./competition_connection_data_update_reducer";
 import CompetitionCreateReducer from "./competition_create_reducer";
-import CompetitionEditNameReducer from "./competition_edit_name_reducer";
 import CompetitionNodePositionUpdateReducer from "./competition_node_position_update_reducer";
 import CompetitionNodePositionsUpdateReducer from "./competition_node_positions_update_reducer";
-import CompetitionOngoingReducer from "./competition_ongoing_reducer";
 import CompetitionTemplateCreateReducer from "./competition_template_create_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
 import CreateProjectReducer from "./create_project_reducer";
@@ -68,6 +65,7 @@ import RegisterPlayerReducer from "./register_player_reducer";
 import RegistrationConfiguredReducer from "./registration_configured_reducer";
 import RegistrationCreateReducer from "./registration_create_reducer";
 import RegistrationEndReducer from "./registration_end_reducer";
+import RegistrationSettingsReducer from "./registration_settings_reducer";
 import RegistrationStartReducer from "./registration_start_reducer";
 import RegistrationTemplateCreateReducer from "./registration_template_create_reducer";
 import RevokeRawServerReducer from "./revoke_raw_server_reducer";
@@ -78,13 +76,16 @@ import RoleMemberRemoveReducer from "./role_member_remove_reducer";
 import RoleRemoveReducer from "./role_remove_reducer";
 import ScheduleConfiguredReducer from "./schedule_configured_reducer";
 import ScheduleCreateReducer from "./schedule_create_reducer";
-import ScheduleTryRunReducer from "./schedule_try_run_reducer";
+import ScheduleManualRunReducer from "./schedule_manual_run_reducer";
+import ScheduleSettingsReducer from "./schedule_settings_reducer";
 import ServerAssignRawServerReducer from "./server_assign_raw_server_reducer";
 import ServerConfigOverrideReducer from "./server_config_override_reducer";
 import ServerConfiguredReducer from "./server_configured_reducer";
+import ServerConfiguringReducer from "./server_configuring_reducer";
 import ServerCreateReducer from "./server_create_reducer";
 import ServerMethodCallReducer from "./server_method_call_reducer";
 import ServerMethodResponseReducer from "./server_method_response_reducer";
+import ServerRemoveRawServerReducer from "./server_remove_raw_server_reducer";
 import ServerTemplateCreateReducer from "./server_template_create_reducer";
 import SetEnvVarReducer from "./set_env_var_reducer";
 import UnregisterPlayerReducer from "./unregister_player_reducer";
@@ -94,21 +95,23 @@ import * as LoginAsServerProcedure from "./login_as_server_procedure";
 import * as PostRoundReplayProcedure from "./post_round_replay_procedure";
 
 // Import all table schema definitions
-import ComeptitionSchedulesRow from "./comeptition_schedules_table";
 import CompetitionRow from "./competition_table";
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
 import CompetitionConnectionDataRow from "./competition_connection_data_table";
+import CompetitionOccupiedServerPoolRow from "./competition_occupied_server_pool_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
 import EventRawServerStateRow from "./event_raw_server_state_table";
 import MatchRoundRow from "./match_round_table";
 import MatchRoundExtRow from "./match_round_ext_table";
 import MatchRoundUsersRow from "./match_round_users_table";
 import MatchStateRow from "./match_state_table";
+import MyComeptitionSchedulesRow from "./my_comeptition_schedules_table";
 import MyConnectionsRow from "./my_connections_table";
 import MyMatchTemplateRow from "./my_match_template_table";
 import MyMatchesRow from "./my_matches_table";
 import MyNodePositionsRow from "./my_node_positions_table";
 import MyProjectsRow from "./my_projects_table";
+import MyRawServerPoolRow from "./my_raw_server_pool_table";
 import MyUserRow from "./my_user_table";
 import ProjectCompetitionDescendantsRow from "./project_competition_descendants_table";
 import RawServerCurrentPlayersRow from "./raw_server_current_players_table";
@@ -117,9 +120,9 @@ import RawServerPlayerDestinationRow from "./raw_server_player_destination_table
 import TempMatchLeaderboardRow from "./temp_match_leaderboard_table";
 import TempRegistrationPlayerRow from "./temp_registration_player_table";
 import ThisRawServerRow from "./this_raw_server_table";
-import UserAvailableServerPoolRow from "./user_available_server_pool_table";
-import UserRawServerPoolRow from "./user_raw_server_pool_table";
-import UserRawServerPoolUnverifiedRow from "./user_raw_server_pool_unverified_table";
+import UnstableCompetitionMembersRow from "./unstable_competition_members_table";
+import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
+import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member_table";
 import UsersRow from "./users_table";
 
 /** Type-only namespace exports for generated type groups. */
@@ -153,13 +156,6 @@ const tablesSchema = __schema({
     ],
     event: true,
   }, EventRawServerStateRow),
-  comeptition_schedules: __table({
-    name: 'comeptition_schedules',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, ComeptitionSchedulesRow),
   competition: __table({
     name: 'competition',
     indexes: [
@@ -181,6 +177,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, CompetitionConnectionDataRow),
+  competition_occupied_server_pool: __table({
+    name: 'competition_occupied_server_pool',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, CompetitionOccupiedServerPoolRow),
   match_round: __table({
     name: 'match_round',
     indexes: [
@@ -209,6 +212,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MatchStateRow),
+  my_comeptition_schedules: __table({
+    name: 'my_comeptition_schedules',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyComeptitionSchedulesRow),
   my_connections: __table({
     name: 'my_connections',
     indexes: [
@@ -244,6 +254,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyProjectsRow),
+  my_raw_server_pool: __table({
+    name: 'my_raw_server_pool',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyRawServerPoolRow),
   my_user: __table({
     name: 'my_user',
     indexes: [
@@ -300,27 +317,27 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, ThisRawServerRow),
-  user_available_server_pool: __table({
-    name: 'user_available_server_pool',
+  unstable_competition_members: __table({
+    name: 'unstable_competition_members',
     indexes: [
     ],
     constraints: [
     ],
-  }, UserAvailableServerPoolRow),
-  user_raw_server_pool: __table({
-    name: 'user_raw_server_pool',
+  }, UnstableCompetitionMembersRow),
+  unstable_competition_role: __table({
+    name: 'unstable_competition_role',
     indexes: [
     ],
     constraints: [
     ],
-  }, UserRawServerPoolRow),
-  user_raw_server_pool_unverified: __table({
-    name: 'user_raw_server_pool_unverified',
+  }, UnstableCompetitionRoleRow),
+  unstable_competition_role_member: __table({
+    name: 'unstable_competition_role_member',
     indexes: [
     ],
     constraints: [
     ],
-  }, UserRawServerPoolUnverifiedRow),
+  }, UnstableCompetitionRoleMemberRow),
   users: __table({
     name: 'users',
     indexes: [
@@ -332,13 +349,10 @@ const tablesSchema = __schema({
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
-  __reducerSchema("competition_configured", CompetitionConfiguredReducer),
   __reducerSchema("competition_connection_data_update", CompetitionConnectionDataUpdateReducer),
   __reducerSchema("competition_create", CompetitionCreateReducer),
-  __reducerSchema("competition_edit_name", CompetitionEditNameReducer),
   __reducerSchema("competition_node_position_update", CompetitionNodePositionUpdateReducer),
   __reducerSchema("competition_node_positions_update", CompetitionNodePositionsUpdateReducer),
-  __reducerSchema("competition_ongoing", CompetitionOngoingReducer),
   __reducerSchema("competition_template_create", CompetitionTemplateCreateReducer),
   __reducerSchema("connection_create", ConnectionCreateReducer),
   __reducerSchema("create_project", CreateProjectReducer),
@@ -366,6 +380,7 @@ const reducersSchema = __reducers(
   __reducerSchema("registration_configured", RegistrationConfiguredReducer),
   __reducerSchema("registration_create", RegistrationCreateReducer),
   __reducerSchema("registration_end", RegistrationEndReducer),
+  __reducerSchema("registration_settings", RegistrationSettingsReducer),
   __reducerSchema("registration_start", RegistrationStartReducer),
   __reducerSchema("registration_template_create", RegistrationTemplateCreateReducer),
   __reducerSchema("revoke_raw_server", RevokeRawServerReducer),
@@ -376,13 +391,16 @@ const reducersSchema = __reducers(
   __reducerSchema("role_remove", RoleRemoveReducer),
   __reducerSchema("schedule_configured", ScheduleConfiguredReducer),
   __reducerSchema("schedule_create", ScheduleCreateReducer),
-  __reducerSchema("schedule_try_run", ScheduleTryRunReducer),
+  __reducerSchema("schedule_manual_run", ScheduleManualRunReducer),
+  __reducerSchema("schedule_settings", ScheduleSettingsReducer),
   __reducerSchema("server_assign_raw_server", ServerAssignRawServerReducer),
   __reducerSchema("server_config_override", ServerConfigOverrideReducer),
   __reducerSchema("server_configured", ServerConfiguredReducer),
+  __reducerSchema("server_configuring", ServerConfiguringReducer),
   __reducerSchema("server_create", ServerCreateReducer),
   __reducerSchema("server_method_call", ServerMethodCallReducer),
   __reducerSchema("server_method_response", ServerMethodResponseReducer),
+  __reducerSchema("server_remove_raw_server", ServerRemoveRawServerReducer),
   __reducerSchema("server_template_create", ServerTemplateCreateReducer),
   __reducerSchema("set_env_var", SetEnvVarReducer),
   __reducerSchema("unregister_player", UnregisterPlayerReducer),

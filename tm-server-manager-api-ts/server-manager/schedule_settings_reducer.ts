@@ -10,9 +10,13 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export default __t.row({
-  name: __t.string(),
-  id: __t.u32().primaryKey(),
-  parentId: __t.u32().name("parent_id"),
-  template: __t.bool(),
-});
+import {
+  ScheduleSettings,
+} from "./types";
+
+export default {
+  id: __t.u32(),
+  get settings() {
+    return ScheduleSettings;
+  },
+};
