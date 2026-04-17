@@ -119,10 +119,10 @@ pub fn connection_create(
         return Err("Cannot connect a Node to itself.".into());
     }
 
-    let from_comp = ctx.node_get_parent(origin)?;
-    let to_comp = ctx.node_get_parent(target)?;
+    let origin_parent = ctx.node_get_parent(origin)?;
+    let target_parent = ctx.node_get_parent(target)?;
 
-    if from_comp != to_comp {
+    if origin_parent != target_parent {
         return Err(
             "Cannot add a connection where nodes are part of different competitions!".into(),
         );
@@ -134,7 +134,7 @@ pub fn connection_create(
         );
     }
 
-    ctx.auth_builder(from_comp)
+    ctx.auth_builder(origin_parent)
         .permission(CompetitionPermissionsV1::COMPETITION_CONNECTION_EDIT)
         .authorize()?;
 
@@ -164,7 +164,7 @@ pub fn connection_create(
         .db
         .tab_connection()
         .parent_id()
-        .filter(from_comp)
+        .filter(origin_parent)
         .collect::<Vec<_>>();
 
     for connection in &competition_connections {
@@ -207,7 +207,7 @@ pub fn connection_create(
     let (target_variant, target_id) = target.split();
     let connection = ctx.db.tab_connection().try_insert(TabConnection {
         id: 0,
-        parent_id: from_comp,
+        parent_id: origin_parent,
         origin_id,
         target_id,
         origin_variant,
