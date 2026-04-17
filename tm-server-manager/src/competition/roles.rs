@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, Table, Uuid, reducer, table};
+use spacetimedb::{AnonymousViewContext, Query, ReducerContext, Table, Uuid, reducer, table, view};
 
 use crate::{authorization::Authorization, competition::CompetitionPermissionsV1, user::UserRead};
 
@@ -101,11 +101,14 @@ fn member_remove(ctx: &ReducerContext, member_id: u32) -> Result<(), String> {
         .id()
         .delete(project_member.id);
 
+    //TODO
+    // ctx.db.tab_competition_role_member().user_roles().filter((point))
+
     Ok(())
 }
 
 #[reducer]
-pub fn role_create(ctx: &ReducerContext, competition_id: u32, name: String) -> Result<(), String> {
+fn role_create(ctx: &ReducerContext, competition_id: u32, name: String) -> Result<(), String> {
     ctx.auth_builder(competition_id)
         //.permission(ProjectPermissionsV1::Pro)
         .authorize()?;
@@ -121,7 +124,7 @@ pub fn role_create(ctx: &ReducerContext, competition_id: u32, name: String) -> R
 }
 
 #[reducer]
-pub fn role_remove(ctx: &ReducerContext, role_id: u32) -> Result<(), String> {
+fn role_remove(ctx: &ReducerContext, role_id: u32) -> Result<(), String> {
     let Some(role) = ctx.db.tab_competition_role().id().find(role_id) else {
         return Err("Could not find role with id".into());
     };
@@ -142,11 +145,7 @@ pub fn role_remove(ctx: &ReducerContext, role_id: u32) -> Result<(), String> {
 }
 
 #[reducer]
-pub fn role_member_assign(
-    ctx: &ReducerContext,
-    role_id: u32,
-    account_id: Uuid,
-) -> Result<(), String> {
+fn role_member_assign(ctx: &ReducerContext, role_id: u32, account_id: Uuid) -> Result<(), String> {
     let Some(role) = ctx.db.tab_competition_role().id().find(role_id) else {
         return Err("Could not find role with id".into());
     };
@@ -167,11 +166,7 @@ pub fn role_member_assign(
 }
 
 #[reducer]
-pub fn role_member_remove(
-    ctx: &ReducerContext,
-    role_id: u32,
-    account_id: Uuid,
-) -> Result<(), String> {
+fn role_member_remove(ctx: &ReducerContext, role_id: u32, account_id: Uuid) -> Result<(), String> {
     let Some(role) = ctx.db.tab_competition_role().id().find(role_id) else {
         return Err("Could not find role with id".into());
     };
@@ -196,7 +191,7 @@ pub fn role_member_remove(
 }
 
 #[reducer]
-pub fn role_assign_permission(
+fn role_assign_permission(
     ctx: &ReducerContext,
     role_id: u32,
     new_permissions: u64,
@@ -217,7 +212,7 @@ pub fn role_assign_permission(
 }
 
 #[reducer]
-pub fn member_assign_permission(
+fn member_assign_permission(
     ctx: &ReducerContext,
     member_id: u32,
     new_permissions: u64,
@@ -236,3 +231,48 @@ pub fn member_assign_permission(
 
     Ok(())
 }
+
+#[view(accessor=unstable_competition_members,public)]
+fn unstable_competition_members(ctx: &AnonymousViewContext) -> impl Query<CompetitionMember> {
+    ctx.from.tab_competition_member()
+}
+
+#[view(accessor=unstable_competition_role,public)]
+fn unstable_competition_role(ctx: &AnonymousViewContext) -> impl Query<CompetitionRole> {
+    ctx.from.tab_competition_role()
+}
+
+#[view(accessor=unstable_competition_role_member,public)]
+fn unstable_competition_role_member(
+    ctx: &AnonymousViewContext,
+) -> impl Query<CompetitionRoleMember> {
+    ctx.from.tab_competition_role_member()
+}
+
+/* #[view(accessor=my_competition_members,public)]
+fn my_competition_members(ctx: &AnonymousViewContext) -> impl Query<CompetitionMember> {
+    let competition_id = 1u32;
+    ctx.from
+        .tab_competition_member()
+        .r#where(|r| r.competition_id.eq(competition_id))
+}
+
+#[view(accessor=my_competition_role,public)]
+fn my_competition_role(ctx: &AnonymousViewContext) -> impl Query<CompetitionRole> {
+    let competition_id = 1u32;
+    ctx.from
+        .tab_competition_role()
+        .r#where(|r| r.competition_id.eq(competition_id))
+}
+
+#[view(accessor=my_competition_role_member,public)]
+fn my_competition_role_member(ctx: &AnonymousViewContext) -> impl Query<CompetitionRoleMember> {
+    let competition_id = 1u32;
+    /* ctx.from
+        .tab_competition_role()
+        .r#where(|r| r.competition_id.eq(competition_id))
+        .right_semijoin(ctx.from.tab_competition_role_member(), |a, b| {
+            b.role_id.eq(a.id)
+        }) */
+       ctx.from.
+} */

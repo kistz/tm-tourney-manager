@@ -414,3 +414,25 @@ impl<Db: DbContext> ConnectionRead for Db {
 }
 /* pub(crate) trait ConnectionWrite: ConnectionRead {}
 impl<Db: DbContext<DbView = Local>> ConnectionWrite for Db {} */
+
+// Connection Rules
+// Schedule:
+// -> as origin: only wait and action connection.
+// -> as target: only wait (also has to be set to relative).
+// Competition:
+// -> as origin: not allowed.
+// -> as target: data and wait.
+// Input:
+// -> as origin: everything.
+// -> as target: not allowed.
+// Match:
+// -> as origin: Everything.
+// -> as target: Everything.
+// Registration:
+// -> as origin: Everything.
+// -> as target: Action.
+// Server:
+// -> as origin: not allowed.
+// -> as target: not allowed.
+// Portal: TODO
+// Leadarboard: TODO
