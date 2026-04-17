@@ -169,7 +169,7 @@ fn competition_ongoing(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     Ok(())
 } */
 
-#[reducer]
+/* #[reducer]
 fn competition_edit_name(
     ctx: &ReducerContext,
     competition_id: u32,
@@ -188,7 +188,7 @@ fn competition_edit_name(
     ctx.db.tab_competition().id().update(competition);
 
     Ok(())
-}
+} */
 
 #[view(accessor=competition,public)]
 fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {

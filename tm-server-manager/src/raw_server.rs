@@ -4,7 +4,8 @@ use petgraph::visit::Time;
 use serde::Deserialize;
 use spacetimedb::http::Request;
 use spacetimedb::{
-    DbContext, Identity, Local, ReducerContext, Table, Timestamp, Uuid, ViewContext, reducer, table,
+    DbContext, Identity, Local, Query, RawQuery, ReducerContext, Table, Timestamp, Uuid,
+    ViewContext, reducer, table,
 };
 use spacetimedb::{ProcedureContext, view};
 
@@ -51,7 +52,7 @@ pub struct RawServerV1 {
     online: bool,
 
     // Can the server be provisioned or is it a fixed server?
-    capturable: bool,
+    //capturable: bool,
 
     // This is necessary because at the moment a arbitrary account_id can be supplied when logging in as a server
     // as there is no way to verify it through the trackmania web services.
@@ -167,7 +168,7 @@ pub fn login_as_server(
                 server_account_id,
                 user_id: ctx.user_id_from_account(user_account_id),
                 identity,
-                capturable: true,
+                //capturable: true,
                 verified: false,
                 online: true,
                 last_connection: ctx.timestamp,
@@ -186,50 +187,12 @@ fn this_raw_server(ctx: &ViewContext) -> Option<RawServerV1> {
     ctx.db.tab_raw_server().identity().find(ctx.sender())
 }
 
-/// The Raw server pool are all servers of an account which are verified.
-#[view(accessor= user_raw_server_pool, public)]
-pub(crate) fn user_raw_server_pool(ctx: &ViewContext) -> Vec<RawServerV1> {
+#[view(accessor= my_raw_server_pool, public)]
+fn my_raw_server_pool(ctx: &ViewContext) -> impl Query<RawServerV1> {
     let Ok(user_id) = ctx.user_id() else {
-        return Vec::new();
+        return RawQuery::new(String::new());
     };
-    //TODO maybe switch to query builder if possible
-    ctx.db
-        .tab_raw_server()
-        .user_id()
-        .filter(user_id)
-        .filter(|s| s.verified)
-        .collect()
-}
-
-/// The Raw server pool are all servers of an account which are verified.
-#[view(accessor= user_available_server_pool, public)]
-pub(crate) fn user_available_server_pool(ctx: &ViewContext) -> Vec<RawServerV1> {
-    let Ok(user_id) = ctx.user_id() else {
-        return Vec::new();
-    };
-
-    ctx.db
-        .tab_raw_server()
-        .user_id()
-        .filter(user_id)
-        .filter(|s| s.verified && s.capturable)
-        .filter(|s| !ctx.raw_server_is_occupied(s.id))
-        .collect()
-}
-
-/// The unverified version of a server pool includes all servers of an account which are not vet verified.
-#[view(accessor= user_raw_server_pool_unverified, public)]
-fn user_raw_server_pool_unverified(ctx: &ViewContext) -> Vec<RawServerV1> {
-    let Ok(user_id) = ctx.user_id() else {
-        return Vec::new();
-    };
-    //TODO maybe switch to query builder if possible
-    ctx.db
-        .tab_raw_server()
-        .user_id()
-        .filter(user_id)
-        .filter(|s| !s.verified)
-        .collect()
+    ctx.from.tab_raw_server().r#where(|r| r.user_id.eq(user_id))
 }
 
 #[reducer]
@@ -304,5 +267,3 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
         }
     }
 }
-
-//mod huh;
