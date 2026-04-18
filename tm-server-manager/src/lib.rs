@@ -1,6 +1,7 @@
 use spacetimedb::{CaseConversionPolicy, Identity, ReducerContext, Uuid};
 
 use crate::{
+    authorization::Authorization,
     raw_server::{TabRawServerWrite, tab_raw_server},
     user::{UserV1 as UserStruct, UserWrite},
 };
@@ -83,6 +84,15 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
                 return Ok(());
             }
         }
+        // This is done for the dashboard table subscription.
+        #[cfg(feature = "production")]
+        if jwt.issuer() == "https://auth.spacetimedb.com" {
+            log::info!(
+                "Connected with internal spacetime issuer. {}",
+                jwt.subject()
+            );
+            return Ok(());
+        }
 
         if jwt.issuer() == "https://auth.spacetimedb.com/oidc" {
             let claims = unsafe {
@@ -116,7 +126,7 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
 
 #[spacetimedb::reducer(client_disconnected)]
 fn client_disconnected(ctx: &ReducerContext) {
-    if let Some(server) = ctx.db.tab_raw_server().identity().find(ctx.sender()) {
-        ctx.raw_server_disconnected(server, ctx.timestamp);
+    if let Ok(server_id) = ctx.server_id() {
+        ctx.raw_server_disconnected(server_id, ctx.timestamp);
     }
 }

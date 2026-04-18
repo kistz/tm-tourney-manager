@@ -1,25 +1,20 @@
-use spacetimedb::{ReducerContext, Table, Uuid, reducer, table};
+use spacetimedb::{ReducerContext, Uuid, reducer};
 use tm_server_types::event::Event;
 
 use crate::{
     authorization::Authorization,
     raw_server::{
         occupation::TabRawServerOccupationRead,
-        player::{raw_server_player_add, raw_server_player_remove, tab_raw_server_player},
-        tab_raw_server,
+        player::{raw_server_player_add, raw_server_player_remove},
     },
-    tm_match::{
-        event::handle_match_event,
-        state::{MatchState, tab_match_state},
-        tab_match,
-    },
+    tm_match::{event::handle_match_event, tab_match},
     user::{UserRead, UserV1, UserWrite},
 };
 
 /// Servers call this to post the event stream.
 #[reducer]
-pub fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
-    let server = ctx.get_server()?;
+fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
+    let server_id = ctx.server_id()?;
 
     match &event {
         Event::PlayerConnect(player) => {
@@ -40,7 +35,7 @@ pub fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
         _ => (),
     }
 
-    if let Some(node) = ctx.raw_server_occupation(server.id) {
+    if let Some(node) = ctx.raw_server_occupation(server_id) {
         if node.is_match()
             && let Some(tm_match) = ctx.db.tab_match().id().find(node.split().1)
             && tm_match.is_live()

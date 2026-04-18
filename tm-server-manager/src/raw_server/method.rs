@@ -85,7 +85,7 @@ pub fn server_method_response(
     call_id: u32,
     response: MethodResponse,
 ) -> Result<(), String> {
-    let server = ctx.get_server()?;
+    let server_id = ctx.server_id()?;
 
     let Some(mut method) = ctx.db.tab_raw_server_method().id().find(call_id) else {
         return Err(format!(
@@ -93,7 +93,7 @@ pub fn server_method_response(
         ));
     };
 
-    if server.id != method.get_server() {
+    if server_id != method.get_server() {
         return Err("Different server responded to the method call. Aborting".into());
     }
 

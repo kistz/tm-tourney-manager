@@ -11,7 +11,7 @@ use crate::{
             tab_competition_role_member__view,
         },
     },
-    raw_server::{RawServerV1, tab_raw_server, tab_raw_server__view},
+    raw_server::{RawServerV1, TabRawServerRead, tab_raw_server, tab_raw_server__view},
     user::UserRead,
 };
 
@@ -19,7 +19,7 @@ pub(crate) trait Authorization {
     type Context: DbContext;
     fn user_id(&self) -> Result<u32, String>;
 
-    fn get_server(&self) -> Result<RawServerV1, String>;
+    fn server_id(&self) -> Result<u32, String>;
 
     fn auth_builder(
         &'_ self,
@@ -30,12 +30,8 @@ pub(crate) trait Authorization {
 impl Authorization for ReducerContext {
     type Context = ReducerContext;
 
-    fn get_server(&self) -> Result<RawServerV1, String> {
-        if let Some(server) = self.db.tab_raw_server().identity().find(self.sender()) {
-            return Ok(server);
-        }
-
-        Err("Tried to use a reducer meant for Servers without the proper Authentication.".into())
+    fn server_id(&self) -> Result<u32, String> {
+        self.get_raw_server_id(self.sender())
     }
 
     fn auth_builder(
@@ -57,12 +53,8 @@ impl Authorization for ViewContext {
         self.get_user_id(self.sender())
     }
 
-    fn get_server(&self) -> Result<RawServerV1, String> {
-        if let Some(server) = self.db.tab_raw_server().identity().find(self.sender()) {
-            return Ok(server);
-        }
-
-        Err("Tried to use a reducer meant for Servers without the proper Authentication.".into())
+    fn server_id(&self) -> Result<u32, String> {
+        self.get_raw_server_id(self.sender())
     }
 
     fn auth_builder(

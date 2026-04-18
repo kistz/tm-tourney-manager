@@ -1,7 +1,7 @@
 use spacetimedb::{ProcedureContext, procedure};
 
 use crate::{
-    raw_server::{occupation::TabRawServerOccupationRead, tab_raw_server},
+    raw_server::{occupation::TabRawServerOccupationRead, tab_raw_server_identity},
     tm_match::replay::MatchReplayWrite,
 };
 
@@ -14,12 +14,12 @@ pub fn post_round_replay(
     let sender = ctx.sender();
 
     ctx.try_with_tx(|ctx| {
-        let server = match ctx.db.tab_raw_server().identity().find(sender) {
+        let server = match ctx.db.tab_raw_server_identity().identity().find(sender) {
             Some(server) => server,
             None => return Err("Identity not associated with a server account.".to_string()),
         };
 
-        let Some(occupation) = ctx.raw_server_occupation(server.id) else {
+        let Some(occupation) = ctx.raw_server_occupation(server.server_id) else {
             return Err("Server is not occupied.".into());
         };
 

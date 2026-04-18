@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, SpacetimeType, Uuid, ViewContext, table, view};
+use spacetimedb::{DbContext, Local, SpacetimeType, Table, Uuid, ViewContext, table, view};
 
 use crate::{
     authorization::Authorization,
@@ -13,7 +13,7 @@ use crate::{
 #[table(accessor=tab_player_destination,
     index(accessor=competition_player, hash(columns=[competition_id,user_id]))
 )]
-pub struct TabPlayerDestination {
+struct TabPlayerDestination {
     #[index(hash)]
     pub competition_id: u32,
 
@@ -35,11 +35,11 @@ pub struct PlayerDestination {
 
 #[view(accessor=raw_server_player_destination,public)]
 fn raw_server_player_destination(ctx: &ViewContext) -> Vec<PlayerDestination> {
-    let Ok(this_server) = ctx.get_server() else {
+    let Ok(server_id) = ctx.server_id() else {
         return Vec::new();
     };
 
-    let Some(node) = ctx.raw_server_occupation(this_server.id) else {
+    let Some(node) = ctx.raw_server_occupation(server_id) else {
         return Vec::new();
     };
 
@@ -56,7 +56,7 @@ fn raw_server_player_destination(ctx: &ViewContext) -> Vec<PlayerDestination> {
                 .tab_player_destination()
                 .competition_id()
                 .filter(competition_id)
-                .filter(|p| p.destination_server_id != this_server.id)
+                .filter(|p| p.destination_server_id != server_id)
                 .map(|r| {
                     if r.user_id == 0 {
                         PlayerDestination {
@@ -92,31 +92,34 @@ impl<Db: DbContext> TabRawServerDestinationRead for Db {}
 
 pub(crate) trait TabRawServerDestinationWrite: TabRawServerDestinationRead {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String>;
+    fn destination_free(&self, node: NodeHandle);
 }
 impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String> {
         let players = self.node_permitted_players_input(node);
-        //TODO
+        let server_id = self.occupation_with_occupier(node).unwrap();
+        let competition_id = self.node_get_parent(node).unwrap();
         for player in players {
-            /* self.db()
-            .tab_player_destination()
-            .try_insert(TabPlayerDestination {
-                match_id,
-                competition_id,
-                destination_server_id: server_id,
-                //PERF: This is a back and forth with other views i think and could be done cleaner.
-                //no time for now tho. This would require an overhaul in many places includinig leaderboards and stuff.
-                user_id: self
-                    .db_read_only()
-                    .tab_user_ids_map()
-                    .account_id()
-                    .find(player.account_id)
-                    .unwrap()
-                    .user_id,
-            })?; */
+            self.db()
+                .tab_player_destination()
+                .try_insert(TabPlayerDestination {
+                    match_id: node.id(),
+                    competition_id,
+                    destination_server_id: server_id,
+                    //PERF: This is a back and forth with other views i think and could be done cleaner.
+                    //no time for now tho. This would require an overhaul in many places includinig leaderboards and stuff.
+                    user_id: self.user_id_from_account(player.account_id),
+                })?;
         }
 
         Ok(())
+    }
+
+    fn destination_free(&self, node: NodeHandle) {
+        self.db()
+            .tab_player_destination()
+            .match_id()
+            .delete(node.id());
     }
 }
 

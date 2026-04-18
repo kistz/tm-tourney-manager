@@ -27,11 +27,11 @@ pub(super) fn raw_server_player_add(
     account_id: Uuid,
     spectator: bool,
 ) -> Result<(), String> {
-    let server = ctx.get_server()?;
+    let server_id = ctx.server_id()?;
 
     // Player is already present on the network.
     if let Some(mut player) = ctx.db.tab_raw_server_player().account_id().find(account_id) {
-        if player.server_id == server.id {
+        if player.server_id == server_id {
             if (player.spectator && spectator) || (!player.spectator && !spectator) {
                 return Err("Player was already in the state before the request.".into());
             }
@@ -39,13 +39,6 @@ pub(super) fn raw_server_player_add(
             ctx.db.tab_raw_server_player().account_id().update(player);
             Ok(())
         } else {
-            log::error!(
-                "Server {} supposedly owned by {} attempted to modify a player which was on server {}. Sus",
-                server.server_login,
-                server.user_id,
-                player.server_id
-            );
-
             //TODO should we correct our mistake then because this should not be possible.
             //On the one hand wwe should trust us more because all servers could be sending malicious request displacing the player.
             //On the other hand every server can crash or disconnect failing to send the disconnection messages.
@@ -56,7 +49,7 @@ pub(super) fn raw_server_player_add(
         //TODO check server side if its the server account id. We need to extract the server account id from the login token for that.
 
         ctx.db.tab_raw_server_player().try_insert(RawServerPlayer {
-            server_id: server.id,
+            server_id: server_id,
             account_id,
             spectator,
         })?;
@@ -69,21 +62,15 @@ pub(super) fn raw_server_player_remove(
     ctx: &ReducerContext,
     account_id: Uuid,
 ) -> Result<(), String> {
-    let server = ctx.get_server()?;
+    let server_id = ctx.server_id()?;
 
     if let Some(player) = ctx.db.tab_raw_server_player().account_id().find(account_id) {
         // Only the current server has permission to disconnect the player.
-        if player.server_id == server.id {
+        if player.server_id == server_id {
             if !ctx.db.tab_raw_server_player().delete(player) {
                 return Err("Could not delete player!".into());
             };
         } else {
-            log::error!(
-                "Server {} supposedly owned by {} attempted to remove a player which was on server {}. Sus",
-                server.server_login,
-                server.user_id,
-                player.server_id
-            );
             return Err(
                 "Attempted to remove player from another server than he is currently on!".into(),
             );
@@ -124,11 +111,11 @@ impl PermittedPlayer {
 
 #[view(accessor= raw_server_permitted_players, public)]
 fn raw_server_permitted_players(ctx: &ViewContext) -> Vec<PermittedPlayer> {
-    let Ok(server) = ctx.get_server() else {
+    let Ok(server_id) = ctx.server_id() else {
         return Vec::new();
     };
 
-    let Some(node) = ctx.raw_server_occupation(server.id) else {
+    let Some(node) = ctx.raw_server_occupation(server_id) else {
         return Vec::new();
     };
 

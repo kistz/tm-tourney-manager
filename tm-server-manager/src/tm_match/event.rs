@@ -4,7 +4,9 @@ use tm_server_types::event::Event;
 use crate::{
     competition::{connection::internal_graph_resolution_node_finished, node::NodeHandle},
     maps::{TabTmMap, tab_tm_map},
-    raw_server::{destination::tab_player_destination, occupation::TabRawServerOccupationWrite},
+    raw_server::{
+        destination::TabRawServerDestinationWrite, occupation::TabRawServerOccupationWrite,
+    },
     tm_match::{
         leaderboard::{
             MatchRoundPlayer, MatchRoundPlayerExt, tab_match_round_player,
@@ -227,7 +229,7 @@ pub(crate) fn handle_match_event(
                 log::error!("Occupation could not be removed. Error {error}")
             };
 
-            ctx.db.tab_player_destination().match_id().delete(match_id);
+            ctx.destination_free(NodeHandle::MatchV1(match_id));
 
             log::info!("The match {match_id} has successfully ended!");
         }

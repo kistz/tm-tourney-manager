@@ -132,6 +132,9 @@ pub async fn setup_state_synchronization() {
             tracing::error!("{error}")
         };
         if event.mode.updated {
+            if let Err(err) = server.restart_map().await {
+                tracing::error!("Cannot restart!. Reason: {err}");
+            };
             tracing::info!("Mode Script was updated");
         } else {
             tracing::info!("Mode Script stayed the same");
