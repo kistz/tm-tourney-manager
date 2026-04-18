@@ -78,7 +78,7 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
         //NodeHandle::MonitoringV1(_) => unreachable!(),
         NodeHandle::ServerV1(_) => unreachable!(),
         NodeHandle::ScheduleV1(_) => unreachable!(),
-        NodeHandle::PortalV1(_) => unreachable!(),
+        //NodeHandle::PortalV1(_) => unreachable!(),
         NodeHandle::RegistrationV1(r) => {
             let registration_action = action.get_registration();
             match registration_action {

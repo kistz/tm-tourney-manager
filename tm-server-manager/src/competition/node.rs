@@ -1,20 +1,21 @@
 use std::collections::HashMap;
 
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid};
+use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer};
 
 use crate::{
     competition::{
+        CompetitionWrite,
         connection::{
             ConnectionRead, action::tab_connection_action, data::tab_connection_data,
             tab_connection, tab_connection__view,
         },
         tab_competition, tab_competition__view,
     },
-    portal::{tab_portal, tab_portal__view},
     raw_server::player::PermittedPlayer,
-    registration::{tab_registration, tab_registration__view},
+    registration::{RegistrationWrite, tab_registration, tab_registration__view},
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
-    tm_match::{authorized_match_set_preparation, tab_match, tab_match__view},
+    tm_match::{MatchWrite, authorized_match_set_preparation, tab_match, tab_match__view},
+    tm_server::ServerWrite,
 };
 mod position;
 
@@ -28,7 +29,7 @@ pub enum NodeHandle {
     //MonitoringV1(u32),
     ServerV1(u32),
     ScheduleV1(u32),
-    PortalV1(u32),
+    //PortalV1(u32),
     RegistrationV1(u32),
 }
 
@@ -51,7 +52,7 @@ impl NodeHandle {
             NodeHandle::ScheduleV1(s) => (3, s),
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(m) => (4, m),
-            NodeHandle::PortalV1(p) => (6, p),
+            //NodeHandle::PortalV1(p) => (6, p),
             NodeHandle::RegistrationV1(r) => (7, r),
         }
     }
@@ -62,7 +63,7 @@ impl NodeHandle {
             2 => Self::CompetitionV1(value),
             3 => Self::ScheduleV1(value),
             4 => Self::ServerV1(value),
-            6 => Self::PortalV1(value),
+            //6 => Self::PortalV1(value),
             7 => Self::RegistrationV1(value),
             _ => unreachable!(),
         }
@@ -84,10 +85,10 @@ impl NodeHandle {
             }
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
-            NodeHandle::PortalV1(portal_id) => {
+            /* NodeHandle::PortalV1(portal_id) => {
                 let node = ctx.db.tab_portal().id().find(portal_id).unwrap();
                 node.is_template()
-            }
+            } */
             NodeHandle::RegistrationV1(reg) => {
                 let node = ctx.db.tab_registration().id().find(reg).unwrap();
                 node.is_template()
@@ -125,7 +126,7 @@ impl NodeType for NodeHandle {
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),
-            NodeHandle::PortalV1(_) => todo!(),
+            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(r) => unreachable!(),
         }
     }
@@ -190,13 +191,13 @@ impl<Db: DbContext> NodeRead for Db {
             }
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
-            NodeHandle::PortalV1(portal_id) => {
+            /* NodeHandle::PortalV1(portal_id) => {
                 if let Some(portal) = self.db_read_only().tab_portal().id().find(portal_id) {
                     Ok(portal.get_comp_id())
                 } else {
                     Err("Portal could not be found.".into())
                 }
-            }
+            } */
             NodeHandle::RegistrationV1(reg) => {
                 if let Some(reg) = self.db_read_only().tab_registration().id().find(reg) {
                     Ok(reg.get_comp_id())
@@ -211,6 +212,7 @@ impl<Db: DbContext> NodeRead for Db {
 pub(crate) trait NodeWrite: NodeRead {
     fn node_create(&self, node: NodeHandle) -> Result<(), String>;
     fn node_delete(&self, node: NodeHandle) -> Result<(), String>;
+    fn node_name_edit(&self, node: NodeHandle, name: String) -> Result<(), String>;
 }
 impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
     fn node_create(&self, node: NodeHandle) -> Result<(), String> {
@@ -251,4 +253,24 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
 
         Ok(())
     }
+
+    fn node_name_edit(&self, node: NodeHandle, name: String) -> Result<(), String> {
+        match node {
+            NodeHandle::MatchV1(id) => self.match_name_edit(id, name)?,
+
+            NodeHandle::CompetitionV1(id) => self.competition_name_edit(id, name)?,
+            NodeHandle::ServerV1(id) => self.server_name_edit(id, name)?,
+            NodeHandle::ScheduleV1(id) => self.schedule_name_edit(id, name)?,
+            NodeHandle::RegistrationV1(id) => self.registration_name_edit(id, name)?,
+        }
+
+        Ok(())
+    }
+}
+
+#[reducer]
+fn node_name_edit(ctx: &ReducerContext, node: NodeHandle, name: String) -> Result<(), String> {
+    //TODO access control
+
+    ctx.node_name_edit(node, name)
 }

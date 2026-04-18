@@ -38,8 +38,8 @@ static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
 static TRACKMANIA_FILES: OnceLock<String> = OnceLock::new();
 
 static SERVER_METADATA: OnceLock<Mutex<EventRawServerState>> = OnceLock::new();
-static EVENT_CACHE: LazyLock<StdMutex<VecDeque<Event>>> =
-    LazyLock::new(|| StdMutex::new(VecDeque::with_capacity(1000)));
+//static EVENT_CACHE: LazyLock<StdMutex<VecDeque<Event>>> =
+//LazyLock::new(|| StdMutex::new(VecDeque::with_capacity(1000)));
 
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt as _, util::SubscriberInitExt};

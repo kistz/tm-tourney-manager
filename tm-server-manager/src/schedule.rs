@@ -260,6 +260,7 @@ pub fn my_comeptition_schedules(
 
 pub(crate) trait ScheduleWrite {
     fn schedule_start_relative(&self, schedule_id: u32, now: Timestamp) -> Result<(), String>;
+    fn schedule_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
 }
 impl<Db: spacetimedb::DbContext<DbView = Local>> ScheduleWrite for Db {
     fn schedule_start_relative(&self, schedule_id: u32, now: Timestamp) -> Result<(), String> {
@@ -277,6 +278,16 @@ impl<Db: spacetimedb::DbContext<DbView = Local>> ScheduleWrite for Db {
         })?;
 
         self.db().tab_schedule().id().update(schedule);
+        Ok(())
+    }
+
+    fn schedule_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_schedule().id().find(match_id) else {
+            return Err("Match not found.".into());
+        };
+        tm_match.name = name;
+        self.db().tab_schedule().id().update(tm_match);
+
         Ok(())
     }
 }

@@ -90,7 +90,6 @@ pub mod method_error_type;
 pub mod method_response_type;
 pub mod mode_settings_type;
 pub mod my_comeptition_schedules_table;
-pub mod my_connections_table;
 pub mod my_match_template_table;
 pub mod my_matches_table;
 pub mod my_node_positions_table;
@@ -144,8 +143,8 @@ pub mod registration_configured_reducer;
 pub mod registration_create_reducer;
 pub mod registration_end_reducer;
 pub mod registration_settings_player_type;
-pub mod registration_settings_reducer;
 pub mod registration_settings_type;
+pub mod registration_settings_update_reducer;
 pub mod registration_start_reducer;
 pub mod registration_status_type;
 pub mod registration_template_create_reducer;
@@ -166,8 +165,8 @@ pub mod schedule_configured_reducer;
 pub mod schedule_create_reducer;
 pub mod schedule_exec_v_1_type;
 pub mod schedule_manual_run_reducer;
-pub mod schedule_settings_reducer;
 pub mod schedule_settings_type;
+pub mod schedule_settings_update_reducer;
 pub mod schedule_status_type;
 pub mod schedule_v_1_type;
 pub mod scores_type;
@@ -205,6 +204,7 @@ pub mod time_attack_type;
 pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
 pub mod unregister_player_reducer;
+pub mod unstable_competition_connection_table;
 pub mod unstable_competition_members_table;
 pub mod unstable_competition_role_member_table;
 pub mod unstable_competition_role_table;
@@ -302,7 +302,6 @@ pub use method_error_type::MethodError;
 pub use method_response_type::MethodResponse;
 pub use mode_settings_type::ModeSettings;
 pub use my_comeptition_schedules_table::*;
-pub use my_connections_table::*;
 pub use my_match_template_table::*;
 pub use my_matches_table::*;
 pub use my_node_positions_table::*;
@@ -356,8 +355,8 @@ pub use registration_configured_reducer::registration_configured;
 pub use registration_create_reducer::registration_create;
 pub use registration_end_reducer::registration_end;
 pub use registration_settings_player_type::RegistrationSettingsPlayer;
-pub use registration_settings_reducer::registration_settings;
 pub use registration_settings_type::RegistrationSettings;
+pub use registration_settings_update_reducer::registration_settings_update;
 pub use registration_start_reducer::registration_start;
 pub use registration_status_type::RegistrationStatus;
 pub use registration_template_create_reducer::registration_template_create;
@@ -378,8 +377,8 @@ pub use schedule_configured_reducer::schedule_configured;
 pub use schedule_create_reducer::schedule_create;
 pub use schedule_exec_v_1_type::ScheduleExecV1;
 pub use schedule_manual_run_reducer::schedule_manual_run;
-pub use schedule_settings_reducer::schedule_settings;
 pub use schedule_settings_type::ScheduleSettings;
+pub use schedule_settings_update_reducer::schedule_settings_update;
 pub use schedule_status_type::ScheduleStatus;
 pub use schedule_v_1_type::ScheduleV1;
 pub use scores_type::Scores;
@@ -417,6 +416,7 @@ pub use time_attack_type::TimeAttack;
 pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
 pub use unregister_player_reducer::unregister_player;
+pub use unstable_competition_connection_table::*;
 pub use unstable_competition_members_table::*;
 pub use unstable_competition_role_member_table::*;
 pub use unstable_competition_role_table::*;
@@ -561,7 +561,7 @@ pub enum Reducer {
     RegistrationEnd {
         id: u32,
     },
-    RegistrationSettings {
+    RegistrationSettingsUpdate {
         id: u32,
         settings: RegistrationSettings,
     },
@@ -606,7 +606,7 @@ pub enum Reducer {
     ScheduleManualRun {
         id: u32,
     },
-    ScheduleSettings {
+    ScheduleSettingsUpdate {
         id: u32,
         settings: ScheduleSettings,
     },
@@ -691,7 +691,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::RegistrationConfigured { .. } => "registration_configured",
             Reducer::RegistrationCreate { .. } => "registration_create",
             Reducer::RegistrationEnd { .. } => "registration_end",
-            Reducer::RegistrationSettings { .. } => "registration_settings",
+            Reducer::RegistrationSettingsUpdate { .. } => "registration_settings_update",
             Reducer::RegistrationStart { .. } => "registration_start",
             Reducer::RegistrationTemplateCreate { .. } => "registration_template_create",
             Reducer::RevokeRawServer { .. } => "revoke_raw_server",
@@ -703,7 +703,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::ScheduleConfigured { .. } => "schedule_configured",
             Reducer::ScheduleCreate { .. } => "schedule_create",
             Reducer::ScheduleManualRun { .. } => "schedule_manual_run",
-            Reducer::ScheduleSettings { .. } => "schedule_settings",
+            Reducer::ScheduleSettingsUpdate { .. } => "schedule_settings_update",
             Reducer::ServerAssignRawServer { .. } => "server_assign_raw_server",
             Reducer::ServerConfigOverride { .. } => "server_config_override",
             Reducer::ServerConfigured { .. } => "server_configured",
@@ -936,12 +936,12 @@ impl __sdk::Reducer for Reducer {
                     id: id.clone(),
                 })
             }
-            Reducer::RegistrationSettings { id, settings } => {
-                __sats::bsatn::to_vec(&registration_settings_reducer::RegistrationSettingsArgs {
+            Reducer::RegistrationSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
+                &registration_settings_update_reducer::RegistrationSettingsUpdateArgs {
                     id: id.clone(),
                     settings: settings.clone(),
-                })
-            }
+                },
+            ),
             Reducer::RegistrationStart { id } => {
                 __sats::bsatn::to_vec(&registration_start_reducer::RegistrationStartArgs {
                     id: id.clone(),
@@ -1012,12 +1012,12 @@ impl __sdk::Reducer for Reducer {
                     id: id.clone(),
                 })
             }
-            Reducer::ScheduleSettings { id, settings } => {
-                __sats::bsatn::to_vec(&schedule_settings_reducer::ScheduleSettingsArgs {
+            Reducer::ScheduleSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
+                &schedule_settings_update_reducer::ScheduleSettingsUpdateArgs {
                     id: id.clone(),
                     settings: settings.clone(),
-                })
-            }
+                },
+            ),
             Reducer::ServerAssignRawServer {
                 server_id,
                 raw_server_id,
@@ -1105,7 +1105,6 @@ pub struct DbUpdate {
     match_round_users: __sdk::TableUpdate<UserV1>,
     match_state: __sdk::TableUpdate<MatchState>,
     my_comeptition_schedules: __sdk::TableUpdate<ScheduleV1>,
-    my_connections: __sdk::TableUpdate<CompetitionConnection>,
     my_match_template: __sdk::TableUpdate<MatchV1>,
     my_matches: __sdk::TableUpdate<MatchV1>,
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
@@ -1118,6 +1117,7 @@ pub struct DbUpdate {
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
     temp_match_leaderboard: __sdk::TableUpdate<MatchRoundPlayer>,
     temp_registration_player: __sdk::TableUpdate<RegisterationPlayer>,
+    unstable_competition_connection: __sdk::TableUpdate<CompetitionConnection>,
     unstable_competition_members: __sdk::TableUpdate<CompetitionMember>,
     unstable_competition_role: __sdk::TableUpdate<CompetitionRole>,
     unstable_competition_role_member: __sdk::TableUpdate<CompetitionRoleMember>,
@@ -1162,9 +1162,6 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "my_comeptition_schedules" => db_update.my_comeptition_schedules.append(
                     my_comeptition_schedules_table::parse_table_update(table_update)?,
                 ),
-                "my_connections" => db_update
-                    .my_connections
-                    .append(my_connections_table::parse_table_update(table_update)?),
                 "my_match_template" => db_update
                     .my_match_template
                     .append(my_match_template_table::parse_table_update(table_update)?),
@@ -1203,6 +1200,11 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "temp_registration_player" => db_update.temp_registration_player.append(
                     temp_registration_player_table::parse_table_update(table_update)?,
                 ),
+                "unstable_competition_connection" => {
+                    db_update.unstable_competition_connection.append(
+                        unstable_competition_connection_table::parse_table_update(table_update)?,
+                    )
+                }
                 "unstable_competition_members" => db_update.unstable_competition_members.append(
                     unstable_competition_members_table::parse_table_update(table_update)?,
                 ),
@@ -1273,8 +1275,6 @@ impl __sdk::DbUpdate for DbUpdate {
                 &self.my_comeptition_schedules,
             )
             .with_updates_by_pk(|row| &row.id);
-        diff.my_connections = cache
-            .apply_diff_to_table::<CompetitionConnection>("my_connections", &self.my_connections);
         diff.my_match_template = cache
             .apply_diff_to_table::<MatchV1>("my_match_template", &self.my_match_template)
             .with_updates_by_pk(|row| &row.id);
@@ -1316,6 +1316,10 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.temp_registration_player = cache.apply_diff_to_table::<RegisterationPlayer>(
             "temp_registration_player",
             &self.temp_registration_player,
+        );
+        diff.unstable_competition_connection = cache.apply_diff_to_table::<CompetitionConnection>(
+            "unstable_competition_connection",
+            &self.unstable_competition_connection,
         );
         diff.unstable_competition_members = cache
             .apply_diff_to_table::<CompetitionMember>(
@@ -1373,9 +1377,6 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_comeptition_schedules" => db_update
                     .my_comeptition_schedules
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "my_connections" => db_update
-                    .my_connections
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "my_match_template" => db_update
                     .my_match_template
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -1411,6 +1412,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "temp_registration_player" => db_update
                     .temp_registration_player
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "unstable_competition_connection" => db_update
+                    .unstable_competition_connection
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "unstable_competition_members" => db_update
                     .unstable_competition_members
@@ -1467,9 +1471,6 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_comeptition_schedules" => db_update
                     .my_comeptition_schedules
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "my_connections" => db_update
-                    .my_connections
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "my_match_template" => db_update
                     .my_match_template
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1505,6 +1506,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "temp_registration_player" => db_update
                     .temp_registration_player
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "unstable_competition_connection" => db_update
+                    .unstable_competition_connection
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "unstable_competition_members" => db_update
                     .unstable_competition_members
@@ -1543,7 +1547,6 @@ pub struct AppliedDiff<'r> {
     match_round_users: __sdk::TableAppliedDiff<'r, UserV1>,
     match_state: __sdk::TableAppliedDiff<'r, MatchState>,
     my_comeptition_schedules: __sdk::TableAppliedDiff<'r, ScheduleV1>,
-    my_connections: __sdk::TableAppliedDiff<'r, CompetitionConnection>,
     my_match_template: __sdk::TableAppliedDiff<'r, MatchV1>,
     my_matches: __sdk::TableAppliedDiff<'r, MatchV1>,
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
@@ -1556,6 +1559,7 @@ pub struct AppliedDiff<'r> {
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
     temp_match_leaderboard: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
     temp_registration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
+    unstable_competition_connection: __sdk::TableAppliedDiff<'r, CompetitionConnection>,
     unstable_competition_members: __sdk::TableAppliedDiff<'r, CompetitionMember>,
     unstable_competition_role: __sdk::TableAppliedDiff<'r, CompetitionRole>,
     unstable_competition_role_member: __sdk::TableAppliedDiff<'r, CompetitionRoleMember>,
@@ -1619,11 +1623,6 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.my_comeptition_schedules,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<CompetitionConnection>(
-            "my_connections",
-            &self.my_connections,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<MatchV1>(
             "my_match_template",
             &self.my_match_template,
@@ -1674,6 +1673,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<RegisterationPlayer>(
             "temp_registration_player",
             &self.temp_registration_player,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<CompetitionConnection>(
+            "unstable_competition_connection",
+            &self.unstable_competition_connection,
             event,
         );
         callbacks.invoke_table_row_callbacks::<CompetitionMember>(
@@ -2347,7 +2351,6 @@ impl __sdk::SpacetimeModule for RemoteModule {
         match_round_users_table::register_table(client_cache);
         match_state_table::register_table(client_cache);
         my_comeptition_schedules_table::register_table(client_cache);
-        my_connections_table::register_table(client_cache);
         my_match_template_table::register_table(client_cache);
         my_matches_table::register_table(client_cache);
         my_node_positions_table::register_table(client_cache);
@@ -2360,6 +2363,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         raw_server_player_destination_table::register_table(client_cache);
         temp_match_leaderboard_table::register_table(client_cache);
         temp_registration_player_table::register_table(client_cache);
+        unstable_competition_connection_table::register_table(client_cache);
         unstable_competition_members_table::register_table(client_cache);
         unstable_competition_role_table::register_table(client_cache);
         unstable_competition_role_member_table::register_table(client_cache);
@@ -2376,7 +2380,6 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "match_round_users",
         "match_state",
         "my_comeptition_schedules",
-        "my_connections",
         "my_match_template",
         "my_matches",
         "my_node_positions",
@@ -2389,6 +2392,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "raw_server_player_destination",
         "temp_match_leaderboard",
         "temp_registration_player",
+        "unstable_competition_connection",
         "unstable_competition_members",
         "unstable_competition_role",
         "unstable_competition_role_member",

@@ -4,53 +4,57 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::schedule_settings_type::ScheduleSettings;
+use super::registration_settings_type::RegistrationSettings;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct ScheduleSettingsArgs {
+pub(super) struct RegistrationSettingsUpdateArgs {
     pub id: u32,
-    pub settings: ScheduleSettings,
+    pub settings: RegistrationSettings,
 }
 
-impl From<ScheduleSettingsArgs> for super::Reducer {
-    fn from(args: ScheduleSettingsArgs) -> Self {
-        Self::ScheduleSettings {
+impl From<RegistrationSettingsUpdateArgs> for super::Reducer {
+    fn from(args: RegistrationSettingsUpdateArgs) -> Self {
+        Self::RegistrationSettingsUpdate {
             id: args.id,
             settings: args.settings,
         }
     }
 }
 
-impl __sdk::InModule for ScheduleSettingsArgs {
+impl __sdk::InModule for RegistrationSettingsUpdateArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `schedule_settings`.
+/// Extension trait for access to the reducer `registration_settings_update`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait schedule_settings {
-    /// Request that the remote module invoke the reducer `schedule_settings` to run as soon as possible.
+pub trait registration_settings_update {
+    /// Request that the remote module invoke the reducer `registration_settings_update` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`schedule_settings:schedule_settings_then`] to run a callback after the reducer completes.
-    fn schedule_settings(&self, id: u32, settings: ScheduleSettings) -> __sdk::Result<()> {
-        self.schedule_settings_then(id, settings, |_, _| {})
+    /// /// Use [`registration_settings_update:registration_settings_update_then`] to run a callback after the reducer completes.
+    fn registration_settings_update(
+        &self,
+        id: u32,
+        settings: RegistrationSettings,
+    ) -> __sdk::Result<()> {
+        self.registration_settings_update_then(id, settings, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `schedule_settings` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `registration_settings_update` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn schedule_settings_then(
+    fn registration_settings_update_then(
         &self,
         id: u32,
-        settings: ScheduleSettings,
+        settings: RegistrationSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -58,17 +62,17 @@ pub trait schedule_settings {
     ) -> __sdk::Result<()>;
 }
 
-impl schedule_settings for super::RemoteReducers {
-    fn schedule_settings_then(
+impl registration_settings_update for super::RemoteReducers {
+    fn registration_settings_update_then(
         &self,
         id: u32,
-        settings: ScheduleSettings,
+        settings: RegistrationSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(ScheduleSettingsArgs { id, settings }, callback)
+            .invoke_reducer_with_callback(RegistrationSettingsUpdateArgs { id, settings }, callback)
     }
 }

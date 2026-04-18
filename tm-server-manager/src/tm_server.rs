@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::config::ServerConfig;
 
 use crate::{
@@ -265,6 +265,22 @@ fn server_config_override(
 
     //TODO
     Ok(())
+}
+
+pub(crate) trait ServerWrite {
+    fn server_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
+}
+
+impl<Db: DbContext<DbView = Local>> ServerWrite for Db {
+    fn server_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_server().id().find(match_id) else {
+            return Err("Match not found.".into());
+        };
+        tm_match.name = name;
+        self.db().tab_server().id().update(tm_match);
+
+        Ok(())
+    }
 }
 
 // Server and match config problem space mapping:

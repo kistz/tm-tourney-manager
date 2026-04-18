@@ -178,7 +178,7 @@ pub(super) fn competition_template_instantiate(
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(i) => schedule_map.get(&i).unwrap().id,
-            NodeHandle::PortalV1(_) => todo!(),
+            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
         };
 
@@ -189,7 +189,7 @@ pub(super) fn competition_template_instantiate(
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(i) => schedule_map.get(&i).unwrap().id,
-            NodeHandle::PortalV1(_) => todo!(),
+            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
         };
 

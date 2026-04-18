@@ -388,7 +388,7 @@ impl<Db: DbContext> ConnectionRead for Db {
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(_) => todo!(),
-            NodeHandle::PortalV1(_) => todo!(),
+            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(r) => {
                 let rules = self
                     .db_read_only()

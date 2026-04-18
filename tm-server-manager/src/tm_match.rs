@@ -493,6 +493,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_recovery_enter(&self, match_id: u32);
     fn match_recovery_exit_seamless(&self, match_id: u32);
     fn match_recovery_exit_forced(&self, match_id: u32);
+    fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
     fn match_recovery_enter(&self, match_id: u32) {
@@ -586,6 +587,16 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             //tm_match.exit_recovery();
             //self.db().tab_match().id().update(tm_match);
         }
+    }
+
+    fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_match().id().find(match_id) else {
+            return Err("Match not found.".into());
+        };
+        tm_match.name = name;
+        self.db().tab_match().id().update(tm_match);
+
+        Ok(())
     }
 }
 

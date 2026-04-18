@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
 
 use crate::{
     authorization::Authorization,
@@ -273,4 +273,20 @@ fn registration_end(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     ctx.db.tab_registration().id().update(registration);
 
     Ok(())
+}
+
+pub(crate) trait RegistrationWrite {
+    fn registration_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
+}
+
+impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
+    fn registration_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_registration().id().find(match_id) else {
+            return Err("Match not found.".into());
+        };
+        tm_match.name = name;
+        self.db().tab_registration().id().update(tm_match);
+
+        Ok(())
+    }
 }

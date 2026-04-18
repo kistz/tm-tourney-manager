@@ -4,53 +4,53 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::registration_settings_type::RegistrationSettings;
+use super::schedule_settings_type::ScheduleSettings;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct RegistrationSettingsArgs {
+pub(super) struct ScheduleSettingsUpdateArgs {
     pub id: u32,
-    pub settings: RegistrationSettings,
+    pub settings: ScheduleSettings,
 }
 
-impl From<RegistrationSettingsArgs> for super::Reducer {
-    fn from(args: RegistrationSettingsArgs) -> Self {
-        Self::RegistrationSettings {
+impl From<ScheduleSettingsUpdateArgs> for super::Reducer {
+    fn from(args: ScheduleSettingsUpdateArgs) -> Self {
+        Self::ScheduleSettingsUpdate {
             id: args.id,
             settings: args.settings,
         }
     }
 }
 
-impl __sdk::InModule for RegistrationSettingsArgs {
+impl __sdk::InModule for ScheduleSettingsUpdateArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `registration_settings`.
+/// Extension trait for access to the reducer `schedule_settings_update`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait registration_settings {
-    /// Request that the remote module invoke the reducer `registration_settings` to run as soon as possible.
+pub trait schedule_settings_update {
+    /// Request that the remote module invoke the reducer `schedule_settings_update` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`registration_settings:registration_settings_then`] to run a callback after the reducer completes.
-    fn registration_settings(&self, id: u32, settings: RegistrationSettings) -> __sdk::Result<()> {
-        self.registration_settings_then(id, settings, |_, _| {})
+    /// /// Use [`schedule_settings_update:schedule_settings_update_then`] to run a callback after the reducer completes.
+    fn schedule_settings_update(&self, id: u32, settings: ScheduleSettings) -> __sdk::Result<()> {
+        self.schedule_settings_update_then(id, settings, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `registration_settings` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `schedule_settings_update` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn registration_settings_then(
+    fn schedule_settings_update_then(
         &self,
         id: u32,
-        settings: RegistrationSettings,
+        settings: ScheduleSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -58,17 +58,17 @@ pub trait registration_settings {
     ) -> __sdk::Result<()>;
 }
 
-impl registration_settings for super::RemoteReducers {
-    fn registration_settings_then(
+impl schedule_settings_update for super::RemoteReducers {
+    fn schedule_settings_update_then(
         &self,
         id: u32,
-        settings: RegistrationSettings,
+        settings: ScheduleSettings,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(RegistrationSettingsArgs { id, settings }, callback)
+            .invoke_reducer_with_callback(ScheduleSettingsUpdateArgs { id, settings }, callback)
     }
 }

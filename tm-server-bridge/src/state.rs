@@ -15,7 +15,7 @@ use tm_server_types::{
 };
 use tokio::time::sleep;
 
-use crate::{EVENT_CACHE, SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{/* EVENT_CACHE */ SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.wait();
@@ -25,7 +25,7 @@ pub async fn setup_state_synchronization() {
     // Sync all events to spacetimedb.
     server.on_event(|event| {
         let spacetime = SPACETIME.read();
-        EVENT_CACHE.lock().unwrap().push_back(event.clone());
+        //EVENT_CACHE.lock().unwrap().push_back(event.clone());
         if spacetime
             .reducers
             .post_event_then(
@@ -39,7 +39,7 @@ pub async fn setup_state_synchronization() {
                 |e, _| {
                     tracing::debug!("Reducer finished: {:?}", e.event.reducer);
                     //TODO verify that it is always ordered.
-                    EVENT_CACHE.lock().unwrap().pop_front();
+                    //EVENT_CACHE.lock().unwrap().pop_front();
                 },
             )
             .is_err()
@@ -127,11 +127,11 @@ pub async fn setup_state_synchronization() {
 
         let server = TRACKMANIA.wait();
 
-        //We need to load the settings again because we changed the script.
-        if let Err(error) = server.set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
         if event.mode.updated {
+            //We need to load the settings again because we changed the script.
+            if let Err(error) = server.set_mode_script_settings(config).await {
+                tracing::error!("{error}")
+            };
             if let Err(err) = server.restart_map().await {
                 tracing::error!("Cannot restart!. Reason: {err}");
             };

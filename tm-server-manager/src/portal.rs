@@ -9,11 +9,11 @@ use crate::{
     },
 };
 
-/// A portal can only reach one level deeper?
-/// That would allow us to define private things for a template i theory
-/// and only expose the things we actually want (with one level deeper maybe?)
-/// It would be more work to setup i guess but im realllly not sure atm.
-#[table(accessor=tab_portal)]
+// A portal can only reach one level deeper?
+// That would allow us to define private things for a template i theory
+// and only expose the things we actually want (with one level deeper maybe?)
+// It would be more work to setup i guess but im realllly not sure atm.
+/* #[table(accessor=tab_portal)]
 pub struct Portal {
     name: String,
 
@@ -28,9 +28,9 @@ pub struct Portal {
     target_variant: u8,
 
     template: bool,
-}
+} */
 
-impl Portal {
+/* impl Portal {
     pub(crate) fn get_comp_id(&self) -> u32 {
         self.parent_id
     }
@@ -86,7 +86,7 @@ fn portal_create(
     })?;
 
     Ok(())
-}
+} */
 
 /* #[view(accessor=portal_target_suggestions,public)]
 pub fn portal_target_suggestions(ctx: &ViewContext /* portal_id: u32 */) -> Vec<()> {

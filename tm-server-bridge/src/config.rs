@@ -43,6 +43,8 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                         .lock()
                         .await;
                     *locked = new_metadata.clone();
+                } else {
+                    tracing::error!("Could not load match settings file!")
                 }
 
                 if let Err(err) = server.restart_map().await {
@@ -85,12 +87,6 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                 tracing::error!("Could not restart!. Reason: {err}");
             };
 
-            /* let mut locked = SERVER_METADATA
-                .get_or_init(|| Mutex::new(new_metadata.clone()))
-                .lock()
-                .await;
-            *locked = new_metadata.clone(); */
-
             if let Err(err) = server
                 .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
                 .await
@@ -100,23 +96,6 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
         });
     });
 }
-
-/* async fn replace_maps(new_maps: impl Iterator<Item = &String>) {
-    let server = TRACKMANIA.wait();
-    if let Ok(current_maps) = server.get_map_list(500, 0).await {
-        for map in current_maps {
-            if let Err(err) = server.remove_map(map.file_name).await {
-                tracing::error!("Could not insert map list!. Reason: {err}");
-            };
-        }
-    }
-
-    for map in new_maps {
-        if let Err(err) = server.add_map(map.clone() + ".Map.Gbx").await {
-            tracing::error!("Could not insert map list!. Reason: {err}");
-        };
-    }
-} */
 
 async fn get_maps(maps: impl Iterator<Item = &String>) {
     #[derive(Debug, Serialize, Deserialize)]
