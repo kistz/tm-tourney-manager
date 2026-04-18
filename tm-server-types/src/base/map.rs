@@ -1,3 +1,4 @@
+use dxr::TryFromValue;
 use serde::{Deserialize, Deserializer};
 
 use crate::base::login_to_account_id;
@@ -54,4 +55,37 @@ where
         return Ok("aa02b90e-0652-4a1c-b705-4677e2983003".into());
     }
     Ok(login_to_account_id(&login))
+}
+
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct MapInfo {
+    pub name: String,
+
+    pub uid: String,
+
+    pub file_name: String,
+}
+
+impl dxr::TryFromValue for MapInfo {
+    fn try_from_value(value: &dxr::Value) -> ::std::result::Result<MapInfo, dxr::Error> {
+        use ::std::collections::HashMap;
+        use ::std::string::String;
+        use dxr::Value;
+        let map: HashMap<String, Value> = HashMap::try_from_value(value)?;
+        Ok(MapInfo {
+            name: login_to_account_id(&<String as TryFromValue>::try_from_value(
+                map.get("Name")
+                    .ok_or_else(|| dxr::Error::missing_field("MapInfo", "Name"))?,
+            )?),
+            uid: <String as TryFromValue>::try_from_value(
+                map.get("Uid")
+                    .ok_or_else(|| dxr::Error::missing_field("MapInfo", "Uid"))?,
+            )?,
+            file_name: <String as TryFromValue>::try_from_value(
+                map.get("FileName")
+                    .ok_or_else(|| dxr::Error::missing_field("MapInfo", "FileName"))?,
+            )?,
+        })
+    }
 }

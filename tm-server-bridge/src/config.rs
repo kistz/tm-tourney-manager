@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use tm_server_controller::method::XmlRpcMethods;
 use tm_server_manager_api_rs::{EventContext, EventRawServerState};
 
-use crate::{NADEO, SERVER_METADATA, TRACKMANIA};
+use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES};
 
 pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tokio::task::block_in_place(move || {
@@ -25,37 +25,100 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                 .await;
             let Some(old_metadata) = old_metadata else {
                 get_maps(config.iter_maps()).await;
-                _ = server.set_script_name(config.script_name()).await;
-                _ = server.set_mode_script_settings(config.clone()).await;
-                _ = server.insert_map_list(config.get_maps().maps()).await;
-                _ = server.next_map().await;
-                _ = server
-                    .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
+                let config = config.into_xml();
+
+                let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
+
+                if let Err(error) = std::fs::write(&full_path, config) {
+                    tracing::error!("Could not write the configuration file: {error}");
+                }
+
+                let loaded = server
+                    .load_match_settings("MatchSettings/manager.txt")
                     .await;
+
+                if loaded.is_ok() {
+                    let mut locked = SERVER_METADATA
+                        .get_or_init(|| Mutex::new(new_metadata.clone()))
+                        .lock()
+                        .await;
+                    *locked = new_metadata.clone();
+                }
+
+                if let Err(err) = server.restart_map().await {
+                    tracing::error!("Could not restart!. Reason: {err}");
+                };
+                if let Err(err) = server
+                    .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
+                    .await
+                {
+                    tracing::error!("Could not send server message!. Reason: {err}");
+                };
                 return;
             };
             if config.get_maps().maps() != old_metadata.lock().await.config.maps.map_uids {
                 get_maps(config.iter_maps()).await;
             }
-            _ = server.set_script_name(config.script_name()).await;
-            _ = server.set_mode_script_settings(config.clone()).await;
-            _ = server.insert_map_list(config.get_maps().maps()).await;
-            _ = server.next_map().await;
+            let config = config.into_xml();
 
-            let mut locked = SERVER_METADATA
+            let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
+
+            if let Err(error) = std::fs::write(&full_path, config) {
+                tracing::error!("Could not write the configuration file: {error}");
+            }
+
+            let loaded = server
+                .load_match_settings("MatchSettings/manager.txt")
+                .await;
+
+            if loaded.is_ok() {
+                let mut locked = SERVER_METADATA
+                    .get_or_init(|| Mutex::new(new_metadata.clone()))
+                    .lock()
+                    .await;
+                *locked = new_metadata.clone();
+            } else {
+                tracing::error!("Could not load new config.")
+            }
+
+            if let Err(err) = server.restart_map().await {
+                tracing::error!("Could not restart!. Reason: {err}");
+            };
+
+            /* let mut locked = SERVER_METADATA
                 .get_or_init(|| Mutex::new(new_metadata.clone()))
                 .lock()
                 .await;
-            *locked = new_metadata.clone();
+            *locked = new_metadata.clone(); */
 
-            _ = server
+            if let Err(err) = server
                 .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
-                .await;
+                .await
+            {
+                tracing::error!("Could not send server message!. Reason: {err}");
+            };
         });
     });
 }
 
-pub(crate) async fn get_maps(maps: impl Iterator<Item = &String>) {
+/* async fn replace_maps(new_maps: impl Iterator<Item = &String>) {
+    let server = TRACKMANIA.wait();
+    if let Ok(current_maps) = server.get_map_list(500, 0).await {
+        for map in current_maps {
+            if let Err(err) = server.remove_map(map.file_name).await {
+                tracing::error!("Could not insert map list!. Reason: {err}");
+            };
+        }
+    }
+
+    for map in new_maps {
+        if let Err(err) = server.add_map(map.clone() + ".Map.Gbx").await {
+            tracing::error!("Could not insert map list!. Reason: {err}");
+        };
+    }
+} */
+
+async fn get_maps(maps: impl Iterator<Item = &String>) {
     #[derive(Debug, Serialize, Deserialize)]
     struct MapInfo {
         #[serde(rename = "fileUrl")]

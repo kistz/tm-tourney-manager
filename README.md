@@ -19,7 +19,7 @@ This has a few advantages:
 services:
   # The standard trackmania server.
   tm1:
-    image: evoesports/trackmania:2026-01-28
+    image: evoesports/trackmania:latest
     restart: unless-stopped
     ports:
       - 2350:2350/udp

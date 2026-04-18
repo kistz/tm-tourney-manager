@@ -9,7 +9,7 @@ mod team;
 pub use team::Team;
 
 mod map;
-pub use map::Map;
+pub use map::*;
 
 mod time;
 pub use time::*;

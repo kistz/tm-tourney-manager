@@ -1,5 +1,5 @@
 use tm_server_types::{
-    base::{PlayerInfo, account_id_to_login},
+    base::{MapInfo, PlayerInfo, account_id_to_login},
     config::ServerConfig,
     method::{MethodCall, MethodError, MethodResponse},
 };
@@ -198,6 +198,12 @@ pub trait XmlRpcMethods {
 
     async fn next_map(&self) -> Result<bool, ClientError>;
 
+    async fn add_map(&self, map_file: impl Into<String>) -> Result<bool, ClientError>;
+
+    async fn remove_map(&self, map_file: impl Into<String>) -> Result<bool, ClientError>;
+
+    async fn get_map_list(&self, max: i32, start: i32) -> Result<Vec<MapInfo>, ClientError>;
+
     async fn connect_fake_player(&self) -> Result<String, ClientError>;
 
     async fn send_display_manialink_page(
@@ -289,8 +295,27 @@ impl XmlRpcMethods for TrackmaniaServer {
         self.call("ChatSendServerMessage", message.into()).await
     }
 
-    async fn insert_map_list(&self, maps: Vec<String>) -> Result<i32, ClientError> {
-        self.call("InsertMapList", maps).await
+    async fn insert_map_list(&self, map_uids: Vec<String>) -> Result<i32, ClientError> {
+        self.call(
+            "InsertMapList",
+            map_uids
+                .into_iter()
+                .map(|m| m + ".Map.Gbx")
+                .collect::<Vec<_>>(),
+        )
+        .await
+    }
+
+    async fn add_map(&self, map_file: impl Into<String>) -> Result<bool, ClientError> {
+        self.call("AddMap", map_file.into()).await
+    }
+
+    async fn get_map_list(&self, max: i32, start: i32) -> Result<Vec<MapInfo>, ClientError> {
+        self.call("GetMapList", ()).await
+    }
+
+    async fn remove_map(&self, map_file: impl Into<String>) -> Result<bool, ClientError> {
+        self.call("RemoveMap", map_file.into()).await
     }
 
     async fn restart_map(&self) -> Result<bool, ClientError> {

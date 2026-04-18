@@ -202,7 +202,7 @@ pub(crate) fn handle_match_event(
             log::info!("Match {match_id} has started!")
         }
         Event::EndMatchEnd(_) => {
-            let state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
+            let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
             if state.get_round() == 0 {
                 log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
             }
@@ -211,6 +211,10 @@ pub(crate) fn handle_match_event(
                 return Err("Match not found".into());
             };
             tm_match.end_match();
+
+            state.end_match();
+            ctx.db.tab_match_state().match_id().update(state);
+
             let tm_match = ctx.db.tab_match().id().update(tm_match);
 
             if let Err(error) =
@@ -295,10 +299,7 @@ pub(crate) fn handle_match_event(
                     })
                     .collect::<Vec<_>>();
 
-                log::error!("{:?}", scores);
-
                 for mut player_round in player_rounds {
-                    log::error!("{:?}", player_round);
                     let found = scores.iter().find(|p| p.user_id == player_round.user_id);
 
                     if let Some(found) = found {

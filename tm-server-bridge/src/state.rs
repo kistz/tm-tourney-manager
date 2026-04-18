@@ -125,23 +125,54 @@ pub async fn setup_state_synchronization() {
             >(SERVER_METADATA.wait().lock().await.config.clone())
         };
 
+        let server = TRACKMANIA.wait();
+
         //We need to load the settings again because we changed the script.
-        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+        if let Err(error) = server.set_mode_script_settings(config).await {
             tracing::error!("{error}")
         };
         if event.mode.updated {
             tracing::info!("Mode Script was updated");
         } else {
             tracing::info!("Mode Script stayed the same");
+            if let Err(err) = server.next_map().await {
+                tracing::error!("Cannot go to next map!. Reason: {err}");
+            };
         }
     });
 
     server.on_start_map_start(async |map: &StartMap| {
-        //We need to load the settings again because we changed the script.
+        if !map.restarted {
+            return;
+        }
+        tracing::info!("The start map ended and we have restarted. Applying config again.");
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(SERVER_METADATA.wait().lock().await.config.clone())
+        };
+
+        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+            tracing::error!("{error}")
+        };
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+    });
+
+    server.on_start_map_end(async |map: &StartMap| {
         if !map.restarted {
             return;
         }
         tracing::info!("The start map ended and we have not restarted. Applying config again.");
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
 
         let config = unsafe {
             std::mem::transmute::<

@@ -56,6 +56,11 @@ impl MatchState {
     pub(crate) fn set_live(&mut self) {
         self.status = MatchStatus::Live;
     }
+
+    pub(crate) fn end_match(&mut self) {
+        self.status = MatchStatus::Ended;
+    }
+
     pub(crate) fn set_recovery(&mut self) {
         self.status = MatchStatus::Recovery;
     }
