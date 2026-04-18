@@ -115,7 +115,7 @@ fn competition_available_server_pool(
     ctx.server_pool_available(competition_id)
 }
 
-#[view(accessor= competition_occupied_server_pool, public)]
+/* #[view(accessor= competition_occupied_server_pool, public)]
 fn competition_occupied_server_pool(
     ctx: &ViewContext, /* competition_id: u32 */
 ) -> Vec<RawServerV1> {
@@ -124,7 +124,7 @@ fn competition_occupied_server_pool(
     //TODO
 
     Vec::new()
-}
+} */
 
 pub(crate) trait TabCompetitionServerPoolRead {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1>;

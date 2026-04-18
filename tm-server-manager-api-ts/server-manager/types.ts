@@ -867,6 +867,12 @@ export const RawServerConfig = __t.object("RawServerConfig", {
 });
 export type RawServerConfig = __Infer<typeof RawServerConfig>;
 
+export const RawServerIdentity = __t.object("RawServerIdentity", {
+  identity: __t.identity(),
+  serverId: __t.u32(),
+});
+export type RawServerIdentity = __Infer<typeof RawServerIdentity>;
+
 export const RawServerMethod = __t.object("RawServerMethod", {
   callTime: __t.timestamp(),
   responseTime: __t.timestamp(),
@@ -897,7 +903,6 @@ export const RawServerPlayer = __t.object("RawServerPlayer", {
 export type RawServerPlayer = __Infer<typeof RawServerPlayer>;
 
 export const RawServerV1 = __t.object("RawServerV1", {
-  identity: __t.identity(),
   serverLogin: __t.string(),
   serverAccountId: __t.uuid(),
   lastConnection: __t.timestamp(),
@@ -928,6 +933,14 @@ export const Registration = __t.object("Registration", {
   template: __t.bool(),
 });
 export type Registration = __Infer<typeof Registration>;
+
+// The tagged union or sum type for the algebraic type `RegistrationSettings`.
+export const RegistrationSettings = __t.enum("RegistrationSettings", {
+  get Player() {
+    return RegistrationSettingsPlayer;
+  },
+});
+export type RegistrationSettings = __Infer<typeof RegistrationSettings>;
 
 export const RegistrationSettingsPlayer = __t.object("RegistrationSettingsPlayer", {
   playerLimit: __t.u32(),
@@ -1028,6 +1041,14 @@ export const ScheduleExecV1 = __t.object("ScheduleExecV1", {
   scheduledAt: __t.scheduleAt(),
 });
 export type ScheduleExecV1 = __Infer<typeof ScheduleExecV1>;
+
+// The tagged union or sum type for the algebraic type `ScheduleSettings`.
+export const ScheduleSettings = __t.enum("ScheduleSettings", {
+  Manual: __t.unit(),
+  Absolute: __t.timestamp(),
+  Relative: __t.timeDuration(),
+});
+export type ScheduleSettings = __Infer<typeof ScheduleSettings>;
 
 // The tagged union or sum type for the algebraic type `ScheduleStatus`.
 export const ScheduleStatus = __t.enum("ScheduleStatus", {

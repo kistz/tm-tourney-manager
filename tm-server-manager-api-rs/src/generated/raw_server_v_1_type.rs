@@ -7,7 +7,6 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct RawServerV1 {
-    pub identity: __sdk::Identity,
     pub server_login: String,
     pub server_account_id: __sdk::Uuid,
     pub last_connection: __sdk::Timestamp,
@@ -25,7 +24,6 @@ impl __sdk::InModule for RawServerV1 {
 ///
 /// Provides typed access to columns for query building.
 pub struct RawServerV1Cols {
-    pub identity: __sdk::__query_builder::Col<RawServerV1, __sdk::Identity>,
     pub server_login: __sdk::__query_builder::Col<RawServerV1, String>,
     pub server_account_id: __sdk::__query_builder::Col<RawServerV1, __sdk::Uuid>,
     pub last_connection: __sdk::__query_builder::Col<RawServerV1, __sdk::Timestamp>,
@@ -39,7 +37,6 @@ impl __sdk::__query_builder::HasCols for RawServerV1 {
     type Cols = RawServerV1Cols;
     fn cols(table_name: &'static str) -> Self::Cols {
         RawServerV1Cols {
-            identity: __sdk::__query_builder::Col::new(table_name, "identity"),
             server_login: __sdk::__query_builder::Col::new(table_name, "server_login"),
             server_account_id: __sdk::__query_builder::Col::new(table_name, "server_account_id"),
             last_connection: __sdk::__query_builder::Col::new(table_name, "last_connection"),
@@ -56,7 +53,6 @@ impl __sdk::__query_builder::HasCols for RawServerV1 {
 /// Provides typed access to indexed columns for query building.
 pub struct RawServerV1IxCols {
     pub id: __sdk::__query_builder::IxCol<RawServerV1, u32>,
-    pub identity: __sdk::__query_builder::IxCol<RawServerV1, __sdk::Identity>,
     pub server_login: __sdk::__query_builder::IxCol<RawServerV1, String>,
     pub user_id: __sdk::__query_builder::IxCol<RawServerV1, u32>,
 }
@@ -66,7 +62,6 @@ impl __sdk::__query_builder::HasIxCols for RawServerV1 {
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         RawServerV1IxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
-            identity: __sdk::__query_builder::IxCol::new(table_name, "identity"),
             server_login: __sdk::__query_builder::IxCol::new(table_name, "server_login"),
             user_id: __sdk::__query_builder::IxCol::new(table_name, "user_id"),
         }

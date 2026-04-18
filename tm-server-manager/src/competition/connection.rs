@@ -37,7 +37,7 @@ pub struct TabConnection {
     #[primary_key]
     pub id: u32,
 
-    #[index(hash)]
+    #[index(btree)]
     parent_id: u32,
 
     origin_id: u32,
@@ -263,21 +263,21 @@ impl From<TabConnection> for CompetitionConnection {
     }
 }
 
-/* #[view(accessor=competition_connection,public)]
-pub fn competition_connection(
-    ctx: &AnonymousViewContext, /* competition_id: u32 */
+#[view(accessor=unstable_competition_connection,public)]
+pub fn unstable_competition_connection(
+    ctx: &ViewContext, /* competition_id: u32 */
 ) -> Vec<CompetitionConnection> {
     let competition_id = 1u32;
 
     ctx.db
         .tab_connection()
         .parent_id()
-        .filter(competition_id)
+        .filter(0..u32::MAX)
         .map(CompetitionConnection::from)
         .collect()
-} */
+}
 
-#[view(accessor=my_connections,public)]
+/* #[view(accessor=my_connections,public)]
 fn my_connections(
     ctx: &ViewContext, /* competition_id: u32 */
 ) -> impl Query<CompetitionConnection> {
@@ -294,7 +294,7 @@ fn my_connections(
     //TODO access control for only permitted users. e.g. walk competition tree for permission.
 
     ctx.from.tab_connection()
-}
+} */
 
 pub(crate) fn internal_graph_resolution_node_finished(
     ctx: &ReducerContext,

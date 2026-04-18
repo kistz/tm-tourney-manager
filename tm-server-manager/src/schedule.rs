@@ -192,9 +192,8 @@ fn schedule_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     Ok(())
 }
 
-//TODO codegen bug
 #[reducer]
-fn schedule_settings(
+fn schedule_settings_update(
     ctx: &ReducerContext,
     id: u32,
     settings: ScheduleSettings,

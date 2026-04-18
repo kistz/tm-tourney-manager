@@ -181,9 +181,8 @@ fn registration_create(
     Ok(())
 }
 
-//TODO codegen bug
 #[reducer]
-fn registration_settings(
+fn registration_settings_update(
     ctx: &ReducerContext,
     id: u32,
     settings: RegistrationSettings,
