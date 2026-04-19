@@ -668,7 +668,6 @@ export const NodeHandle = __t.enum("NodeHandle", {
   CompetitionV1: __t.u32(),
   ServerV1: __t.u32(),
   ScheduleV1: __t.u32(),
-  PortalV1: __t.u32(),
   RegistrationV1: __t.u32(),
 });
 export type NodeHandle = __Infer<typeof NodeHandle>;
@@ -813,16 +812,6 @@ export const PointsLimit = __t.enum("PointsLimit", {
   PointsLimit: __t.u32(),
 });
 export type PointsLimit = __Infer<typeof PointsLimit>;
-
-export const Portal = __t.object("Portal", {
-  name: __t.string(),
-  id: __t.u32(),
-  parentId: __t.u32(),
-  targetId: __t.u32(),
-  targetVariant: __t.u8(),
-  template: __t.bool(),
-});
-export type Portal = __Infer<typeof Portal>;
 
 // The tagged union or sum type for the algebraic type `ProjectKind`.
 export const ProjectKind = __t.enum("ProjectKind", {

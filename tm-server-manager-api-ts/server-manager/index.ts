@@ -53,7 +53,7 @@ import MatchUpdatePreConfigReducer from "./match_update_pre_config_reducer";
 import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
 import MemberRemoveReducer from "./member_remove_reducer";
-import PortalCreateReducer from "./portal_create_reducer";
+import NodeNameEditReducer from "./node_name_edit_reducer";
 import PostEventReducer from "./post_event_reducer";
 import ProjectEditDatesReducer from "./project_edit_dates_reducer";
 import ProjectEditDescriptionReducer from "./project_edit_description_reducer";
@@ -352,7 +352,7 @@ const reducersSchema = __reducers(
   __reducerSchema("member_add", MemberAddReducer),
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
   __reducerSchema("member_remove", MemberRemoveReducer),
-  __reducerSchema("portal_create", PortalCreateReducer),
+  __reducerSchema("node_name_edit", NodeNameEditReducer),
   __reducerSchema("post_event", PostEventReducer),
   __reducerSchema("project_edit_dates", ProjectEditDatesReducer),
   __reducerSchema("project_edit_description", ProjectEditDescriptionReducer),

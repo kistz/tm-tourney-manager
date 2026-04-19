@@ -15,8 +15,6 @@ pub enum NodeHandle {
 
     ScheduleV1(u32),
 
-    PortalV1(u32),
-
     RegistrationV1(u32),
 }
 

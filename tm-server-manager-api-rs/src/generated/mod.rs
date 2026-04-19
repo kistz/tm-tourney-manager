@@ -98,6 +98,7 @@ pub mod my_projects_table;
 pub mod my_raw_server_pool_table;
 pub mod my_user_table;
 pub mod node_handle_type;
+pub mod node_name_edit_reducer;
 pub mod node_position_update_type;
 pub mod pause_type;
 pub mod permitted_player_type;
@@ -114,8 +115,6 @@ pub mod player_info_type;
 pub mod player_type;
 pub mod podium_type;
 pub mod points_limit_type;
-pub mod portal_create_reducer;
-pub mod portal_type;
 pub mod post_event_reducer;
 pub mod post_round_replay_procedure;
 pub mod project_competition_descendants_table;
@@ -310,6 +309,7 @@ pub use my_projects_table::*;
 pub use my_raw_server_pool_table::*;
 pub use my_user_table::*;
 pub use node_handle_type::NodeHandle;
+pub use node_name_edit_reducer::node_name_edit;
 pub use node_position_update_type::NodePositionUpdate;
 pub use pause_type::Pause;
 pub use permitted_player_type::PermittedPlayer;
@@ -326,8 +326,6 @@ pub use player_info_type::PlayerInfo;
 pub use player_type::Player;
 pub use podium_type::Podium;
 pub use points_limit_type::PointsLimit;
-pub use portal_create_reducer::portal_create;
-pub use portal_type::Portal;
 pub use post_event_reducer::post_event;
 pub use post_round_replay_procedure::post_round_replay;
 pub use project_competition_descendants_table::*;
@@ -516,10 +514,9 @@ pub enum Reducer {
     MemberRemove {
         member_id: u32,
     },
-    PortalCreate {
+    NodeNameEdit {
+        node: NodeHandle,
         name: String,
-        parent_id: u32,
-        target: NodeHandle,
     },
     PostEvent {
         event: Event,
@@ -679,7 +676,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::MemberAdd { .. } => "member_add",
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
             Reducer::MemberRemove { .. } => "member_remove",
-            Reducer::PortalCreate { .. } => "portal_create",
+            Reducer::NodeNameEdit { .. } => "node_name_edit",
             Reducer::PostEvent { .. } => "post_event",
             Reducer::ProjectEditDates { .. } => "project_edit_dates",
             Reducer::ProjectEditDescription { .. } => "project_edit_description",
@@ -859,15 +856,12 @@ impl __sdk::Reducer for Reducer {
                     member_id: member_id.clone(),
                 })
             }
-            Reducer::PortalCreate {
-                name,
-                parent_id,
-                target,
-            } => __sats::bsatn::to_vec(&portal_create_reducer::PortalCreateArgs {
-                name: name.clone(),
-                parent_id: parent_id.clone(),
-                target: target.clone(),
-            }),
+            Reducer::NodeNameEdit { node, name } => {
+                __sats::bsatn::to_vec(&node_name_edit_reducer::NodeNameEditArgs {
+                    node: node.clone(),
+                    name: name.clone(),
+                })
+            }
             Reducer::PostEvent { event } => {
                 __sats::bsatn::to_vec(&post_event_reducer::PostEventArgs {
                     event: event.clone(),

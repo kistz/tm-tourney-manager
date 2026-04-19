@@ -8,52 +8,49 @@ use super::node_handle_type::NodeHandle;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct PortalCreateArgs {
+pub(super) struct NodeNameEditArgs {
+    pub node: NodeHandle,
     pub name: String,
-    pub parent_id: u32,
-    pub target: NodeHandle,
 }
 
-impl From<PortalCreateArgs> for super::Reducer {
-    fn from(args: PortalCreateArgs) -> Self {
-        Self::PortalCreate {
+impl From<NodeNameEditArgs> for super::Reducer {
+    fn from(args: NodeNameEditArgs) -> Self {
+        Self::NodeNameEdit {
+            node: args.node,
             name: args.name,
-            parent_id: args.parent_id,
-            target: args.target,
         }
     }
 }
 
-impl __sdk::InModule for PortalCreateArgs {
+impl __sdk::InModule for NodeNameEditArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `portal_create`.
+/// Extension trait for access to the reducer `node_name_edit`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait portal_create {
-    /// Request that the remote module invoke the reducer `portal_create` to run as soon as possible.
+pub trait node_name_edit {
+    /// Request that the remote module invoke the reducer `node_name_edit` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`portal_create:portal_create_then`] to run a callback after the reducer completes.
-    fn portal_create(&self, name: String, parent_id: u32, target: NodeHandle) -> __sdk::Result<()> {
-        self.portal_create_then(name, parent_id, target, |_, _| {})
+    /// /// Use [`node_name_edit:node_name_edit_then`] to run a callback after the reducer completes.
+    fn node_name_edit(&self, node: NodeHandle, name: String) -> __sdk::Result<()> {
+        self.node_name_edit_then(node, name, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `portal_create` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `node_name_edit` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn portal_create_then(
+    fn node_name_edit_then(
         &self,
+        node: NodeHandle,
         name: String,
-        parent_id: u32,
-        target: NodeHandle,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -61,24 +58,17 @@ pub trait portal_create {
     ) -> __sdk::Result<()>;
 }
 
-impl portal_create for super::RemoteReducers {
-    fn portal_create_then(
+impl node_name_edit for super::RemoteReducers {
+    fn node_name_edit_then(
         &self,
+        node: NodeHandle,
         name: String,
-        parent_id: u32,
-        target: NodeHandle,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
-        self.imp.invoke_reducer_with_callback(
-            PortalCreateArgs {
-                name,
-                parent_id,
-                target,
-            },
-            callback,
-        )
+        self.imp
+            .invoke_reducer_with_callback(NodeNameEditArgs { node, name }, callback)
     }
 }

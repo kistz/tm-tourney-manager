@@ -25,7 +25,7 @@ import MatchUpdatePreConfigReducer from "../match_update_pre_config_reducer";
 import MemberAddReducer from "../member_add_reducer";
 import MemberAssignPermissionReducer from "../member_assign_permission_reducer";
 import MemberRemoveReducer from "../member_remove_reducer";
-import PortalCreateReducer from "../portal_create_reducer";
+import NodeNameEditReducer from "../node_name_edit_reducer";
 import PostEventReducer from "../post_event_reducer";
 import ProjectEditDatesReducer from "../project_edit_dates_reducer";
 import ProjectEditDescriptionReducer from "../project_edit_description_reducer";
@@ -81,7 +81,7 @@ export type MatchUpdatePreConfigParams = __Infer<typeof MatchUpdatePreConfigRedu
 export type MemberAddParams = __Infer<typeof MemberAddReducer>;
 export type MemberAssignPermissionParams = __Infer<typeof MemberAssignPermissionReducer>;
 export type MemberRemoveParams = __Infer<typeof MemberRemoveReducer>;
-export type PortalCreateParams = __Infer<typeof PortalCreateReducer>;
+export type NodeNameEditParams = __Infer<typeof NodeNameEditReducer>;
 export type PostEventParams = __Infer<typeof PostEventReducer>;
 export type ProjectEditDatesParams = __Infer<typeof ProjectEditDatesReducer>;
 export type ProjectEditDescriptionParams = __Infer<typeof ProjectEditDescriptionReducer>;

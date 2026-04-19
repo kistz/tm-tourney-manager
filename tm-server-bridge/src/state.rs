@@ -144,7 +144,7 @@ pub async fn setup_state_synchronization() {
         }
     });
 
-    server.on_start_map_start(async |map: &StartMap| {
+    /* server.on_start_map_start(async |map: &StartMap| {
         if !map.restarted {
             return;
         }
@@ -166,7 +166,7 @@ pub async fn setup_state_synchronization() {
 
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-    });
+    }); */
 
     server.on_start_map_end(async |map: &StartMap| {
         if !map.restarted {

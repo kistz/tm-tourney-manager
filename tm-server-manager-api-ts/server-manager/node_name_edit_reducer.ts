@@ -15,9 +15,8 @@ import {
 } from "./types";
 
 export default {
-  name: __t.string(),
-  parentId: __t.u32(),
-  get target() {
+  get node() {
     return NodeHandle;
   },
+  name: __t.string(),
 };
