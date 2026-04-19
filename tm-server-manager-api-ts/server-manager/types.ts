@@ -431,6 +431,21 @@ export const KickArgs = __t.object("KickArgs", {
 });
 export type KickArgs = __Infer<typeof KickArgs>;
 
+export const Knockout = __t.object("Knockout", {
+  get finishTimeout() {
+    return FinishTimeout;
+  },
+  get mapsPerMatch() {
+    return MapsPerMatch;
+  },
+  get roundsPerMap() {
+    return RoundsPerMap;
+  },
+  roundsWithoutElimination: __t.i32(),
+  eliminatedPlayerNumberRank: __t.array(__t.i32()),
+});
+export type Knockout = __Infer<typeof Knockout>;
+
 // The tagged union or sum type for the algebraic type `LapsNumber`.
 export const LapsNumber = __t.enum("LapsNumber", {
   Validation: __t.unit(),
@@ -640,6 +655,9 @@ export const ModeSettings = __t.enum("ModeSettings", {
   },
   get TimeAttack() {
     return TimeAttack;
+  },
+  get Knockout() {
+    return Knockout;
   },
 });
 export type ModeSettings = __Infer<typeof ModeSettings>;
@@ -975,7 +993,7 @@ export const ReverseCup = __t.object("ReverseCup", {
   get mapsPerMatch() {
     return MapsPerMatch;
   },
-  pointsRepartition: __t.array(__t.u32()),
+  pointsRepartition: __t.array(__t.i32()),
   get roundsPerMap() {
     return RoundsPerMap;
   },

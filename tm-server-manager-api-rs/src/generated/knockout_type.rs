@@ -5,27 +5,19 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::finish_timeout_type::FinishTimeout;
-use super::last_chance_dnf_mode_type::LastChanceDnfMode;
 use super::maps_per_match_type::MapsPerMatch;
 use super::rounds_per_map_type::RoundsPerMap;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct ReverseCup {
+pub struct Knockout {
     pub finish_timeout: FinishTimeout,
     pub maps_per_match: MapsPerMatch,
-    pub points_repartition: Vec<i32>,
     pub rounds_per_map: RoundsPerMap,
-    pub number_of_winners: i32,
-    pub starting_points: i32,
-    pub disable_last_chance: bool,
-    pub allow_fast_forward_rounds: bool,
-    pub fast_forward_points_repartition: bool,
-    pub dnf_points_loss: u32,
-    pub last_chance_dnf_mode: LastChanceDnfMode,
-    pub number_of_players: u32,
+    pub rounds_without_elimination: i32,
+    pub eliminated_player_number_rank: Vec<i32>,
 }
 
-impl __sdk::InModule for ReverseCup {
+impl __sdk::InModule for Knockout {
     type Module = super::RemoteModule;
 }

@@ -149,7 +149,7 @@ impl ModeSettings {
             ModeSettings::Rounds(_) => "Trackmania/TM_Rounds_Online",
             ModeSettings::ReverseCup(_) => "Modes/Trackmania/ReverseCup",
             ModeSettings::TimeAttack(_) => "Trackmania/TM_TimeAttack_Online",
-            ModeSettings::Knockout(_) => "Trackmania/TM_TimeAttack_Online",
+            ModeSettings::Knockout(_) => "Trackmania/TM_Kockout_Online",
         }
     }
 
