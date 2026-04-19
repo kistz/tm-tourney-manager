@@ -1,4 +1,4 @@
-use async_fn_traits::AsyncFn1;
+use async_fn_traits::{AsyncFn0, AsyncFn1};
 use tm_server_types::{
     base::PlayerInfo,
     event::{
@@ -7,12 +7,20 @@ use tm_server_types::{
     },
 };
 
-use crate::TrackmaniaServer;
+use crate::{TrackmaniaServer, Unit};
 
 pub trait TypedCallbacks {
     fn on_way_point(
         &self,
         execute: impl for<'a> AsyncFn1<&'a WayPoint, OutputFuture: Send, Output = ()>
+        + Send
+        + Sync
+        + 'static,
+    );
+
+    fn on_begin_match(
+        &self,
+        execute: impl for<'a> AsyncFn1<&'a Unit, OutputFuture: Send, Output = ()>
         + Send
         + Sync
         + 'static,
@@ -155,6 +163,16 @@ impl TypedCallbacks for TrackmaniaServer {
         + 'static,
     ) {
         self.on("ManiaPlanet.PlayerConnect", execute)
+    }
+
+    fn on_begin_match(
+        &self,
+        execute: impl for<'a> AsyncFn1<&'a Unit, OutputFuture: Send, Output = ()>
+        + Send
+        + Sync
+        + 'static,
+    ) {
+        self.on("ManiaPlanet.BeginMatch", execute)
     }
 
     fn on_player_disconnect(

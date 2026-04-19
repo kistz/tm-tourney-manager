@@ -5,6 +5,7 @@ pub mod method;
 pub use core::ClientError;
 pub use core::TrackmaniaServer;
 
+use tm_server_types::event::Event;
 pub use tm_server_types::*;
 
 #[tokio::test]
@@ -54,4 +55,12 @@ async fn server_connect_and_authenticate() -> Result<(), ClientError> {
     assert!(success.is_ok() && success.unwrap());
 
     Ok(())
+}
+
+// This is a hack because we cant not easily do no args for the execute closure in the on method.
+pub struct Unit;
+impl From<&Event> for &Unit {
+    fn from(_: &Event) -> Self {
+        &Unit
+    }
 }

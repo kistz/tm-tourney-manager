@@ -9,6 +9,9 @@ pub use reverse_cup::ReverseCup;
 mod time_attack;
 pub use time_attack::TimeAttack;
 
+mod knockout;
+pub use knockout::Knockout;
+
 mod rounds_bot_online;
 pub use rounds_bot_online::RoundsBotOnline;
 
@@ -102,7 +105,7 @@ pub enum ModeSettings {
     Rounds(Rounds),
     ReverseCup(ReverseCup),
     TimeAttack(TimeAttack),
-    //RoundsBotOnline(RoundsBotOnline),
+    Knockout(Knockout),
 }
 
 impl ModeSettings {
@@ -111,7 +114,7 @@ impl ModeSettings {
             ModeSettings::Rounds(rounds) => rounds.into_xml(),
             ModeSettings::ReverseCup(reverse_cup) => reverse_cup.into_xml(),
             ModeSettings::TimeAttack(time_attack) => time_attack.into_xml(),
-            //ModeConfig::RoundsBotOnline(rounds_bot) => rounds_bot.into_xml(),
+            ModeSettings::Knockout(knockout) => knockout.into_xml(),
         }
     }
 
@@ -120,7 +123,7 @@ impl ModeSettings {
             ModeSettings::Rounds(rounds) => rounds.get_xml_map(),
             ModeSettings::ReverseCup(reverse_cup) => reverse_cup.get_xml_map(),
             ModeSettings::TimeAttack(time_attack) => time_attack.get_xml_map(),
-            //ModeConfig::RoundsBotOnline(rounds_bot) => rounds_bot.into_xml(),
+            ModeSettings::Knockout(knockout) => knockout.get_xml_map(),
         }
     }
 
@@ -134,9 +137,10 @@ impl ModeSettings {
             }
             ModeSettings::TimeAttack(_) => {
                 "<script_name>Trackmania/TM_TimeAttack_Online</script_name>".into()
-            } /* ModeConfig::RoundsBotOnline(_) => {
-                  "<script_name>Trackmania/TM_RoundsBot_Online</script_name>".into()
-              } */
+            }
+            ModeSettings::Knockout(_) => {
+                "<script_name>Trackmania/TM_Knockout_Online</script_name>".into()
+            }
         }
     }
 
@@ -145,6 +149,19 @@ impl ModeSettings {
             ModeSettings::Rounds(_) => "Trackmania/TM_Rounds_Online",
             ModeSettings::ReverseCup(_) => "Modes/Trackmania/ReverseCup",
             ModeSettings::TimeAttack(_) => "Trackmania/TM_TimeAttack_Online",
+            ModeSettings::Knockout(_) => "Trackmania/TM_TimeAttack_Online",
+        }
+    }
+
+    /// Returns the mode script of a custom mode.
+    pub fn get_external_script(&self) -> Option<&str> {
+        match self {
+            ModeSettings::Rounds(_) => None,
+            ModeSettings::ReverseCup(_) => {
+                Some(include_str!("../external_modes/ReverseCup.Script.txt"))
+            }
+            ModeSettings::TimeAttack(_) => None,
+            ModeSettings::Knockout(_) => None,
         }
     }
 }

@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use spacetimedb_sdk::{Table, Uuid};
 use tm_server_controller::{
+    Unit,
     callbacks::TypedCallbacks,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
 };
@@ -142,6 +143,25 @@ pub async fn setup_state_synchronization() {
                 tracing::error!("Cannot go to next map!. Reason: {err}");
             };
         }
+
+        let _: i32 = server
+            .call("SaveMatchSettings", format!("{}.txt", event.time))
+            .await
+            .unwrap();
+    });
+
+    server.on_begin_match(async |_: &Unit| {
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(SERVER_METADATA.wait().lock().await.config.clone())
+        };
+
+        let server = TRACKMANIA.wait();
+        if let Err(error) = server.set_mode_script_settings(config).await {
+            tracing::error!("{error}")
+        };
     });
 
     /* server.on_start_map_start(async |map: &StartMap| {
@@ -168,7 +188,7 @@ pub async fn setup_state_synchronization() {
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
     }); */
 
-    server.on_start_map_end(async |map: &StartMap| {
+    /* server.on_start_map_end(async |map: &StartMap| {
         if !map.restarted {
             return;
         }
@@ -190,7 +210,7 @@ pub async fn setup_state_synchronization() {
 
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-    });
+    }); */
 }
 
 /// Synchronizes all the state already present on the server with spacetime db.

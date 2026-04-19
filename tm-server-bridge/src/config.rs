@@ -20,6 +20,18 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                 >(new_metadata.config.clone())
             };
 
+            // Get the script if its a non built in mode.
+            if let Some(script) = config.get_mode().get_external_script() {
+                let full_path = TRACKMANIA_FILES.wait().clone()
+                    + "/Scripts/"
+                    + config.get_mode().script_name()
+                    + ".Script.txt";
+
+                if let Err(error) = std::fs::write(&full_path, script) {
+                    tracing::error!("Could not write the mode script file: {error}");
+                }
+            }
+
             _ = server
                 .chat_send_server_massage("[tmservers.live] New configuration is loading.")
                 .await;

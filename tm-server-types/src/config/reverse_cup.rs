@@ -11,7 +11,7 @@ pub struct ReverseCup {
     //Inherited Rounds settings.
     pub finish_timeout: FinishTimeout,
     pub maps_per_match: MapsPerMatch,
-    pub points_repartition: Vec<u32>,
+    pub points_repartition: Vec<i32>,
     pub rounds_per_map: RoundsPerMap,
 
     //New settings introduced
@@ -122,7 +122,7 @@ impl ReverseCup {
     }
 }
 
-fn points_repartition_format(points: &Vec<u32>) -> String {
+fn points_repartition_format(points: &Vec<i32>) -> String {
     let mut string = String::new();
     for point in points {
         string += &point.to_string();
