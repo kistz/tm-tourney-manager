@@ -7,9 +7,11 @@ use crate::{
     competition::{
         CompetitionPermissionsV1, CompetitionV1,
         connection::{data::tab_connection_data, tab_connection},
-        node::NodeHandle,
+        node::{NodeHandle, NodeWrite},
         tab_competition,
     },
+    input::{InputRead, InputWrite},
+    output::{OutputRead, OutputWrite},
     registration::tab_registration,
     schedule::tab_schedule,
     tm_match::tab_match,
@@ -114,6 +116,10 @@ pub(super) fn competition_template_instantiate(
         .tab_server()
         .parent_id()
         .filter(competition_template.id);
+    let inputs = ctx.inputs_in_parent(competition_template.id);
+
+    // This is always maximnum 1 but keeping the pattern consistent
+    let outputs = ctx.outputs_in_parent(competition_template.id);
 
     // Instanatiate the top level node.
     let mut new_comp = competition_template.instantiate(target_id, stay_template);
@@ -125,6 +131,7 @@ pub(super) fn competition_template_instantiate(
         let old_id = old_match.id;
         let new_match = old_match.instantiate(new_comp.id, stay_template);
         let new_match = ctx.db.tab_match().try_insert(new_match)?;
+        ctx.node_create(NodeHandle::MatchV1(new_match.id))?;
         match_map.insert(old_id, new_match);
     }
 
@@ -135,6 +142,7 @@ pub(super) fn competition_template_instantiate(
         let new_competition = old_competition.instantiate(new_comp.id, stay_template);
         let new_competition = ctx.db.tab_competition().try_insert(new_competition)?;
         competition_template_instantiate(ctx, new_competition.id, old_id, old_name)?;
+        ctx.node_create(NodeHandle::CompetitionV1(new_competition.id))?;
         competition_map.insert(old_id, new_competition);
     }
 
@@ -143,6 +151,7 @@ pub(super) fn competition_template_instantiate(
         let old_id = old_registration.id;
         let new_registration = old_registration.instantiate(new_comp.id, stay_template);
         let new_registration = ctx.db.tab_registration().try_insert(new_registration)?;
+        ctx.node_create(NodeHandle::RegistrationV1(new_registration.id))?;
         registration_map.insert(old_id, new_registration);
     }
 
@@ -151,6 +160,7 @@ pub(super) fn competition_template_instantiate(
         let old_id = old_schedule.id;
         let new_schedule = old_schedule.instantiate(new_comp.id, stay_template);
         let new_schedule = ctx.db.tab_schedule().try_insert(new_schedule)?;
+        ctx.node_create(NodeHandle::ScheduleV1(new_schedule.id))?;
         schedule_map.insert(old_id, new_schedule);
     }
 
@@ -159,14 +169,32 @@ pub(super) fn competition_template_instantiate(
         let old_id = old_server.id;
         let new_server = old_server.instantiate(new_comp.id, stay_template);
         let new_server = ctx.db.tab_server().try_insert(new_server)?;
+        ctx.node_create(NodeHandle::ServerV1(new_server.id))?;
         server_map.insert(old_id, new_server);
+    }
+
+    let mut input_map = HashMap::new();
+    for old_input in inputs {
+        let old_id = old_input.id;
+        let new_input = old_input.instantiate(new_comp.id, stay_template);
+        let new_input = ctx.input_insert(new_input)?;
+        ctx.node_create(NodeHandle::InputV1(new_input.id))?;
+        input_map.insert(old_id, new_input);
+    }
+
+    let mut output_map = HashMap::new();
+    for old_output in outputs {
+        let old_id = old_output.id;
+        let new_output = old_output.instantiate(new_comp.id, stay_template);
+        ctx.node_create(NodeHandle::OutputV1(new_output.id))?;
+        let new_output = ctx.output_insert(new_output)?;
+        output_map.insert(old_id, new_output);
     }
 
     // Rewire all connections with the corresponding maps.
     for old_connection in connections {
         let old_origin = old_connection.connection_origin();
         let new_origin = match old_origin {
-            NodeHandle::MatchV1(m) => match_map.get(&m).unwrap().id,
             NodeHandle::CompetitionV1(i) => {
                 if let Some(comp) = competition_map.get(&i) {
                     comp.id
@@ -175,22 +203,23 @@ pub(super) fn competition_template_instantiate(
                     new_comp.id
                 }
             }
-            //NodeHandle::MonitoringV1(_) => todo!(),
-            NodeHandle::ServerV1(_) => todo!(),
+            NodeHandle::MatchV1(m) => match_map.get(&m).unwrap().id,
+            NodeHandle::ServerV1(n) => server_map.get(&n).unwrap().id,
             NodeHandle::ScheduleV1(i) => schedule_map.get(&i).unwrap().id,
-            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
+            NodeHandle::InputV1(n) => input_map.get(&n).unwrap().id,
+            NodeHandle::OutputV1(n) => output_map.get(&n).unwrap().id,
         };
 
         let old_target = old_connection.connection_target();
         let new_target = match old_target {
             NodeHandle::MatchV1(m) => match_map.get(&m).unwrap().id,
             NodeHandle::CompetitionV1(i) => competition_map.get(&i).unwrap().id,
-            //NodeHandle::MonitoringV1(_) => todo!(),
-            NodeHandle::ServerV1(_) => todo!(),
+            NodeHandle::ServerV1(n) => server_map.get(&n).unwrap().id,
             NodeHandle::ScheduleV1(i) => schedule_map.get(&i).unwrap().id,
-            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
+            NodeHandle::InputV1(n) => input_map.get(&n).unwrap().id,
+            NodeHandle::OutputV1(n) => output_map.get(&n).unwrap().id,
         };
 
         let mut new_connection = old_connection.instantiate(new_comp.id);

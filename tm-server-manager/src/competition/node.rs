@@ -26,10 +26,10 @@ pub use position::*;
 pub enum NodeHandle {
     MatchV1(u32),
     CompetitionV1(u32),
-    //MonitoringV1(u32),
-    ServerV1(u32),
     ScheduleV1(u32),
-    //PortalV1(u32),
+    ServerV1(u32),
+    InputV1(u32),
+    OutputV1(u32),
     RegistrationV1(u32),
 }
 
@@ -50,9 +50,9 @@ impl NodeHandle {
             NodeHandle::MatchV1(m) => (1, m),
             NodeHandle::CompetitionV1(c) => (2, c),
             NodeHandle::ScheduleV1(s) => (3, s),
-            //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(m) => (4, m),
-            //NodeHandle::PortalV1(p) => (6, p),
+            NodeHandle::InputV1(h) => (5, h),
+            NodeHandle::OutputV1(h) => (6, h),
             NodeHandle::RegistrationV1(r) => (7, r),
         }
     }
@@ -63,7 +63,8 @@ impl NodeHandle {
             2 => Self::CompetitionV1(value),
             3 => Self::ScheduleV1(value),
             4 => Self::ServerV1(value),
-            //6 => Self::PortalV1(value),
+            5 => Self::InputV1(value),
+            6 => Self::OutputV1(value),
             7 => Self::RegistrationV1(value),
             _ => unreachable!(),
         }
@@ -83,30 +84,37 @@ impl NodeHandle {
                 let node = ctx.db.tab_schedule().id().find(s).unwrap();
                 node.is_template()
             }
-            //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
-            /* NodeHandle::PortalV1(portal_id) => {
-                let node = ctx.db.tab_portal().id().find(portal_id).unwrap();
-                node.is_template()
-            } */
+
             NodeHandle::RegistrationV1(reg) => {
                 let node = ctx.db.tab_registration().id().find(reg).unwrap();
                 node.is_template()
             }
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
         }
     }
 
     pub(crate) fn is_match(&self) -> bool {
-        match self {
-            NodeHandle::MatchV1(_) => true,
-            _ => false,
-        }
+        matches!(self, NodeHandle::MatchV1(_))
     }
     pub(crate) fn is_server(&self) -> bool {
-        match self {
-            NodeHandle::ServerV1(_) => true,
-            _ => false,
-        }
+        matches!(self, NodeHandle::ServerV1(_))
+    }
+    pub(crate) fn is_input(&self) -> bool {
+        matches!(self, NodeHandle::InputV1(_))
+    }
+    pub(crate) fn is_output(&self) -> bool {
+        matches!(self, NodeHandle::OutputV1(_))
+    }
+    pub(crate) fn is_competition(&self) -> bool {
+        matches!(self, NodeHandle::CompetitionV1(_))
+    }
+    pub(crate) fn is_registration(&self) -> bool {
+        matches!(self, NodeHandle::RegistrationV1(_))
+    }
+    pub(crate) fn is_schedule(&self) -> bool {
+        matches!(self, NodeHandle::ScheduleV1(_))
     }
 
     pub(crate) fn id(&self) -> u32 {
@@ -128,6 +136,8 @@ impl NodeType for NodeHandle {
             NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),
             //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(r) => unreachable!(),
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
         }
     }
 }
@@ -205,6 +215,8 @@ impl<Db: DbContext> NodeRead for Db {
                     Err("Schedule could not be found.".into())
                 }
             }
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
         }
     }
 }
@@ -257,11 +269,12 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
     fn node_name_edit(&self, node: NodeHandle, name: String) -> Result<(), String> {
         match node {
             NodeHandle::MatchV1(id) => self.match_name_edit(id, name)?,
-
             NodeHandle::CompetitionV1(id) => self.competition_name_edit(id, name)?,
             NodeHandle::ServerV1(id) => self.server_name_edit(id, name)?,
             NodeHandle::ScheduleV1(id) => self.schedule_name_edit(id, name)?,
             NodeHandle::RegistrationV1(id) => self.registration_name_edit(id, name)?,
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
         }
 
         Ok(())

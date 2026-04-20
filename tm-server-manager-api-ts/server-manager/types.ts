@@ -435,9 +435,6 @@ export const Knockout = __t.object("Knockout", {
   get finishTimeout() {
     return FinishTimeout;
   },
-  get mapsPerMatch() {
-    return MapsPerMatch;
-  },
   get roundsPerMap() {
     return RoundsPerMap;
   },
@@ -684,8 +681,10 @@ export type MyProjectV1 = __Infer<typeof MyProjectV1>;
 export const NodeHandle = __t.enum("NodeHandle", {
   MatchV1: __t.u32(),
   CompetitionV1: __t.u32(),
-  ServerV1: __t.u32(),
   ScheduleV1: __t.u32(),
+  ServerV1: __t.u32(),
+  InputV1: __t.u32(),
+  OutputV1: __t.u32(),
   RegistrationV1: __t.u32(),
 });
 export type NodeHandle = __Infer<typeof NodeHandle>;
@@ -699,6 +698,14 @@ export const NodePositionUpdate = __t.object("NodePositionUpdate", {
   },
 });
 export type NodePositionUpdate = __Infer<typeof NodePositionUpdate>;
+
+export const OutputV1 = __t.object("OutputV1", {
+  name: __t.string(),
+  id: __t.u32(),
+  parentId: __t.u32(),
+  template: __t.bool(),
+});
+export type OutputV1 = __Infer<typeof OutputV1>;
 
 export const Pause = __t.object("Pause", {
   available: __t.bool(),

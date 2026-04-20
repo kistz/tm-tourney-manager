@@ -11,7 +11,7 @@ use crate::{
     competition::{
         CompetitionPermissionsV1,
         connection::{
-            action::try_exec_action,
+            action::{TabConnectionAction, tab_connection_action, try_exec_action},
             data::{ConnectionData, tab_connection_data, tab_connection_data__view},
         },
         node::{NodeHandle, NodeRead, NodeType},
@@ -107,6 +107,18 @@ pub enum ConnectionKind {
     Action,
 }
 
+impl ConnectionKind {
+    pub(crate) fn is_data(&self) -> bool {
+        matches!(self, ConnectionKind::Data)
+    }
+    pub(crate) fn is_wait(&self) -> bool {
+        matches!(self, ConnectionKind::Wait)
+    }
+    pub(crate) fn is_action(&self) -> bool {
+        matches!(self, ConnectionKind::Action)
+    }
+}
+
 /// Since we need to check either way if the two thing have the same parent we can omit specifing the competition manually.
 #[reducer]
 pub fn connection_create(
@@ -127,6 +139,15 @@ pub fn connection_create(
             "Cannot add a connection where nodes are part of different competitions!".into(),
         );
     }
+
+    let parent = origin_parent;
+
+    ConnectionCombination {
+        origin,
+        target,
+        kind,
+    }
+    .validate()?;
 
     if origin.is_template(ctx) != target.is_template(ctx) {
         return Err(
@@ -225,7 +246,9 @@ pub fn connection_create(
                 .try_insert(ConnectionData::new(connection.id, connection.parent_id))?;
         }
         ConnectionKind::Action => {
-            todo!()
+            ctx.db
+                .tab_connection_action()
+                .try_insert(TabConnectionAction::new(target, parent, connection.id)?)?;
         }
     }
 
@@ -385,10 +408,8 @@ impl<Db: DbContext> ConnectionRead for Db {
                     .collect()
             }
             NodeHandle::CompetitionV1(c) => todo!(),
-            //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(_) => todo!(),
-            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(r) => {
                 let rules = self
                     .db_read_only()
@@ -409,6 +430,8 @@ impl<Db: DbContext> ConnectionRead for Db {
                     })
                     .collect()
             }
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
         }
     }
 }
@@ -420,11 +443,14 @@ impl<Db: DbContext<DbView = Local>> ConnectionWrite for Db {} */
 // -> as origin: only wait and action connection.
 // -> as target: only wait (also has to be set to relative).
 // Competition:
-// -> as origin: not allowed.
+// -> as origin: data and wait.
 // -> as target: data and wait.
 // Input:
 // -> as origin: everything.
 // -> as target: not allowed.
+// Output:
+// -> as origin: not allowed..
+// -> as target: data and wait.
 // Match:
 // -> as origin: Everything.
 // -> as target: Everything.
@@ -434,5 +460,55 @@ impl<Db: DbContext<DbView = Local>> ConnectionWrite for Db {} */
 // Server:
 // -> as origin: not allowed.
 // -> as target: not allowed.
-// Portal: TODO
 // Leadarboard: TODO
+
+struct ConnectionCombination {
+    origin: NodeHandle,
+    target: NodeHandle,
+    kind: ConnectionKind,
+}
+
+impl ConnectionCombination {
+    fn validate(self) -> Result<(), String> {
+        let origin = self.origin;
+        let target = self.target;
+        let kind = self.kind;
+
+        if target.is_input() {
+            return Err("Input cannot be target.".into());
+        }
+        if origin.is_output() {
+            return Err("Output cannot be origin.".into());
+        }
+        if origin.is_server() || target.is_server() {
+            return Err("Server cannot be involved in connection.".into());
+        }
+        if origin.is_schedule() && kind.is_data() {
+            return Err("Cannot have a schedule with data connection".into());
+        }
+
+        if kind.is_action() {
+            if target.is_match() || target.is_registration() {
+                return Ok(());
+            }
+
+            return Err("Cannot put a action connection here.".into());
+        }
+
+        if origin.is_match() || target.is_match() {
+            return Ok(());
+        }
+
+        if origin.is_schedule() && target.is_match() {
+            return Ok(());
+        }
+
+        //TODO cover all cases and make it reject by default.
+        return Ok(());
+
+        /* Err(format!(
+            "Unhandled Case: Combination of origin: {:?} and target: {:?} is not allowed.",
+            origin, target
+        )) */
+    }
+}

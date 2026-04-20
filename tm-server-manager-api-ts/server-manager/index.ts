@@ -41,6 +41,7 @@ import CompetitionNodePositionsUpdateReducer from "./competition_node_positions_
 import CompetitionTemplateCreateReducer from "./competition_template_create_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
 import CreateProjectReducer from "./create_project_reducer";
+import InputCreateReducer from "./input_create_reducer";
 import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
@@ -54,6 +55,7 @@ import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
 import MemberRemoveReducer from "./member_remove_reducer";
 import NodeNameEditReducer from "./node_name_edit_reducer";
+import OutputCreateReducer from "./output_create_reducer";
 import PostEventReducer from "./post_event_reducer";
 import ProjectEditDatesReducer from "./project_edit_dates_reducer";
 import ProjectEditDescriptionReducer from "./project_edit_description_reducer";
@@ -340,6 +342,7 @@ const reducersSchema = __reducers(
   __reducerSchema("competition_template_create", CompetitionTemplateCreateReducer),
   __reducerSchema("connection_create", ConnectionCreateReducer),
   __reducerSchema("create_project", CreateProjectReducer),
+  __reducerSchema("input_create", InputCreateReducer),
   __reducerSchema("lend_raw_server", LendRawServerReducer),
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
@@ -353,6 +356,7 @@ const reducersSchema = __reducers(
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
   __reducerSchema("member_remove", MemberRemoveReducer),
   __reducerSchema("node_name_edit", NodeNameEditReducer),
+  __reducerSchema("output_create", OutputCreateReducer),
   __reducerSchema("post_event", PostEventReducer),
   __reducerSchema("project_edit_dates", ProjectEditDatesReducer),
   __reducerSchema("project_edit_description", ProjectEditDescriptionReducer),

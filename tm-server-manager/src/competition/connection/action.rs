@@ -16,6 +16,30 @@ pub struct TabConnectionAction {
 }
 
 impl TabConnectionAction {
+    pub(super) fn new(
+        target: NodeHandle,
+        parent_id: u32,
+        connection_id: u32,
+    ) -> Result<Self, String> {
+        Ok(Self {
+            competition_id: parent_id,
+            connection_id,
+            action: match target {
+                NodeHandle::MatchV1(_) => {
+                    ConnectionAction::MatchV1(ConnectionActionMatch::TryStart)
+                }
+                NodeHandle::CompetitionV1(_) => unreachable!(),
+                NodeHandle::ScheduleV1(_) => unreachable!(),
+                NodeHandle::ServerV1(_) => unreachable!(),
+                NodeHandle::InputV1(_) => unreachable!(),
+                NodeHandle::OutputV1(_) => unreachable!(),
+                NodeHandle::RegistrationV1(_) => {
+                    ConnectionAction::RegistrationV1(ConnectionActionRegistration::Open)
+                }
+            },
+        })
+    }
+
     fn get_match(&self) -> ConnectionActionMatch {
         match self.action {
             ConnectionAction::MatchV1(connection_action_match) => connection_action_match,
@@ -75,10 +99,8 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
             }
         }
         NodeHandle::CompetitionV1(_) => unreachable!(),
-        //NodeHandle::MonitoringV1(_) => unreachable!(),
         NodeHandle::ServerV1(_) => unreachable!(),
         NodeHandle::ScheduleV1(_) => unreachable!(),
-        //NodeHandle::PortalV1(_) => unreachable!(),
         NodeHandle::RegistrationV1(r) => {
             let registration_action = action.get_registration();
             match registration_action {
@@ -86,5 +108,7 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
                 ConnectionActionRegistration::Close => todo!(),
             }
         }
+        NodeHandle::InputV1(_) => unreachable!(),
+        NodeHandle::OutputV1(_) => unreachable!(),
     }
 }

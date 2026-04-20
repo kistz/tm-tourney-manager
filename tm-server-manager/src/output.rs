@@ -9,8 +9,8 @@ use crate::{
     },
 };
 
-#[table(accessor= tab_input)]
-pub struct InputV1 {
+#[table(accessor= tab_output)]
+pub struct OutputV1 {
     name: String,
 
     #[auto_inc]
@@ -23,7 +23,7 @@ pub struct InputV1 {
     template: bool,
 }
 
-impl InputV1 {
+impl OutputV1 {
     pub(crate) fn instantiate(mut self, parent_id: u32, stay_template: bool) -> Self {
         self.template = stay_template;
         self.parent_id = parent_id;
@@ -33,7 +33,7 @@ impl InputV1 {
 }
 
 #[reducer]
-fn input_create(
+fn output_create(
     ctx: &ReducerContext,
     name: String,
     parent_id: u32,
@@ -44,7 +44,7 @@ fn input_create(
     };
 
     ctx.auth_builder(parent_id)
-        .permission(CompetitionPermissionsV1::INPUT_CREATE)
+        .permission(CompetitionPermissionsV1::OUTPUT_CREATE)
         .authorize()?;
 
     if parent_competition.is_template() {
@@ -57,48 +57,48 @@ fn input_create(
 
     // Try to load template if provided
     if with_template != 0 {
-        ctx.input_template_instantiate(with_template)?;
+        ctx.output_template_instantiate(with_template)?;
     } else {
         // Create an uncommitted server
-        let input = InputV1 {
+        let output = OutputV1 {
             name,
             id: 0,
             parent_id,
             template: false,
         };
 
-        let input = ctx.db.tab_input().try_insert(input)?;
+        let output = ctx.db.tab_output().try_insert(output)?;
 
-        ctx.node_create(NodeHandle::InputV1(input.id))?;
+        ctx.node_create(NodeHandle::OutputV1(output.id))?;
     }
 
     Ok(())
 }
 
-pub(crate) trait InputRead {
-    fn inputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = InputV1>;
+pub(crate) trait OutputRead {
+    fn outputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = OutputV1>;
 }
-impl<Db: DbContext> InputRead for Db {
-    fn inputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = InputV1> {
+impl<Db: DbContext> OutputRead for Db {
+    fn outputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = OutputV1> {
         self.db_read_only()
-            .tab_input()
+            .tab_output()
             .parent_id()
             .filter(parent_id)
     }
 }
-pub(crate) trait InputWrite: InputRead {
-    fn input_template_instantiate(&self, with_template: u32) -> Result<(), String>;
-    fn input_insert(&self, input: InputV1) -> Result<InputV1, String>;
+pub(crate) trait OutputWrite: OutputRead {
+    fn output_template_instantiate(&self, with_template: u32) -> Result<(), String>;
+    fn output_insert(&self, output: OutputV1) -> Result<OutputV1, String>;
 }
-impl<Db: DbContext<DbView = Local>> InputWrite for Db {
-    fn input_template_instantiate(&self, with_template: u32) -> Result<(), String> {
+impl<Db: DbContext<DbView = Local>> OutputWrite for Db {
+    fn output_template_instantiate(&self, with_template: u32) -> Result<(), String> {
         todo!()
     }
 
-    fn input_insert(&self, input: InputV1) -> Result<InputV1, String> {
+    fn output_insert(&self, output: OutputV1) -> Result<OutputV1, String> {
         self.db()
-            .tab_input()
-            .try_insert(input)
+            .tab_output()
+            .try_insert(output)
             .map_err(|e| e.to_string())
     }
 }

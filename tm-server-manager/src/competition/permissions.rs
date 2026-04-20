@@ -16,8 +16,6 @@ impl CompetitionPermissionsV1 {
     pub const COMPETITION_CONNECTION_EDIT: CompetitionPermissionsV1 =
         CompetitionPermissionsV1(1 << 7);
     pub const COMPETITION_LAYOUT_EDIT: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 18);
-    pub const COMPETITION_EDIT_REGISTRATION: CompetitionPermissionsV1 =
-        CompetitionPermissionsV1(1 << 9);
 
     pub const MATCH_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 10);
     pub const MATCH_DELETE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 11);
@@ -32,9 +30,10 @@ impl CompetitionPermissionsV1 {
 
     pub const SCHEDULE_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 17);
 
-    pub const PORTAL_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 18);
+    pub const INPUT_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 21);
 
     pub const SERVER_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 19);
+    pub const OUTPUT_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 20);
 }
 
 impl PermissionType for CompetitionPermissionsV1 {
