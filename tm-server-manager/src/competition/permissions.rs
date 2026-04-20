@@ -34,6 +34,9 @@ impl CompetitionPermissionsV1 {
 
     pub const SERVER_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 19);
     pub const OUTPUT_CREATE: CompetitionPermissionsV1 = CompetitionPermissionsV1(1 << 20);
+
+    pub const TRACKMANIA_SPECTATE_MATCHES: CompetitionPermissionsV1 =
+        CompetitionPermissionsV1(1 << 21);
 }
 
 impl PermissionType for CompetitionPermissionsV1 {

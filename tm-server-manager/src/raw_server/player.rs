@@ -49,7 +49,7 @@ pub(super) fn raw_server_player_add(
         //TODO check server side if its the server account id. We need to extract the server account id from the login token for that.
 
         ctx.db.tab_raw_server_player().try_insert(RawServerPlayer {
-            server_id: server_id,
+            server_id,
             account_id,
             spectator,
         })?;

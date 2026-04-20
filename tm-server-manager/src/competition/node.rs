@@ -4,7 +4,7 @@ use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer
 
 use crate::{
     competition::{
-        CompetitionWrite,
+        CompetitionRead, CompetitionWrite,
         connection::{
             ConnectionRead, action::tab_connection_action, data::tab_connection_data,
             tab_connection, tab_connection__view,
@@ -149,6 +149,12 @@ pub(crate) trait NodeRead {
 impl<Db: DbContext> NodeRead for Db {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer> {
         let mut map: HashMap<Uuid, PermittedPlayer> = HashMap::new();
+
+        let parent = self.node_get_parent(node).unwrap();
+
+        let tree = self.competition_tree(parent);
+        // TODO get permitted
+
         let depending_connections = self
             .db_read_only()
             .tab_connection()
@@ -161,14 +167,11 @@ impl<Db: DbContext> NodeRead for Db {
                 .connection_filter_permitted_players(depending_connection)
                 .into_iter()
                 .map(|p| (p.account_id, p));
+            // This overrides the existing entrys.
             map.extend(permitted_players);
         }
 
-        let values = map.into_values().collect();
-
-        log::warn!("{:?}", values);
-
-        values
+        map.into_values().collect()
     }
 
     fn node_get_parent(&self, node: NodeHandle) -> Result<u32, String> {
