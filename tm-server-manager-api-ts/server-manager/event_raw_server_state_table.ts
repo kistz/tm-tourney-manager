@@ -20,6 +20,6 @@ export default __t.row({
     return ServerConfig;
   },
   open: __t.bool(),
-  recoverySection: __t.bool().name("recovery_section"),
+  skipAgain: __t.bool().name("skip_again"),
   seamless: __t.bool(),
 });

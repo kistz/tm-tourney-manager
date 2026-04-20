@@ -12,7 +12,7 @@ pub struct EventRawServerState {
     pub server_id: u32,
     pub config: ServerConfig,
     pub open: bool,
-    pub recovery_section: bool,
+    pub skip_again: bool,
     pub seamless: bool,
 }
 
@@ -27,7 +27,7 @@ pub struct EventRawServerStateCols {
     pub server_id: __sdk::__query_builder::Col<EventRawServerState, u32>,
     pub config: __sdk::__query_builder::Col<EventRawServerState, ServerConfig>,
     pub open: __sdk::__query_builder::Col<EventRawServerState, bool>,
-    pub recovery_section: __sdk::__query_builder::Col<EventRawServerState, bool>,
+    pub skip_again: __sdk::__query_builder::Col<EventRawServerState, bool>,
     pub seamless: __sdk::__query_builder::Col<EventRawServerState, bool>,
 }
 
@@ -38,7 +38,7 @@ impl __sdk::__query_builder::HasCols for EventRawServerState {
             server_id: __sdk::__query_builder::Col::new(table_name, "server_id"),
             config: __sdk::__query_builder::Col::new(table_name, "config"),
             open: __sdk::__query_builder::Col::new(table_name, "open"),
-            recovery_section: __sdk::__query_builder::Col::new(table_name, "recovery_section"),
+            skip_again: __sdk::__query_builder::Col::new(table_name, "skip_again"),
             seamless: __sdk::__query_builder::Col::new(table_name, "seamless"),
         }
     }

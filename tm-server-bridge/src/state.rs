@@ -158,17 +158,20 @@ pub async fn setup_state_synchronization() {
             >(SERVER_METADATA.wait().lock().await.config.clone())
         };
 
-        let server = TRACKMANIA.wait();
-        if let Err(error) = server.set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
+        tokio::spawn(async {
+            sleep(Duration::from_secs(2)).await;
+            let server = TRACKMANIA.wait();
+            if let Err(error) = server.set_mode_script_settings(config).await {
+                tracing::error!("{error}")
+            };
+        });
     });
 
-    /* server.on_start_map_start(async |map: &StartMap| {
-        if !map.restarted {
+    server.on_start_map_start(async |map: &StartMap| {
+        /* if !map.restarted {
             return;
-        }
-        tracing::info!("The start map ended and we have restarted. Applying config again.");
+        } */
+        //tracing::info!("The start map ended and we have restarted. Applying config again.");
 
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
@@ -186,7 +189,7 @@ pub async fn setup_state_synchronization() {
 
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-    }); */
+    });
 
     /* server.on_start_map_end(async |map: &StartMap| {
         if !map.restarted {

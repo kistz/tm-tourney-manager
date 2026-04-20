@@ -399,7 +399,7 @@ export const EventRawServerState = __t.object("EventRawServerState", {
     return ServerConfig;
   },
   open: __t.bool(),
-  recoverySection: __t.bool(),
+  skipAgain: __t.bool(),
   seamless: __t.bool(),
 });
 export type EventRawServerState = __Infer<typeof EventRawServerState>;

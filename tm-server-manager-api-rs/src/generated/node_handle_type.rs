@@ -11,9 +11,13 @@ pub enum NodeHandle {
 
     CompetitionV1(u32),
 
+    ScheduleV1(u32),
+
     ServerV1(u32),
 
-    ScheduleV1(u32),
+    InputV1(u32),
+
+    OutputV1(u32),
 
     RegistrationV1(u32),
 }

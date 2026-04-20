@@ -11,7 +11,6 @@ pub mod chat_send_server_message_to_user_args_type;
 pub mod chat_send_to_user_args_type;
 pub mod common_type;
 pub mod competition_available_server_pool_table;
-pub mod competition_connection_data_table;
 pub mod competition_connection_data_update_reducer;
 pub mod competition_connection_type;
 pub mod competition_create_reducer;
@@ -30,6 +29,7 @@ pub mod connection_action_registration_type;
 pub mod connection_action_type;
 pub mod connection_create_reducer;
 pub mod connection_data_option_type;
+pub mod connection_data_table;
 pub mod connection_data_type;
 pub mod connection_kind_type;
 pub mod connection_status_type;
@@ -51,6 +51,7 @@ pub mod event_raw_server_state_type;
 pub mod event_type;
 pub mod finish_timeout_type;
 pub mod give_up_type;
+pub mod input_create_reducer;
 pub mod input_v_1_type;
 pub mod kick_args_type;
 pub mod knockout_type;
@@ -101,6 +102,8 @@ pub mod my_user_table;
 pub mod node_handle_type;
 pub mod node_name_edit_reducer;
 pub mod node_position_update_type;
+pub mod output_create_reducer;
+pub mod output_v_1_type;
 pub mod pause_type;
 pub mod permitted_player_type;
 pub mod play_loop_end_type;
@@ -208,6 +211,7 @@ pub mod unstable_competition_connection_table;
 pub mod unstable_competition_members_table;
 pub mod unstable_competition_role_member_table;
 pub mod unstable_competition_role_table;
+pub mod unstable_registration_table;
 pub mod user_identity_type;
 pub mod user_ids_map_type;
 pub mod user_v_1_type;
@@ -223,7 +227,6 @@ pub use chat_send_server_message_to_user_args_type::ChatSendServerMessageToUserA
 pub use chat_send_to_user_args_type::ChatSendToUserArgs;
 pub use common_type::Common;
 pub use competition_available_server_pool_table::*;
-pub use competition_connection_data_table::*;
 pub use competition_connection_data_update_reducer::competition_connection_data_update;
 pub use competition_connection_type::CompetitionConnection;
 pub use competition_create_reducer::competition_create;
@@ -242,6 +245,7 @@ pub use connection_action_registration_type::ConnectionActionRegistration;
 pub use connection_action_type::ConnectionAction;
 pub use connection_create_reducer::connection_create;
 pub use connection_data_option_type::ConnectionDataOption;
+pub use connection_data_table::*;
 pub use connection_data_type::ConnectionData;
 pub use connection_kind_type::ConnectionKind;
 pub use connection_status_type::ConnectionStatus;
@@ -263,6 +267,7 @@ pub use event_raw_server_state_type::EventRawServerState;
 pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
 pub use give_up_type::GiveUp;
+pub use input_create_reducer::input_create;
 pub use input_v_1_type::InputV1;
 pub use kick_args_type::KickArgs;
 pub use knockout_type::Knockout;
@@ -313,6 +318,8 @@ pub use my_user_table::*;
 pub use node_handle_type::NodeHandle;
 pub use node_name_edit_reducer::node_name_edit;
 pub use node_position_update_type::NodePositionUpdate;
+pub use output_create_reducer::output_create;
+pub use output_v_1_type::OutputV1;
 pub use pause_type::Pause;
 pub use permitted_player_type::PermittedPlayer;
 pub use play_loop_end_type::PlayLoopEnd;
@@ -420,6 +427,7 @@ pub use unstable_competition_connection_table::*;
 pub use unstable_competition_members_table::*;
 pub use unstable_competition_role_member_table::*;
 pub use unstable_competition_role_table::*;
+pub use unstable_registration_table::*;
 pub use user_identity_type::UserIdentity;
 pub use user_ids_map_type::UserIdsMap;
 pub use user_v_1_type::UserV1;
@@ -471,6 +479,11 @@ pub enum Reducer {
         starting_at: __sdk::Timestamp,
         ending_at: __sdk::Timestamp,
     },
+    InputCreate {
+        name: String,
+        parent_id: u32,
+        with_template: u32,
+    },
     LendRawServer {
         server_id: u32,
         competition_id: u32,
@@ -519,6 +532,11 @@ pub enum Reducer {
     NodeNameEdit {
         node: NodeHandle,
         name: String,
+    },
+    OutputCreate {
+        name: String,
+        parent_id: u32,
+        with_template: u32,
     },
     PostEvent {
         event: Event,
@@ -666,6 +684,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::CompetitionTemplateCreate { .. } => "competition_template_create",
             Reducer::ConnectionCreate { .. } => "connection_create",
             Reducer::CreateProject { .. } => "create_project",
+            Reducer::InputCreate { .. } => "input_create",
             Reducer::LendRawServer { .. } => "lend_raw_server",
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
@@ -679,6 +698,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
             Reducer::MemberRemove { .. } => "member_remove",
             Reducer::NodeNameEdit { .. } => "node_name_edit",
+            Reducer::OutputCreate { .. } => "output_create",
             Reducer::PostEvent { .. } => "post_event",
             Reducer::ProjectEditDates { .. } => "project_edit_dates",
             Reducer::ProjectEditDescription { .. } => "project_edit_description",
@@ -782,6 +802,15 @@ impl __sdk::Reducer for Reducer {
                 starting_at: starting_at.clone(),
                 ending_at: ending_at.clone(),
             }),
+            Reducer::InputCreate {
+                name,
+                parent_id,
+                with_template,
+            } => __sats::bsatn::to_vec(&input_create_reducer::InputCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+                with_template: with_template.clone(),
+            }),
             Reducer::LendRawServer {
                 server_id,
                 competition_id,
@@ -864,6 +893,15 @@ impl __sdk::Reducer for Reducer {
                     name: name.clone(),
                 })
             }
+            Reducer::OutputCreate {
+                name,
+                parent_id,
+                with_template,
+            } => __sats::bsatn::to_vec(&output_create_reducer::OutputCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+                with_template: with_template.clone(),
+            }),
             Reducer::PostEvent { event } => {
                 __sats::bsatn::to_vec(&post_event_reducer::PostEventArgs {
                     event: event.clone(),
@@ -1093,7 +1131,7 @@ impl __sdk::Reducer for Reducer {
 pub struct DbUpdate {
     competition: __sdk::TableUpdate<CompetitionV1>,
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
-    competition_connection_data: __sdk::TableUpdate<ConnectionData>,
+    connection_data: __sdk::TableUpdate<ConnectionData>,
     event_raw_server_method: __sdk::TableUpdate<EventRawServerMethod>,
     event_raw_server_state: __sdk::TableUpdate<EventRawServerState>,
     match_round: __sdk::TableUpdate<MatchRoundPlayer>,
@@ -1117,6 +1155,7 @@ pub struct DbUpdate {
     unstable_competition_members: __sdk::TableUpdate<CompetitionMember>,
     unstable_competition_role: __sdk::TableUpdate<CompetitionRole>,
     unstable_competition_role_member: __sdk::TableUpdate<CompetitionRoleMember>,
+    unstable_registration: __sdk::TableUpdate<Registration>,
     users: __sdk::TableUpdate<UserV1>,
 }
 
@@ -1134,9 +1173,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                         competition_available_server_pool_table::parse_table_update(table_update)?,
                     )
                 }
-                "competition_connection_data" => db_update.competition_connection_data.append(
-                    competition_connection_data_table::parse_table_update(table_update)?,
-                ),
+                "connection_data" => db_update
+                    .connection_data
+                    .append(connection_data_table::parse_table_update(table_update)?),
                 "event_raw_server_method" => db_update.event_raw_server_method.append(
                     event_raw_server_method_table::parse_table_update(table_update)?,
                 ),
@@ -1212,6 +1251,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                         unstable_competition_role_member_table::parse_table_update(table_update)?,
                     )
                 }
+                "unstable_registration" => db_update.unstable_registration.append(
+                    unstable_registration_table::parse_table_update(table_update)?,
+                ),
                 "users" => db_update
                     .users
                     .append(users_table::parse_table_update(table_update)?),
@@ -1250,11 +1292,8 @@ impl __sdk::DbUpdate for DbUpdate {
             "competition_available_server_pool",
             &self.competition_available_server_pool,
         );
-        diff.competition_connection_data = cache
-            .apply_diff_to_table::<ConnectionData>(
-                "competition_connection_data",
-                &self.competition_connection_data,
-            )
+        diff.connection_data = cache
+            .apply_diff_to_table::<ConnectionData>("connection_data", &self.connection_data)
             .with_updates_by_pk(|row| &row.connection_id);
         diff.match_round =
             cache.apply_diff_to_table::<MatchRoundPlayer>("match_round", &self.match_round);
@@ -1333,6 +1372,12 @@ impl __sdk::DbUpdate for DbUpdate {
             "unstable_competition_role_member",
             &self.unstable_competition_role_member,
         );
+        diff.unstable_registration = cache
+            .apply_diff_to_table::<Registration>(
+                "unstable_registration",
+                &self.unstable_registration,
+            )
+            .with_updates_by_pk(|row| &row.id);
         diff.users = cache
             .apply_diff_to_table::<UserV1>("users", &self.users)
             .with_updates_by_pk(|row| &row.id);
@@ -1349,8 +1394,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "competition_available_server_pool" => db_update
                     .competition_available_server_pool
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "competition_connection_data" => db_update
-                    .competition_connection_data
+                "connection_data" => db_update
+                    .connection_data
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
@@ -1420,6 +1465,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "unstable_competition_role_member" => db_update
                     .unstable_competition_role_member
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "unstable_registration" => db_update
+                    .unstable_registration
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "users" => db_update
                     .users
@@ -1443,8 +1491,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "competition_available_server_pool" => db_update
                     .competition_available_server_pool
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "competition_connection_data" => db_update
-                    .competition_connection_data
+                "connection_data" => db_update
+                    .connection_data
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
@@ -1515,6 +1563,9 @@ impl __sdk::DbUpdate for DbUpdate {
                 "unstable_competition_role_member" => db_update
                     .unstable_competition_role_member
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "unstable_registration" => db_update
+                    .unstable_registration
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "users" => db_update
                     .users
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1535,7 +1586,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     competition: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
-    competition_connection_data: __sdk::TableAppliedDiff<'r, ConnectionData>,
+    connection_data: __sdk::TableAppliedDiff<'r, ConnectionData>,
     event_raw_server_method: __sdk::TableAppliedDiff<'r, EventRawServerMethod>,
     event_raw_server_state: __sdk::TableAppliedDiff<'r, EventRawServerState>,
     match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
@@ -1559,6 +1610,7 @@ pub struct AppliedDiff<'r> {
     unstable_competition_members: __sdk::TableAppliedDiff<'r, CompetitionMember>,
     unstable_competition_role: __sdk::TableAppliedDiff<'r, CompetitionRole>,
     unstable_competition_role_member: __sdk::TableAppliedDiff<'r, CompetitionRoleMember>,
+    unstable_registration: __sdk::TableAppliedDiff<'r, Registration>,
     users: __sdk::TableAppliedDiff<'r, UserV1>,
     __unused: std::marker::PhantomData<&'r ()>,
 }
@@ -1584,8 +1636,8 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<ConnectionData>(
-            "competition_connection_data",
-            &self.competition_connection_data,
+            "connection_data",
+            &self.connection_data,
             event,
         );
         callbacks.invoke_table_row_callbacks::<EventRawServerMethod>(
@@ -1689,6 +1741,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<CompetitionRoleMember>(
             "unstable_competition_role_member",
             &self.unstable_competition_role_member,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<Registration>(
+            "unstable_registration",
+            &self.unstable_registration,
             event,
         );
         callbacks.invoke_table_row_callbacks::<UserV1>("users", &self.users, event);
@@ -2339,7 +2396,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         competition_table::register_table(client_cache);
         competition_available_server_pool_table::register_table(client_cache);
-        competition_connection_data_table::register_table(client_cache);
+        connection_data_table::register_table(client_cache);
         event_raw_server_method_table::register_table(client_cache);
         event_raw_server_state_table::register_table(client_cache);
         match_round_table::register_table(client_cache);
@@ -2363,12 +2420,13 @@ impl __sdk::SpacetimeModule for RemoteModule {
         unstable_competition_members_table::register_table(client_cache);
         unstable_competition_role_table::register_table(client_cache);
         unstable_competition_role_member_table::register_table(client_cache);
+        unstable_registration_table::register_table(client_cache);
         users_table::register_table(client_cache);
     }
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
         "competition",
         "competition_available_server_pool",
-        "competition_connection_data",
+        "connection_data",
         "event_raw_server_method",
         "event_raw_server_state",
         "match_round",
@@ -2392,6 +2450,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "unstable_competition_members",
         "unstable_competition_role",
         "unstable_competition_role_member",
+        "unstable_registration",
         "users",
     ];
 }

@@ -5,14 +5,12 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::finish_timeout_type::FinishTimeout;
-use super::maps_per_match_type::MapsPerMatch;
 use super::rounds_per_map_type::RoundsPerMap;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct Knockout {
     pub finish_timeout: FinishTimeout,
-    pub maps_per_match: MapsPerMatch,
     pub rounds_per_map: RoundsPerMap,
     pub rounds_without_elimination: i32,
     pub eliminated_player_number_rank: Vec<i32>,
