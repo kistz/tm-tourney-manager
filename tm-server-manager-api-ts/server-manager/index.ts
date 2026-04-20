@@ -99,7 +99,7 @@ import * as PostRoundReplayProcedure from "./post_round_replay_procedure";
 // Import all table schema definitions
 import CompetitionRow from "./competition_table";
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
-import CompetitionConnectionDataRow from "./competition_connection_data_table";
+import ConnectionDataRow from "./connection_data_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
 import EventRawServerStateRow from "./event_raw_server_state_table";
 import MatchRoundRow from "./match_round_table";
@@ -123,6 +123,7 @@ import UnstableCompetitionConnectionRow from "./unstable_competition_connection_
 import UnstableCompetitionMembersRow from "./unstable_competition_members_table";
 import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
 import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member_table";
+import UnstableRegistrationRow from "./unstable_registration_table";
 import UsersRow from "./users_table";
 
 /** Type-only namespace exports for generated type groups. */
@@ -170,13 +171,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, CompetitionAvailableServerPoolRow),
-  competition_connection_data: __table({
-    name: 'competition_connection_data',
+  connection_data: __table({
+    name: 'connection_data',
     indexes: [
     ],
     constraints: [
     ],
-  }, CompetitionConnectionDataRow),
+  }, ConnectionDataRow),
   match_round: __table({
     name: 'match_round',
     indexes: [
@@ -324,6 +325,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, UnstableCompetitionRoleMemberRow),
+  unstable_registration: __table({
+    name: 'unstable_registration',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, UnstableRegistrationRow),
   users: __table({
     name: 'users',
     indexes: [

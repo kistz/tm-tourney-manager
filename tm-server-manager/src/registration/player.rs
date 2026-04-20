@@ -2,7 +2,10 @@ use spacetimedb::{
     AnonymousViewContext, Query, ReducerContext, Table, Timestamp, Uuid, reducer, table, view,
 };
 
-use crate::{authorization::Authorization, registration::tab_registration};
+use crate::{
+    authorization::Authorization,
+    registration::{RegistrationStatus, tab_registration},
+};
 
 #[table(
     accessor=tab_registeration_player,
@@ -58,22 +61,24 @@ pub fn register_player(ctx: &ReducerContext, registration_id: u32) -> Result<(),
 
 #[reducer]
 pub fn unregister_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
-    /*  let account_id = ctx.user_id()?;
+    let account_id = ctx.user_id()?;
 
     let Some(registration) = ctx.db.tab_registration().id().find(registration_id) else {
         return Err("Tried to register for a competition that doesnt exist.".into());
-    }; */
+    };
 
-    //registration.player_registration_allowed(ctx)?;
+    if registration.status != RegistrationStatus::Ongoing {
+        return Err("Registration not active".into());
+    }
 
-    /* let Some(registred_user) = ctx
+    let Some(registred_user) = ctx
         .db
         .tab_registeration_player()
         .registration_id()
         .filter(registration_id)
         .find(|p| p.user_id == account_id)
     else {
-        return Err("User is already registered for competition!".to_string());
+        return Err("User is not registered for competition!".to_string());
     };
 
     if !ctx.db.tab_registeration_player().delete(registred_user) {
@@ -81,9 +86,9 @@ pub fn unregister_player(ctx: &ReducerContext, registration_id: u32) -> Result<(
             "Unexpected error occured deleting the user {} from {}",
             account_id, registration_id
         ));
-    }; */
+    };
 
-    todo!()
+    Ok(())
 }
 
 pub(crate) trait RegistrationRead {

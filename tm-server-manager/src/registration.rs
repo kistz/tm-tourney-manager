@@ -1,4 +1,7 @@
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{
+    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer,
+    table, view,
+};
 
 use crate::{
     authorization::Authorization,
@@ -122,7 +125,6 @@ enum RegistrationStatus {
     Configured,
     Ongoing,
     Ended,
-    // Locked,
 }
 
 impl RegistrationStatus {
@@ -289,4 +291,9 @@ impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
 
         Ok(())
     }
+}
+
+#[view(accessor=unstable_registration,public)]
+fn unstable_registration(ctx: &AnonymousViewContext) -> impl Query<Registration> {
+    ctx.from.tab_registration()
 }

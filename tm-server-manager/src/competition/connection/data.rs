@@ -92,8 +92,8 @@ pub enum ConnectionDataOption {
     Custom(Vec<u8>),
 }
 
-#[view(accessor=competition_connection_data,public)]
-pub fn competition_connection_data(
+#[view(accessor=connection_data,public)]
+pub fn connection_data(
     ctx: &ViewContext, /* ,competition_id: u32 */
 ) -> impl Query<ConnectionData> {
     let competition_id = 1u32;
