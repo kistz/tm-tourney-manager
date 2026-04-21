@@ -462,6 +462,27 @@ pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String
     Ok(())
 }
 
+#[reducer]
+pub fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), String> {
+    let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match not found!".into());
+    };
+
+    if !tm_match.status.before_preparation() {
+        return Err("Cannot do that after preparation".into());
+    }
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    tm_match.open = open;
+
+    ctx.db.tab_match().id().update(tm_match);
+
+    Ok(())
+}
+
 //TODO restore functionality.
 /* #[reducer]
 pub fn match_delete(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
