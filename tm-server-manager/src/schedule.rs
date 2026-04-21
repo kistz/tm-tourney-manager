@@ -144,7 +144,7 @@ fn schedule_create(
             id: 0,
             parent_id,
             template: false,
-            settings: ScheduleSettings::Absolute(ctx.timestamp),
+            settings: ScheduleSettings::Manual,
             status: ScheduleStatus::Configuring,
             name,
         };

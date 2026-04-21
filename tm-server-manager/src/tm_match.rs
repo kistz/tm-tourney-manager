@@ -15,7 +15,7 @@ use crate::{
     },
     raw_server::{
         TabRawServerRead, TabRawServerWrite,
-        config::RawServerContigWrite,
+        config::{RawServerContigRead, RawServerContigWrite},
         destination::TabRawServerDestinationWrite,
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
         tab_raw_server,
@@ -67,9 +67,11 @@ pub struct MatchV1 {
 
     /// The moment the server is captured by the match the pre_match_config gets loaded in.
     /// Only if it is defined. Useful for hiding project maps till the actual start.
+    #[index(hash)]
     pre_config: u32,
     /// If the match is started this config gets loaded.
     /// Has to be specified before your able to advance into Upcoming.
+    #[index(hash)]
     config: u32,
 
     status: MatchStatus,
@@ -305,10 +307,10 @@ pub fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 }
 
 #[reducer]
-pub fn match_update_pre_config(
+pub fn match_override_pre_config(
     ctx: &ReducerContext,
     id: u32,
-    config_id: u32,
+    config: ServerConfig,
 ) -> Result<(), String> {
     if let Some(mut tm_match) = ctx.db.tab_match().id().find(id)
         && tm_match.status == MatchStatus::Configuring
@@ -316,8 +318,17 @@ pub fn match_update_pre_config(
         ctx.auth_builder(tm_match.parent_id)
             .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
             .authorize()?;
-        tm_match.pre_config = config_id;
-        ctx.db.tab_match().id().update(tm_match);
+
+        let configs = ctx.raw_server_config_references(tm_match.pre_config);
+        if configs.len() == 1 {
+            ctx.raw_server_config_update(tm_match.pre_config, config)?;
+        } else {
+            let config = ctx.raw_server_config_new(config)?;
+            tm_match.pre_config = config;
+
+            ctx.db.tab_match().id().update(tm_match);
+        }
+
         Ok(())
     } else {
         Err(format!("Match {id} not found or in wrong state."))
@@ -342,11 +353,15 @@ pub fn match_override_config(
         return Err("Too late to set configuration".into());
     }
 
-    //TODO cleanup old/orphaned configs. Should i do this with a mapping table or just always instantiate the config or keep track of this in the match?
-    //TODO also check if it is empty (0) or if smth was there before.
-    let new_id = ctx.raw_server_match_config_override(tm_match.id, config)?;
-    tm_match.config = new_id;
-    ctx.db.tab_match().id().update(tm_match);
+    let configs = ctx.raw_server_config_references(tm_match.config);
+    if configs.len() == 1 {
+        ctx.raw_server_config_update(tm_match.config, config)?;
+    } else {
+        let config = ctx.raw_server_config_new(config)?;
+        tm_match.config = config;
+
+        ctx.db.tab_match().id().update(tm_match);
+    }
     Ok(())
 }
 

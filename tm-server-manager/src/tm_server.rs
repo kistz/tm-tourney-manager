@@ -11,6 +11,7 @@ use crate::{
     },
     raw_server::{
         TabRawServerWrite,
+        config::{RawServerContigRead, RawServerContigWrite},
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
         tab_raw_server,
     },
@@ -215,6 +216,11 @@ fn server_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 
     ctx.db.tab_server().id().update(tm_server);
 
+    let raw_server = ctx
+        .occupation_with_occupier(NodeHandle::ServerV1(id))
+        .unwrap();
+    ctx.emit_raw_server_config(raw_server, true)?;
+
     Ok(())
 }
 
@@ -259,11 +265,23 @@ fn server_config_override(
         //.permission(CompetitionPermissionsV1::SERVER_ASSIGN)
         .authorize()?;
 
-    /* ctx.raw_server_config_update(server_id, new_config)
+    let configs = ctx.raw_server_config_references(tm_server.config);
+    if configs.len() == 1 {
+        ctx.raw_server_config_update(tm_server.config, config)?;
+    } else {
+        let config = ctx.raw_server_config_new(config)?;
+        tm_server.config = config;
 
-    tm_server.config = config */
+        tm_server = ctx.db.tab_server().id().update(tm_server);
+    }
 
-    //TODO
+    if tm_server.status == ServerStatus::Ongoing {
+        let raw_server = ctx
+            .occupation_with_occupier(NodeHandle::ServerV1(to))
+            .unwrap();
+        ctx.emit_raw_server_config(raw_server, true)?;
+    }
+
     Ok(())
 }
 

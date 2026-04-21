@@ -2,8 +2,8 @@ use spacetimedb::{Table, table};
 use tm_server_types::config::ServerConfig;
 
 use crate::{
-    raw_server::occupation::TabRawServerOccupationRead, tm_match::tab_match__view,
-    tm_server::tab_server__view,
+    competition::node::NodeHandle, raw_server::occupation::TabRawServerOccupationRead,
+    tm_match::tab_match__view, tm_server::tab_server__view,
 };
 
 #[table(accessor=tab_raw_server_config)]
@@ -31,18 +31,46 @@ struct EventRawServerState {
     seamless: bool,
 }
 
+pub(crate) trait RawServerContigRead {
+    fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle>;
+}
+impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
+    fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle> {
+        let mut config_references = Vec::new();
+        config_references.extend(
+            self.db_read_only()
+                .tab_match()
+                .config()
+                .filter(config_id)
+                .map(|m| NodeHandle::MatchV1(m.id)),
+        );
+        config_references.extend(
+            self.db_read_only()
+                .tab_match()
+                .pre_config()
+                .filter(config_id)
+                .map(|m| NodeHandle::MatchV1(m.id)),
+        );
+        config_references.extend(
+            self.db_read_only()
+                .tab_server()
+                .config()
+                .filter(config_id)
+                .map(|m| NodeHandle::ServerV1(m.id)),
+        );
+
+        config_references
+    }
+}
+
 pub(crate) trait RawServerContigWrite {
     fn raw_server_config_update(
         &self,
-        server_id: u32,
+        config_id: u32,
         new_config: ServerConfig,
-    ) -> Result<u32, String>;
+    ) -> Result<(), String>;
 
-    fn raw_server_match_config_override(
-        &self,
-        match_id: u32,
-        new_config: ServerConfig,
-    ) -> Result<u32, String>;
+    fn raw_server_config_new(&self, new_config: ServerConfig) -> Result<u32, String>;
 
     fn emit_raw_server_config(&self, server_id: u32, seamless: bool) -> Result<(), String>;
 }
@@ -50,17 +78,21 @@ pub(crate) trait RawServerContigWrite {
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWrite for Db {
     fn raw_server_config_update(
         &self,
-        server_id: u32,
+        config_id: u32,
         new_config: ServerConfig,
-    ) -> Result<u32, String> {
-        todo!()
+    ) -> Result<(), String> {
+        self.db()
+            .tab_raw_server_config()
+            .id()
+            .update(RawServerConfig {
+                id: config_id,
+                config: new_config,
+            });
+
+        Ok(())
     }
 
-    fn raw_server_match_config_override(
-        &self,
-        match_id: u32,
-        new_config: ServerConfig,
-    ) -> Result<u32, String> {
+    fn raw_server_config_new(&self, new_config: ServerConfig) -> Result<u32, String> {
         //TODO clean up old config or smth.
 
         let id = self
