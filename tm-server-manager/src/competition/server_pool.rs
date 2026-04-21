@@ -160,8 +160,6 @@ impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
             )
         }
 
-        log::info!("{servers:?}");
-
         servers
     }
 }

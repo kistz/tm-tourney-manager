@@ -273,7 +273,7 @@ pub fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Res
         return Err("Server with id was not found!".into());
     };
 
-    if ctx
+    if !ctx
         .server_pool_available(tm_match.parent_id)
         .into_iter()
         .any(|s| s.id == server_id)

@@ -181,7 +181,7 @@ fn server_assign_raw_server(
         ctx.raw_server_occupation_remove(NodeHandle::ServerV1(server_id))?;
     }
 
-    if ctx
+    if !ctx
         .server_pool_available(tm_server.parent_id)
         .into_iter()
         .any(|s| s.id == raw_server_id)
