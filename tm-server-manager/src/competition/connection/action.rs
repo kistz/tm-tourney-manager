@@ -1,9 +1,14 @@
-use spacetimedb::{ReducerContext, SpacetimeType, table};
+use spacetimedb::{ReducerContext, SpacetimeType, reducer, table};
 
 use crate::{
-    competition::node::NodeHandle,
+    authorization::Authorization,
+    competition::{
+        CompetitionPermissionsV1,
+        connection::{ConnectionStatus, tab_connection},
+        node::NodeHandle,
+    },
     registration::RegistrationWrite,
-    tm_match::{match_try_start, tab_match},
+    tm_match::match_try_start,
 };
 
 #[table(accessor=tab_connection_action)]
@@ -56,12 +61,69 @@ impl TabConnectionAction {
     }
 }
 
+#[reducer]
+fn connection_action_update(
+    ctx: &ReducerContext,
+    connection_id: u32,
+    action: ConnectionAction,
+) -> Result<(), String> {
+    let Some(connection) = ctx.db.tab_connection().id().find(connection_id) else {
+        return Err("connection could not be found!".into());
+    };
+
+    match connection.connection_target() {
+        NodeHandle::MatchV1(_) => {
+            if !action.is_match() {
+                return Err("Wrong action".into());
+            }
+        }
+        NodeHandle::RegistrationV1(_) => {
+            if !action.is_registration() {
+                return Err("Wrong action".into());
+            }
+        }
+        _ => return Err("Invalid target for action".into()),
+    }
+
+    if connection.status != ConnectionStatus::Configuring {
+        return Err("Wrong status to chnge config".into());
+    }
+
+    ctx.auth_builder(connection.parent_id)
+        .permission(CompetitionPermissionsV1::COMPETITION_CONNECTION_EDIT)
+        .authorize()?;
+
+    let Some(mut data) = ctx
+        .db
+        .tab_connection_action()
+        .connection_id()
+        .find(connection_id)
+    else {
+        return Err("Connection action could not be found.".into());
+    };
+
+    data.action = action;
+
+    ctx.db.tab_connection_action().connection_id().update(data);
+
+    Ok(())
+}
+
 // Versioning works be e.g.:
 // MatchV1A2(ConnectionActionMatchV2)
 #[derive(Debug, SpacetimeType)]
 enum ConnectionAction {
     MatchV1(ConnectionActionMatch),
     RegistrationV1(ConnectionActionRegistration),
+}
+
+impl ConnectionAction {
+    fn is_match(&self) -> bool {
+        matches!(self, ConnectionAction::MatchV1(_))
+    }
+    fn is_registration(&self) -> bool {
+        matches!(self, ConnectionAction::RegistrationV1(_))
+    }
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]

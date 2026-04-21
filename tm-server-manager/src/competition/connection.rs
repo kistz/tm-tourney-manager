@@ -71,7 +71,11 @@ impl TabConnection {
     }
 
     pub(crate) fn resolve(&mut self) {
-        self.status = ConnectionStatus::Resolved
+        if self.status == ConnectionStatus::Configured {
+            self.status = ConnectionStatus::Resolved
+        } else {
+            log::info!("Connection was not in configured state but was requested to be resolved.")
+        }
     }
 
     pub(crate) fn is_resolved(&self) -> bool {
@@ -121,7 +125,7 @@ impl ConnectionKind {
 
 /// Since we need to check either way if the two thing have the same parent we can omit specifing the competition manually.
 #[reducer]
-pub fn connection_create(
+fn connection_create(
     ctx: &ReducerContext,
     origin: NodeHandle,
     target: NodeHandle,
@@ -255,6 +259,27 @@ pub fn connection_create(
     Ok(())
 }
 
+#[reducer]
+fn connection_configured(ctx: &ReducerContext, connection_id: u32) -> Result<(), String> {
+    let Some(mut connection) = ctx.db.tab_connection().id().find(connection_id) else {
+        return Err("Connection not found.".into());
+    };
+
+    ctx.auth_builder(connection.parent_id)
+        .permission(CompetitionPermissionsV1::COMPETITION_CONNECTION_EDIT)
+        .authorize()?;
+
+    if connection.status != ConnectionStatus::Configuring {
+        return Err("Wrong status to configure".into());
+    }
+
+    connection.status = ConnectionStatus::Configured;
+
+    ctx.db.tab_connection().id().update(connection);
+
+    Ok(())
+}
+
 #[derive(Debug, SpacetimeType)]
 pub struct CompetitionConnection {
     id: u32,
@@ -342,7 +367,7 @@ pub(crate) fn internal_graph_resolution_node_finished(
             try_exec_action(affected_connection.id, affected_connection.target, ctx);
 
             // Action connections dont influence anything else.
-            continue;   
+            continue;
         }
 
         let pending_connections = ctx

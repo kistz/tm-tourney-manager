@@ -2,8 +2,10 @@ use spacetimedb::{Query, ReducerContext, SpacetimeType, ViewContext, reducer, ta
 
 use crate::{
     authorization::Authorization,
-    competition::{CompetitionPermissionsV1, connection::tab_connection},
-    raw_server::player::PermittedPlayer,
+    competition::{
+        CompetitionPermissionsV1,
+        connection::{ConnectionStatus, tab_connection},
+    },
     registration::player::RegisterationPlayer,
     tm_match::leaderboard::MatchRoundPlayer,
 };
@@ -111,6 +113,11 @@ fn competition_connection_data_update(
     let Some(connection) = ctx.db.tab_connection().id().find(connection_id) else {
         return Err("connection could not be found!".into());
     };
+
+    if connection.status != ConnectionStatus::Configuring {
+        return Err("Wrong status to chnge config".into());
+    }
+
     ctx.auth_builder(connection.parent_id)
         .permission(CompetitionPermissionsV1::COMPETITION_CONNECTION_EDIT)
         .authorize()?;
@@ -121,7 +128,7 @@ fn competition_connection_data_update(
         .connection_id()
         .find(connection_id)
     else {
-        return Err("Connection could not be found.".into());
+        return Err("Connection data could not be found.".into());
     };
 
     data.options = option;
