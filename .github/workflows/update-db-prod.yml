@@ -50,7 +50,7 @@ jobs:
           rustc --version
           cargo --version
           rustup target add wasm32-unknown-unknown
-          cargo build -p tm-server-manager --features="production" --release
+          cargo build --release -p tm-server-manager --features=production
 
       - name: Publish database
         run: |
