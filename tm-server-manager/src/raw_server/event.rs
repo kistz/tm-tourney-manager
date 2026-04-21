@@ -18,6 +18,7 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
 
     match &event {
         Event::PlayerConnect(player) => {
+            log::info!("Player connected: {}", player.account_id);
             let account_id = Uuid::parse_str(&player.account_id).unwrap();
             if !ctx.has_user(account_id) {
                 let user = UserV1::new(account_id);
