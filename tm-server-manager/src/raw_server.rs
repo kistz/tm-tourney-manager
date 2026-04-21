@@ -25,6 +25,7 @@ pub mod occupation;
 pub mod player;
 pub mod replay;
 
+#[derive(Debug)]
 #[spacetimedb::table(accessor=tab_raw_server)]
 pub struct RawServerV1 {
     #[unique]
@@ -70,6 +71,10 @@ impl RawServerV1 {
 
     pub fn is_verified(&self) -> bool {
         self.verified
+    }
+
+    pub fn is_online(&self) -> bool {
+        self.online
     }
 }
 

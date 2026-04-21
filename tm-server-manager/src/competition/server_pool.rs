@@ -148,7 +148,7 @@ impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
                             .id()
                             .find(s.server_id)
                             .unwrap();
-                        if !server.is_verified() {
+                        if !server.is_verified() || !server.is_online() {
                             None
                         } else {
                             if self.raw_server_is_occupied(server.id) {
@@ -159,6 +159,8 @@ impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
                     }),
             )
         }
+
+        log::info!("{servers:?}");
 
         servers
     }
