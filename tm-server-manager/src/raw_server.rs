@@ -13,6 +13,7 @@ use crate::authorization::Authorization;
 use crate::competition::node::{NodeHandle, NodeRead};
 use crate::competition::server_pool::TabCompetitionServerPoolRead;
 use crate::raw_server::occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite};
+use crate::raw_server::player::tab_raw_server_player;
 use crate::tm_match::state::tab_match_state;
 use crate::tm_match::{MatchWrite, tab_match};
 use crate::user::UserRead;
@@ -305,6 +306,11 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
 
         log::info!("Server {} went offline", server.server_login);
         self.db().tab_raw_server().id().update(server);
+
+        self.db()
+            .tab_raw_server_player()
+            .server_id()
+            .delete(server_id);
 
         if let Some(occupation) = self.raw_server_occupation(server_id)
             && occupation.is_match()
