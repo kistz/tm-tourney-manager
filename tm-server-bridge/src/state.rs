@@ -112,35 +112,37 @@ pub async fn setup_state_synchronization() {
     });
 
     server.on_start_server_start(async |event: &StartServer| {
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
+        if let Some(lock) = SERVER_METADATA.get() {
+            let config = unsafe {
+                std::mem::transmute::<
+                    tm_server_manager_api_rs::ServerConfig,
+                    tm_server_controller::config::ServerConfig,
+                >(lock.lock().await.config.clone())
+            };
 
-        let server = TRACKMANIA.wait();
+            let server = TRACKMANIA.wait();
 
-        if event.mode.updated {
-            //We need to load the settings again because we changed the script.
-            if let Err(error) = server.set_mode_script_settings(config).await {
-                tracing::error!("{error}")
-            };
-            if let Err(err) = server.restart_map().await {
-                tracing::error!("Cannot restart!. Reason: {err}");
-            };
-            tracing::info!("Mode Script was updated");
-        } else {
-            tracing::info!("Mode Script stayed the same");
-            if let Err(err) = server.next_map().await {
-                tracing::error!("Cannot go to next map!. Reason: {err}");
-            };
+            if event.mode.updated {
+                //We need to load the settings again because we changed the script.
+                if let Err(error) = server.set_mode_script_settings(config).await {
+                    tracing::error!("{error}")
+                };
+                if let Err(err) = server.restart_map().await {
+                    tracing::error!("Cannot restart!. Reason: {err}");
+                };
+                tracing::info!("Mode Script was updated");
+            } else {
+                tracing::info!("Mode Script stayed the same");
+                if let Err(err) = server.next_map().await {
+                    tracing::error!("Cannot go to next map!. Reason: {err}");
+                };
+            }
+
+            let _: i32 = server
+                .call("SaveMatchSettings", format!("{}.txt", event.time))
+                .await
+                .unwrap();
         }
-
-        let _: i32 = server
-            .call("SaveMatchSettings", format!("{}.txt", event.time))
-            .await
-            .unwrap();
     });
 
     /* server.on_begin_match(async |_: &Unit| {
@@ -166,19 +168,21 @@ pub async fn setup_state_synchronization() {
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
 
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
+        if let Some(lock) = SERVER_METADATA.get() {
+            let config = unsafe {
+                std::mem::transmute::<
+                    tm_server_manager_api_rs::ServerConfig,
+                    tm_server_controller::config::ServerConfig,
+                >(lock.lock().await.config.clone())
+            };
 
-        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
+            if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+                tracing::error!("{error}")
+            };
 
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+            let _: Result<(), tm_server_controller::ClientError> =
+                TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+        }
     });
 
     server.on_start_map_end(async |_: &StartMap| {
@@ -187,19 +191,21 @@ pub async fn setup_state_synchronization() {
         let _: Result<(), tm_server_controller::ClientError> =
             TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
 
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
+        if let Some(lock) = SERVER_METADATA.get() {
+            let config = unsafe {
+                std::mem::transmute::<
+                    tm_server_manager_api_rs::ServerConfig,
+                    tm_server_controller::config::ServerConfig,
+                >(lock.lock().await.config.clone())
+            };
 
-        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
+            if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+                tracing::error!("{error}")
+            };
 
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+            let _: Result<(), tm_server_controller::ClientError> =
+                TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+        }
     });
 }
 
