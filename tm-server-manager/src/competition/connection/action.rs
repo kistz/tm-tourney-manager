@@ -2,6 +2,7 @@ use spacetimedb::{ReducerContext, SpacetimeType, table};
 
 use crate::{
     competition::node::NodeHandle,
+    registration::RegistrationWrite,
     tm_match::{match_try_start, tab_match},
 };
 
@@ -104,8 +105,24 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
         NodeHandle::RegistrationV1(r) => {
             let registration_action = action.get_registration();
             match registration_action {
-                ConnectionActionRegistration::Open => todo!(),
-                ConnectionActionRegistration::Close => todo!(),
+                ConnectionActionRegistration::Open => {
+                    if let Err(err) = ctx.registration_open(r) {
+                        log::error!(
+                            "Explicit Flow: registration_open action failed through connection {} Error: {}",
+                            connection,
+                            err
+                        );
+                    }
+                }
+                ConnectionActionRegistration::Close => {
+                    if let Err(err) = ctx.registration_close(r) {
+                        log::error!(
+                            "Explicit Flow: registration_close action failed through connection {} Error: {}",
+                            connection,
+                            err
+                        );
+                    }
+                }
             }
         }
         NodeHandle::InputV1(_) => unreachable!(),

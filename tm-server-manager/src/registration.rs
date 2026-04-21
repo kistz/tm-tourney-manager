@@ -229,7 +229,7 @@ fn registration_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> 
 
 #[reducer]
 fn registration_start(ctx: &ReducerContext, id: u32) -> Result<(), String> {
-    let Some(mut registration) = ctx.db.tab_registration().id().find(id) else {
+    let Some(registration) = ctx.db.tab_registration().id().find(id) else {
         return Err("Registration not found.".into());
     };
 
@@ -237,19 +237,7 @@ fn registration_start(ctx: &ReducerContext, id: u32) -> Result<(), String> {
         .permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
         .authorize()?;
 
-    if registration.is_template() {
-        return Err("Cannot be called on templates".into());
-    }
-
-    if registration.status != RegistrationStatus::Configured {
-        return Err("Is not in configured state.".into());
-    }
-
-    registration.status = RegistrationStatus::Ongoing;
-
-    ctx.db.tab_registration().id().update(registration);
-
-    Ok(())
+    ctx.registration_open(id)
 }
 
 #[reducer]
@@ -262,32 +250,62 @@ fn registration_end(ctx: &ReducerContext, id: u32) -> Result<(), String> {
         .permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
         .authorize()?;
 
-    if registration.is_template() {
-        return Err("Cannot be called on templates".into());
-    }
-
-    if registration.status != RegistrationStatus::Ongoing {
-        return Err("Is not in ongoing state.".into());
-    }
-
-    registration.status = RegistrationStatus::Ended;
-
-    ctx.db.tab_registration().id().update(registration);
-
-    Ok(())
+    ctx.registration_close(id)
 }
 
 pub(crate) trait RegistrationWrite {
-    fn registration_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
+    fn registration_name_edit(&self, registration_id: u32, name: String) -> Result<(), String>;
+    fn registration_open(&self, registration_id: u32) -> Result<(), String>;
+    fn registration_close(&self, registration_id: u32) -> Result<(), String>;
 }
 
 impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
-    fn registration_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
-        let Some(mut tm_match) = self.db().tab_registration().id().find(match_id) else {
+    fn registration_name_edit(&self, registration_id: u32, name: String) -> Result<(), String> {
+        let Some(mut registration) = self.db().tab_registration().id().find(registration_id) else {
             return Err("Match not found.".into());
         };
-        tm_match.name = name;
-        self.db().tab_registration().id().update(tm_match);
+        registration.name = name;
+        self.db().tab_registration().id().update(registration);
+
+        Ok(())
+    }
+
+    fn registration_open(&self, registration_id: u32) -> Result<(), String> {
+        let Some(mut registration) = self.db().tab_registration().id().find(registration_id) else {
+            return Err("Registration not found.".into());
+        };
+
+        if registration.is_template() {
+            return Err("Cannot be called on templates".into());
+        }
+
+        if registration.status != RegistrationStatus::Ongoing {
+            return Err("Is not in ongoing state.".into());
+        }
+
+        registration.status = RegistrationStatus::Ended;
+
+        self.db().tab_registration().id().update(registration);
+
+        Ok(())
+    }
+
+    fn registration_close(&self, registration_id: u32) -> Result<(), String> {
+        let Some(mut registration) = self.db().tab_registration().id().find(registration_id) else {
+            return Err("Registration not found.".into());
+        };
+
+        if registration.is_template() {
+            return Err("Cannot be called on templates".into());
+        }
+
+        if registration.status != RegistrationStatus::Ongoing {
+            return Err("Is not in ongoing state.".into());
+        }
+
+        registration.status = RegistrationStatus::Ended;
+
+        self.db().tab_registration().id().update(registration);
 
         Ok(())
     }

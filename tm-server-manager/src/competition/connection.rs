@@ -342,7 +342,7 @@ pub(crate) fn internal_graph_resolution_node_finished(
             try_exec_action(affected_connection.id, affected_connection.target, ctx);
 
             // Action connections dont influence anything else.
-            continue;
+            continue;   
         }
 
         let pending_connections = ctx
