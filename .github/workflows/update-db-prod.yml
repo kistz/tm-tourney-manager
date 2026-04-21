@@ -56,4 +56,4 @@ jobs:
         run: |
           set -euo pipefail
           echo "Publishing '$DATABASE_NAME' to maincloud..."
-          spacetime publish -s maincloud -b ../target/wasm32-unknown-unknown/release/tm_server_manager.wasm "$DATABASE_NAME" -y
+          spacetime publish -s maincloud -b ./target/wasm32-unknown-unknown/release/tm_server_manager.wasm "$DATABASE_NAME" -y
