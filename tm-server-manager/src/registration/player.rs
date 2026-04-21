@@ -20,7 +20,7 @@ pub struct RegisterationPlayer {
 }
 
 #[view(accessor=temp_registration_player,public)]
-pub fn temp_registration_player(
+fn temp_registration_player(
     ctx: &AnonymousViewContext, /* ,registration_id: u32 */
 ) -> Vec<RegisterationPlayer> {
     let registration_id = 2u32;
@@ -28,7 +28,7 @@ pub fn temp_registration_player(
 }
 
 #[reducer]
-pub fn register_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
+fn register_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
     let user_id = ctx.user_id()?;
 
     let Some(registration) = ctx.db.tab_registration().id().find(registration_id) else {
@@ -60,7 +60,7 @@ pub fn register_player(ctx: &ReducerContext, registration_id: u32) -> Result<(),
 }
 
 #[reducer]
-pub fn unregister_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
+fn unregister_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
     let account_id = ctx.user_id()?;
 
     let Some(registration) = ctx.db.tab_registration().id().find(registration_id) else {

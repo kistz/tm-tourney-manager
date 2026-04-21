@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use spacetimedb_sdk::{Table, Uuid};
 use tm_server_controller::{
-    Unit,
     callbacks::TypedCallbacks,
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
 };
@@ -16,7 +15,7 @@ use tm_server_types::{
 };
 use tokio::time::sleep;
 
-use crate::{/* EVENT_CACHE */ SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.wait();
@@ -26,21 +25,15 @@ pub async fn setup_state_synchronization() {
     // Sync all events to spacetimedb.
     server.on_event(|event| {
         let spacetime = SPACETIME.read();
-        //EVENT_CACHE.lock().unwrap().push_back(event.clone());
         if spacetime
             .reducers
-            .post_event_then(
+            .post_event(
                 //SAFETY: Its the same type. Sadly Rust can not know that :< .
                 unsafe {
                     std::mem::transmute::<
                         tm_server_controller::event::Event,
                         tm_server_manager_api_rs::Event,
                     >(event.clone())
-                },
-                |e, _| {
-                    tracing::debug!("Reducer finished: {:?}", e.event.reducer);
-                    //TODO verify that it is always ordered.
-                    //EVENT_CACHE.lock().unwrap().pop_front();
                 },
             )
             .is_err()
@@ -150,7 +143,7 @@ pub async fn setup_state_synchronization() {
             .unwrap();
     });
 
-    server.on_begin_match(async |_: &Unit| {
+    /* server.on_begin_match(async |_: &Unit| {
         let config = unsafe {
             std::mem::transmute::<
                 tm_server_manager_api_rs::ServerConfig,
@@ -165,55 +158,49 @@ pub async fn setup_state_synchronization() {
                 tracing::error!("{error}")
             };
         });
-    });
-
-    server.on_start_map_start(async |map: &StartMap| {
-        /* if !map.restarted {
-            return;
-        } */
-        //tracing::info!("The start map ended and we have restarted. Applying config again.");
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
-
-        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-    });
-
-    /* server.on_start_map_end(async |map: &StartMap| {
-        if !map.restarted {
-            return;
-        }
-        tracing::info!("The start map ended and we have not restarted. Applying config again.");
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
-
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
-
-        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
-            tracing::error!("{error}")
-        };
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
     }); */
+
+    server.on_start_map_start(async |_: &StartMap| {
+        tracing::info!("Reapplying config on StartMapStart.");
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(SERVER_METADATA.wait().lock().await.config.clone())
+        };
+
+        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+            tracing::error!("{error}")
+        };
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+    });
+
+    server.on_start_map_end(async |_: &StartMap| {
+        tracing::info!("Reapplying config on StartMapEnd.");
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(SERVER_METADATA.wait().lock().await.config.clone())
+        };
+
+        if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
+            tracing::error!("{error}")
+        };
+
+        let _: Result<(), tm_server_controller::ClientError> =
+            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
+    });
 }
 
 /// Synchronizes all the state already present on the server with spacetime db.

@@ -102,7 +102,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
     pub(crate) fn authorize(self) -> Result<u32, String> {
         let user_id = self.ctx.get_user_id(self.ctx.sender())?;
 
-        let tree = self.ctx.competition_tree(self.competition_id);
+        let tree = self.ctx.competition_ancestors(self.competition_id);
         let mut permissions = Vec::new();
         for competition_id in tree {
             permissions.push(
@@ -165,7 +165,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
     pub(crate) fn authorize(self) -> Result<u32, String> {
         let user_id = self.ctx.get_user_id(self.ctx.sender())?;
 
-        let tree = self.ctx.competition_tree(self.competition_id);
+        let tree = self.ctx.competition_ancestors(self.competition_id);
         let mut permissions = Vec::new();
         for competition_id in tree {
             permissions.push(

@@ -200,11 +200,12 @@ fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
 }
 
 pub(crate) trait CompetitionRead {
-    fn competition_tree(&self, competition_id: u32) -> Vec<u32>;
+    fn competition_ancestors(&self, competition_id: u32) -> Vec<u32>;
     fn competition_descendants(&self, competition_id: u32) -> Vec<CompetitionV1>;
+    fn competition_tree_complete(&self, competition_id: u32) -> Vec<u32>;
 }
 impl<Db: DbContext> CompetitionRead for Db {
-    fn competition_tree(&self, competition_id: u32) -> Vec<u32> {
+    fn competition_ancestors(&self, competition_id: u32) -> Vec<u32> {
         let Some(competition) = self
             .db_read_only()
             .tab_competition()
@@ -213,19 +214,21 @@ impl<Db: DbContext> CompetitionRead for Db {
         else {
             return Vec::new();
         };
-        let mut tree = vec![competition_id];
+        let mut ancestors = vec![competition_id];
 
         let mut parent_id = competition.parent_id;
         while parent_id != 0 {
             if let Some(new_parent) = self.db_read_only().tab_competition().id().find(parent_id) {
                 parent_id = new_parent.parent_id;
-                tree.push(new_parent.id);
+                ancestors.push(new_parent.id);
                 continue;
             }
             parent_id = 0;
         }
 
-        tree
+        log::warn!("Comp ancestors of {}: {:?}", competition_id, ancestors);
+
+        ancestors
     }
 
     fn competition_descendants(&self, competition_id: u32) -> Vec<CompetitionV1> {
@@ -245,7 +248,19 @@ impl<Db: DbContext> CompetitionRead for Db {
             }
         }
 
+        log::warn!("Comp descendants of {}: {:?}", competition_id, descendants);
+
         descendants
+    }
+
+    /// Walks back up to the root of the competition.
+    /// Then gathers all children competitions of the root.
+    fn competition_tree_complete(&self, competition_id: u32) -> Vec<u32> {
+        let root = *self.competition_ancestors(competition_id).last().unwrap();
+        self.competition_descendants(root)
+            .into_iter()
+            .map(|comp| comp.id)
+            .collect()
     }
 }
 

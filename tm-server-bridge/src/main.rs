@@ -1,8 +1,4 @@
-use std::{
-    collections::VecDeque,
-    process::exit,
-    sync::{LazyLock, Mutex as StdMutex, OnceLock},
-};
+use std::{process::exit, sync::OnceLock};
 
 use nadeo_api::NadeoClient;
 
@@ -13,7 +9,6 @@ use tm_server_controller::{
 
 use crate::connection::MyDbConnection;
 use tm_server_manager_api_rs::EventRawServerState;
-use tm_server_types::event::Event;
 use tokio::{signal, sync::Mutex};
 
 mod chat;

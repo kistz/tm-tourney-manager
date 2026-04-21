@@ -132,7 +132,7 @@ pub(crate) trait TabCompetitionServerPoolRead {
 
 impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1> {
-        let tree = self.competition_tree(competition_id);
+        let tree = self.competition_ancestors(competition_id);
 
         let mut servers = Vec::new();
         for competition in tree {

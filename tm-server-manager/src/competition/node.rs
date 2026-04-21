@@ -154,7 +154,7 @@ impl<Db: DbContext> NodeRead for Db {
 
         let parent = self.node_get_parent(node).unwrap();
 
-        let tree = self.competition_tree(parent);
+        let tree = self.competition_ancestors(parent);
         for comp in tree {
             map.extend(
                 self.db_read_only()

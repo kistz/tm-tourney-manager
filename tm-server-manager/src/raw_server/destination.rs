@@ -11,20 +11,21 @@ use crate::{
 };
 
 #[table(accessor=tab_player_destination,
-    index(accessor=competition_player, hash(columns=[competition_id,user_id]))
+    index(accessor=competition_player, hash(columns=[competition_id,user_id])),
+    index(accessor=claiming_node, hash(columns=[node_variant,node_id]))
 )]
 struct TabPlayerDestination {
     #[index(hash)]
     pub competition_id: u32,
-
-    #[index(hash)]
-    pub match_id: u32,
 
     // Destination for the player
     #[index(hash)]
     pub destination_server_id: u32,
 
     pub user_id: u32,
+
+    node_id: u32,
+    node_variant: u8,
 }
 
 #[derive(Debug, SpacetimeType)]
@@ -47,7 +48,7 @@ fn raw_server_player_destination(ctx: &ViewContext) -> Vec<PlayerDestination> {
         return Vec::new();
     };
 
-    let tree = ctx.competition_tree(competition_id);
+    let tree = ctx.competition_tree_complete(competition_id);
 
     let mut destinations = Vec::new();
     for competition_id in tree {
@@ -103,7 +104,8 @@ impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
             self.db()
                 .tab_player_destination()
                 .try_insert(TabPlayerDestination {
-                    match_id: node.id(),
+                    node_variant: node.split().0,
+                    node_id: node.id(),
                     competition_id,
                     destination_server_id: server_id,
                     //PERF: This is a back and forth with other views i think and could be done cleaner.
@@ -118,8 +120,8 @@ impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
     fn destination_free(&self, node: NodeHandle) {
         self.db()
             .tab_player_destination()
-            .match_id()
-            .delete(node.id());
+            .claiming_node()
+            .delete(node.split());
     }
 }
 
