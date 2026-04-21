@@ -1,4 +1,4 @@
-use spacetimedb::{Table, Uuid, table};
+use spacetimedb::{DbContext, ProcedureContext, Table, Uuid, procedure, table};
 
 #[table(accessor= tab_match_round_replay,index(accessor=match_round,hash(columns=[match_id,round])))]
 struct MatchRoundReplay {
@@ -129,4 +129,24 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchReplayWrite f
 
         Ok(())
     }
+}
+
+#[procedure]
+fn match_round_replay(
+    ctx: &mut ProcedureContext,
+    match_id: u32,
+    round: u16,
+) -> Result<Vec<u8>, String> {
+    ctx.try_with_tx(|ctx| {
+        let Some(replay) = ctx
+            .db_read_only()
+            .tab_match_round_replay()
+            .match_round()
+            .filter((match_id, round))
+            .next()
+        else {
+            return Err("Round of Match could not be found.".into());
+        };
+        Ok(replay.replay)
+    })
 }

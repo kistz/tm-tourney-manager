@@ -34,6 +34,10 @@ impl MatchState {
         self.is_warmup = active;
     }
 
+    pub(crate) fn is_live(&self) -> bool {
+        matches!(self.status, MatchStatus::Live)
+    }
+
     pub(crate) fn set_map(&mut self, id: u32) {
         self.map_id = id;
     }

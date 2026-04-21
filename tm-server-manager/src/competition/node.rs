@@ -4,11 +4,12 @@ use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer
 
 use crate::{
     competition::{
-        CompetitionRead, CompetitionWrite,
+        CompetitionPermissionsV1, CompetitionRead, CompetitionWrite,
         connection::{
             ConnectionRead, action::tab_connection_action, data::tab_connection_data,
             tab_connection, tab_connection__view,
         },
+        roles::tab_competition_member__view,
         tab_competition, tab_competition__view,
     },
     raw_server::player::PermittedPlayer,
@@ -16,6 +17,7 @@ use crate::{
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
     tm_match::{MatchWrite, authorized_match_set_preparation, tab_match, tab_match__view},
     tm_server::ServerWrite,
+    user::UserRead,
 };
 mod position;
 
@@ -153,7 +155,26 @@ impl<Db: DbContext> NodeRead for Db {
         let parent = self.node_get_parent(node).unwrap();
 
         let tree = self.competition_tree(parent);
-        // TODO get permitted
+        for comp in tree {
+            map.extend(
+                self.db_read_only()
+                    .tab_competition_member()
+                    .competition_id()
+                    .filter(comp)
+                    .filter_map(|m| {
+                        if m.get_permissions()
+                            .has(CompetitionPermissionsV1::TRACKMANIA_SPECTATE_MATCHES)
+                        {
+                            let account_id = self.user_account_from_id(m.user());
+                            return Some((
+                                account_id,
+                                PermittedPlayer::new(account_id, false, true),
+                            ));
+                        }
+                        None
+                    }),
+            )
+        }
 
         let depending_connections = self
             .db_read_only()

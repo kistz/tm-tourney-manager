@@ -65,6 +65,10 @@ impl CompetitionMember {
     pub(crate) fn get_permissions(&self) -> CompetitionPermissionsV1 {
         CompetitionPermissionsV1(self.permissions)
     }
+
+    pub(crate) fn user(&self) -> u32 {
+        self.user_id
+    }
 }
 
 #[reducer]

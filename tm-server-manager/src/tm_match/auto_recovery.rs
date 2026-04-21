@@ -1,7 +1,6 @@
 use spacetimedb::{ReducerContext, ScheduleAt, Table, TimeDuration, Timestamp, reducer, table};
 
 use crate::{
-    raw_server::occupation::TabRawServerOccupationRead,
     tm_match::{MatchWrite, tab_match},
 };
 
