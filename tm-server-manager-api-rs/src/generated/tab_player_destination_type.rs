@@ -8,9 +8,10 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub struct TabPlayerDestination {
     pub competition_id: u32,
-    pub match_id: u32,
     pub destination_server_id: u32,
     pub user_id: u32,
+    pub node_id: u32,
+    pub node_variant: u8,
 }
 
 impl __sdk::InModule for TabPlayerDestination {
@@ -22,9 +23,10 @@ impl __sdk::InModule for TabPlayerDestination {
 /// Provides typed access to columns for query building.
 pub struct TabPlayerDestinationCols {
     pub competition_id: __sdk::__query_builder::Col<TabPlayerDestination, u32>,
-    pub match_id: __sdk::__query_builder::Col<TabPlayerDestination, u32>,
     pub destination_server_id: __sdk::__query_builder::Col<TabPlayerDestination, u32>,
     pub user_id: __sdk::__query_builder::Col<TabPlayerDestination, u32>,
+    pub node_id: __sdk::__query_builder::Col<TabPlayerDestination, u32>,
+    pub node_variant: __sdk::__query_builder::Col<TabPlayerDestination, u8>,
 }
 
 impl __sdk::__query_builder::HasCols for TabPlayerDestination {
@@ -32,12 +34,13 @@ impl __sdk::__query_builder::HasCols for TabPlayerDestination {
     fn cols(table_name: &'static str) -> Self::Cols {
         TabPlayerDestinationCols {
             competition_id: __sdk::__query_builder::Col::new(table_name, "competition_id"),
-            match_id: __sdk::__query_builder::Col::new(table_name, "match_id"),
             destination_server_id: __sdk::__query_builder::Col::new(
                 table_name,
                 "destination_server_id",
             ),
             user_id: __sdk::__query_builder::Col::new(table_name, "user_id"),
+            node_id: __sdk::__query_builder::Col::new(table_name, "node_id"),
+            node_variant: __sdk::__query_builder::Col::new(table_name, "node_variant"),
         }
     }
 }
@@ -48,7 +51,6 @@ impl __sdk::__query_builder::HasCols for TabPlayerDestination {
 pub struct TabPlayerDestinationIxCols {
     pub competition_id: __sdk::__query_builder::IxCol<TabPlayerDestination, u32>,
     pub destination_server_id: __sdk::__query_builder::IxCol<TabPlayerDestination, u32>,
-    pub match_id: __sdk::__query_builder::IxCol<TabPlayerDestination, u32>,
 }
 
 impl __sdk::__query_builder::HasIxCols for TabPlayerDestination {
@@ -60,7 +62,6 @@ impl __sdk::__query_builder::HasIxCols for TabPlayerDestination {
                 table_name,
                 "destination_server_id",
             ),
-            match_id: __sdk::__query_builder::IxCol::new(table_name, "match_id"),
         }
     }
 }

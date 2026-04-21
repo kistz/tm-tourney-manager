@@ -63,16 +63,20 @@ impl __sdk::__query_builder::HasCols for MatchV1 {
 ///
 /// Provides typed access to indexed columns for query building.
 pub struct MatchV1IxCols {
+    pub config: __sdk::__query_builder::IxCol<MatchV1, u32>,
     pub id: __sdk::__query_builder::IxCol<MatchV1, u32>,
     pub parent_id: __sdk::__query_builder::IxCol<MatchV1, u32>,
+    pub pre_config: __sdk::__query_builder::IxCol<MatchV1, u32>,
 }
 
 impl __sdk::__query_builder::HasIxCols for MatchV1 {
     type IxCols = MatchV1IxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         MatchV1IxCols {
+            config: __sdk::__query_builder::IxCol::new(table_name, "config"),
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
             parent_id: __sdk::__query_builder::IxCol::new(table_name, "parent_id"),
+            pre_config: __sdk::__query_builder::IxCol::new(table_name, "pre_config"),
         }
     }
 }

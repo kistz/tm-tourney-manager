@@ -69,9 +69,11 @@ pub mod match_configured_reducer;
 pub mod match_create_reducer;
 pub mod match_event_type;
 pub mod match_override_config_reducer;
+pub mod match_override_pre_config_reducer;
 pub mod match_round_ext_table;
 pub mod match_round_player_ext_type;
 pub mod match_round_player_type;
+pub mod match_round_replay_procedure;
 pub mod match_round_replay_time_type;
 pub mod match_round_replay_type;
 pub mod match_round_table;
@@ -82,7 +84,6 @@ pub mod match_state_type;
 pub mod match_status_type;
 pub mod match_template_create_reducer;
 pub mod match_try_start_reducer;
-pub mod match_update_pre_config_reducer;
 pub mod match_v_1_type;
 pub mod member_add_reducer;
 pub mod member_assign_permission_reducer;
@@ -285,9 +286,11 @@ pub use match_configured_reducer::match_configured;
 pub use match_create_reducer::match_create;
 pub use match_event_type::MatchEvent;
 pub use match_override_config_reducer::match_override_config;
+pub use match_override_pre_config_reducer::match_override_pre_config;
 pub use match_round_ext_table::*;
 pub use match_round_player_ext_type::MatchRoundPlayerExt;
 pub use match_round_player_type::MatchRoundPlayer;
+pub use match_round_replay_procedure::match_round_replay;
 pub use match_round_replay_time_type::MatchRoundReplayTime;
 pub use match_round_replay_type::MatchRoundReplay;
 pub use match_round_table::*;
@@ -298,7 +301,6 @@ pub use match_state_type::MatchState;
 pub use match_status_type::MatchStatus;
 pub use match_template_create_reducer::match_template_create;
 pub use match_try_start_reducer::match_try_start;
-pub use match_update_pre_config_reducer::match_update_pre_config;
 pub use match_v_1_type::MatchV1;
 pub use member_add_reducer::member_add;
 pub use member_assign_permission_reducer::member_assign_permission;
@@ -504,6 +506,10 @@ pub enum Reducer {
         id: u32,
         config: ServerConfig,
     },
+    MatchOverridePreConfig {
+        id: u32,
+        config: ServerConfig,
+    },
     MatchSetPreparation {
         match_id: u32,
     },
@@ -513,10 +519,6 @@ pub enum Reducer {
     },
     MatchTryStart {
         match_id: u32,
-    },
-    MatchUpdatePreConfig {
-        id: u32,
-        config_id: u32,
     },
     MemberAdd {
         competition_id: u32,
@@ -690,10 +692,10 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchConfigured { .. } => "match_configured",
             Reducer::MatchCreate { .. } => "match_create",
             Reducer::MatchOverrideConfig { .. } => "match_override_config",
+            Reducer::MatchOverridePreConfig { .. } => "match_override_pre_config",
             Reducer::MatchSetPreparation { .. } => "match_set_preparation",
             Reducer::MatchTemplateCreate { .. } => "match_template_create",
             Reducer::MatchTryStart { .. } => "match_try_start",
-            Reducer::MatchUpdatePreConfig { .. } => "match_update_pre_config",
             Reducer::MemberAdd { .. } => "member_add",
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
             Reducer::MemberRemove { .. } => "member_remove",
@@ -844,6 +846,12 @@ impl __sdk::Reducer for Reducer {
                     config: config.clone(),
                 })
             }
+            Reducer::MatchOverridePreConfig { id, config } => __sats::bsatn::to_vec(
+                &match_override_pre_config_reducer::MatchOverridePreConfigArgs {
+                    id: id.clone(),
+                    config: config.clone(),
+                },
+            ),
             Reducer::MatchSetPreparation { match_id } => {
                 __sats::bsatn::to_vec(&match_set_preparation_reducer::MatchSetPreparationArgs {
                     match_id: match_id.clone(),
@@ -858,12 +866,6 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchTryStart { match_id } => {
                 __sats::bsatn::to_vec(&match_try_start_reducer::MatchTryStartArgs {
                     match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchUpdatePreConfig { id, config_id } => {
-                __sats::bsatn::to_vec(&match_update_pre_config_reducer::MatchUpdatePreConfigArgs {
-                    id: id.clone(),
-                    config_id: config_id.clone(),
                 })
             }
             Reducer::MemberAdd {

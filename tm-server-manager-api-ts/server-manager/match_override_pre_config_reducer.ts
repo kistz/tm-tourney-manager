@@ -9,17 +9,14 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
+
 import {
   ServerConfig,
 } from "./types";
 
-
-export default __t.row({
-  serverId: __t.u32().primaryKey().name("server_id"),
+export default {
+  id: __t.u32(),
   get config() {
     return ServerConfig;
   },
-  open: __t.bool(),
-  occupied: __t.bool(),
-  seamless: __t.bool(),
-});
+};

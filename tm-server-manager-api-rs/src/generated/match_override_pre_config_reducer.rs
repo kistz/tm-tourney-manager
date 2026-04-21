@@ -4,51 +4,53 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::server_config_type::ServerConfig;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct MatchUpdatePreConfigArgs {
+pub(super) struct MatchOverridePreConfigArgs {
     pub id: u32,
-    pub config_id: u32,
+    pub config: ServerConfig,
 }
 
-impl From<MatchUpdatePreConfigArgs> for super::Reducer {
-    fn from(args: MatchUpdatePreConfigArgs) -> Self {
-        Self::MatchUpdatePreConfig {
+impl From<MatchOverridePreConfigArgs> for super::Reducer {
+    fn from(args: MatchOverridePreConfigArgs) -> Self {
+        Self::MatchOverridePreConfig {
             id: args.id,
-            config_id: args.config_id,
+            config: args.config,
         }
     }
 }
 
-impl __sdk::InModule for MatchUpdatePreConfigArgs {
+impl __sdk::InModule for MatchOverridePreConfigArgs {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `match_update_pre_config`.
+/// Extension trait for access to the reducer `match_override_pre_config`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait match_update_pre_config {
-    /// Request that the remote module invoke the reducer `match_update_pre_config` to run as soon as possible.
+pub trait match_override_pre_config {
+    /// Request that the remote module invoke the reducer `match_override_pre_config` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`match_update_pre_config:match_update_pre_config_then`] to run a callback after the reducer completes.
-    fn match_update_pre_config(&self, id: u32, config_id: u32) -> __sdk::Result<()> {
-        self.match_update_pre_config_then(id, config_id, |_, _| {})
+    /// /// Use [`match_override_pre_config:match_override_pre_config_then`] to run a callback after the reducer completes.
+    fn match_override_pre_config(&self, id: u32, config: ServerConfig) -> __sdk::Result<()> {
+        self.match_override_pre_config_then(id, config, |_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `match_update_pre_config` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `match_override_pre_config` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn match_update_pre_config_then(
+    fn match_override_pre_config_then(
         &self,
         id: u32,
-        config_id: u32,
+        config: ServerConfig,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -56,17 +58,17 @@ pub trait match_update_pre_config {
     ) -> __sdk::Result<()>;
 }
 
-impl match_update_pre_config for super::RemoteReducers {
-    fn match_update_pre_config_then(
+impl match_override_pre_config for super::RemoteReducers {
+    fn match_override_pre_config_then(
         &self,
         id: u32,
-        config_id: u32,
+        config: ServerConfig,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(MatchUpdatePreConfigArgs { id, config_id }, callback)
+            .invoke_reducer_with_callback(MatchOverridePreConfigArgs { id, config }, callback)
     }
 }

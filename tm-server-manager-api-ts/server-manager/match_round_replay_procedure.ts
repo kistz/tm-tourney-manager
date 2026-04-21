@@ -10,7 +10,8 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export default {
-  id: __t.u32(),
-  configId: __t.u32(),
+export const params = {
+  matchId: __t.u32(),
+  round: __t.u16(),
 };
+export const returnType = __t.result(__t.byteArray(), __t.string())

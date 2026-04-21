@@ -399,7 +399,7 @@ export const EventRawServerState = __t.object("EventRawServerState", {
     return ServerConfig;
   },
   open: __t.bool(),
-  skipAgain: __t.bool(),
+  occupied: __t.bool(),
   seamless: __t.bool(),
 });
 export type EventRawServerState = __Infer<typeof EventRawServerState>;
@@ -1239,9 +1239,10 @@ export type TabMatchAutoRecovery = __Infer<typeof TabMatchAutoRecovery>;
 
 export const TabPlayerDestination = __t.object("TabPlayerDestination", {
   competitionId: __t.u32(),
-  matchId: __t.u32(),
   destinationServerId: __t.u32(),
   userId: __t.u32(),
+  nodeId: __t.u32(),
+  nodeVariant: __t.u8(),
 });
 export type TabPlayerDestination = __Infer<typeof TabPlayerDestination>;
 

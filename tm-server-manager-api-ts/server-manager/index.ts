@@ -47,10 +47,10 @@ import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
 import MatchCreateReducer from "./match_create_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
+import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
 import MatchTemplateCreateReducer from "./match_template_create_reducer";
 import MatchTryStartReducer from "./match_try_start_reducer";
-import MatchUpdatePreConfigReducer from "./match_update_pre_config_reducer";
 import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
 import MemberRemoveReducer from "./member_remove_reducer";
@@ -94,6 +94,7 @@ import UnregisterPlayerReducer from "./unregister_player_reducer";
 
 // Import all procedure arg schemas
 import * as LoginAsServerProcedure from "./login_as_server_procedure";
+import * as MatchRoundReplayProcedure from "./match_round_replay_procedure";
 import * as PostRoundReplayProcedure from "./post_round_replay_procedure";
 
 // Import all table schema definitions
@@ -356,10 +357,10 @@ const reducersSchema = __reducers(
   __reducerSchema("match_configured", MatchConfiguredReducer),
   __reducerSchema("match_create", MatchCreateReducer),
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
+  __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
   __reducerSchema("match_template_create", MatchTemplateCreateReducer),
   __reducerSchema("match_try_start", MatchTryStartReducer),
-  __reducerSchema("match_update_pre_config", MatchUpdatePreConfigReducer),
   __reducerSchema("member_add", MemberAddReducer),
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
   __reducerSchema("member_remove", MemberRemoveReducer),
@@ -405,6 +406,7 @@ const reducersSchema = __reducers(
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
   __procedureSchema("login_as_server", LoginAsServerProcedure.params, LoginAsServerProcedure.returnType),
+  __procedureSchema("match_round_replay", MatchRoundReplayProcedure.params, MatchRoundReplayProcedure.returnType),
   __procedureSchema("post_round_replay", PostRoundReplayProcedure.params, PostRoundReplayProcedure.returnType),
 );
 

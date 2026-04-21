@@ -150,6 +150,7 @@ impl MyDbConnection {
 fn on_connection_error(ctx: &ErrorContext, error: spacetimedb_sdk::Error) {
     tracing::error!("{:?}", ctx.event);
     tracing::error!("{error:?}");
+    tokio::spawn(spacetime_disconnected());
 }
 
 fn on_stdb_disconnected(_: &ErrorContext, err: Option<spacetimedb_sdk::Error>) {

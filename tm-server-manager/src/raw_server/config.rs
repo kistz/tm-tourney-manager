@@ -27,7 +27,7 @@ struct EventRawServerState {
     server_id: u32,
     config: ServerConfig,
     open: bool,
-    skip_again: bool,
+    occupied: bool,
     seamless: bool,
 }
 
@@ -125,7 +125,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                         server_id,
                         config: config.config,
                         open: tm_match.is_open(),
-                        skip_again: tm_match.is_recovery(),
+                        occupied: true,
                         seamless,
                     })?;
 
@@ -145,7 +145,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                         server_id,
                         config: config.config,
                         open: tm_server.is_open(),
-                        skip_again: false,
+                        occupied: true,
                         seamless,
                     })?;
 
