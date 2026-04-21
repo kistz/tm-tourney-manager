@@ -16,7 +16,7 @@ use crate::{
     registration::{RegistrationWrite, tab_registration, tab_registration__view},
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
     tm_match::{MatchWrite, authorized_match_set_preparation, tab_match, tab_match__view},
-    tm_server::ServerWrite,
+    tm_server::{ServerWrite, tab_server__view},
     user::UserRead,
 };
 mod position;
@@ -223,20 +223,18 @@ impl<Db: DbContext> NodeRead for Db {
                     Err("Schedule could not be found.".into())
                 }
             }
-            //NodeHandle::MonitoringV1(_) => todo!(),
-            NodeHandle::ServerV1(_) => todo!(),
-            /* NodeHandle::PortalV1(portal_id) => {
-                if let Some(portal) = self.db_read_only().tab_portal().id().find(portal_id) {
-                    Ok(portal.get_comp_id())
+            NodeHandle::ServerV1(s) => {
+                if let Some(ma) = self.db_read_only().tab_server().id().find(s) {
+                    Ok(ma.parent_id())
                 } else {
-                    Err("Portal could not be found.".into())
+                    Err("Server could not be found.".into())
                 }
-            } */
+            },
             NodeHandle::RegistrationV1(reg) => {
                 if let Some(reg) = self.db_read_only().tab_registration().id().find(reg) {
                     Ok(reg.get_comp_id())
                 } else {
-                    Err("Schedule could not be found.".into())
+                    Err("Registration could not be found.".into())
                 }
             }
             NodeHandle::InputV1(_) => todo!(),

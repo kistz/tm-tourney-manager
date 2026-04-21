@@ -21,7 +21,9 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
             let account_id = Uuid::parse_str(&player.account_id).unwrap();
             if !ctx.has_user(account_id) {
                 let user = UserV1::new(account_id);
-                _ = ctx.user_insert(user);
+                if let Err(err) = ctx.user_insert(user) {
+                    log::error!("{err}");
+                };
             }
             raw_server_player_add(ctx, account_id, player.is_spectator)?
         }

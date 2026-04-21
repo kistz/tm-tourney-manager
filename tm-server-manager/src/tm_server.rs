@@ -46,6 +46,10 @@ impl ServerV1 {
         self.config
     }
 
+    pub(crate) fn parent_id(&self) -> u32 {
+        self.parent_id
+    }
+
     pub(crate) fn is_open(&self) -> bool {
         self.open
     }
