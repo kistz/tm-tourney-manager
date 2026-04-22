@@ -51,6 +51,7 @@ import MatchCreateReducer from "./match_create_reducer";
 import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
+import MatchRestartReducer from "./match_restart_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
 import MatchTemplateCreateReducer from "./match_template_create_reducer";
 import MatchTryStartReducer from "./match_try_start_reducer";
@@ -364,6 +365,7 @@ const reducersSchema = __reducers(
   __reducerSchema("match_open", MatchOpenReducer),
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
+  __reducerSchema("match_restart", MatchRestartReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
   __reducerSchema("match_template_create", MatchTemplateCreateReducer),
   __reducerSchema("match_try_start", MatchTryStartReducer),

@@ -111,6 +111,7 @@ pub(crate) trait RawServerMethodWrite {
         &self,
         server_id: u32,
         user_id: u32,
+        now: Timestamp,
         message: String,
     ) -> Result<(), String>;
 }
@@ -120,6 +121,7 @@ impl<Db: DbContext<DbView = Local>> RawServerMethodWrite for Db {
         &self,
         server_id: u32,
         user_id: u32,
+        now: Timestamp,
         message: String,
     ) -> Result<(), String> {
         let Some(server) = self.db().tab_raw_server().id().find(server_id) else {
@@ -134,7 +136,7 @@ impl<Db: DbContext<DbView = Local>> RawServerMethodWrite for Db {
             .try_insert(RawServerMethod {
                 id: 0,
                 user_id,
-                call_time: Timestamp::from_system_time(SystemTime::now()),
+                call_time: now,
                 response_time: Timestamp::from_time_duration_since_unix_epoch(TimeDuration::ZERO),
                 server_id: server.id,
                 call: MethodCall::ChatSendServerMessage(message),

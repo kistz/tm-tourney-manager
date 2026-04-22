@@ -150,7 +150,7 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
             let match_action = action.get_match();
             match match_action {
                 ConnectionActionMatch::TryStart => {
-                    if let Err(error) = ctx.match_try_start(m) {
+                    if let Err(error) = ctx.match_try_start(m, ctx.timestamp) {
                         log::error!(
                             "Explicit Flow: match_try_start action failed through connection {} Error: {}",
                             connection,

@@ -1,7 +1,8 @@
 use std::time::Duration;
 
 use spacetimedb::{
-    Query, ReducerContext, SpacetimeType, Table, TimeDuration, ViewContext, reducer, table, view,
+    Query, ReducerContext, SpacetimeType, Table, TimeDuration, Timestamp, ViewContext, reducer,
+    table, view,
 };
 use tm_server_types::config::ServerConfig;
 
@@ -393,7 +394,7 @@ fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    ctx.match_try_start(match_id)
+    ctx.match_try_start(match_id, ctx.timestamp)
 }
 
 #[reducer]
@@ -455,7 +456,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_recovery_exit_seamless(&self, match_id: u32);
     fn match_recovery_exit_forced(&self, match_id: u32);
     fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
-    fn match_try_start(&self, match_id: u32) -> Result<(), String>;
+    fn match_try_start(&self, match_id: u32, now: Timestamp) -> Result<(), String>;
     fn match_set_preparation(&self, match_id: u32) -> Result<(), String>;
     fn match_restart(&self, match_id: u32) -> Result<(), String>;
 }
@@ -563,7 +564,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         Ok(())
     }
 
-    fn match_try_start(&self, match_id: u32) -> Result<(), String> {
+    fn match_try_start(&self, match_id: u32, now: Timestamp) -> Result<(), String> {
         let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
             return Err("Match not found!".into());
         };
@@ -580,7 +581,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             return Err("No server is assigned to the match.".into());
         };
 
-        self.send_raw_server_message(server_id, 0, "The Match is now Live!".into())?;
+        self.send_raw_server_message(server_id, 0, now, "$0f0The Match is now Live!".into())?;
 
         //TODO this is depending on player state (e.g. is there need to be specific players present are all there?)
         tm_match.status = MatchStatus::Live;

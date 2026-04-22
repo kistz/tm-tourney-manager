@@ -27,6 +27,8 @@ pub mod competition_v_1_type;
 pub mod connection_action_match_type;
 pub mod connection_action_registration_type;
 pub mod connection_action_type;
+pub mod connection_action_update_reducer;
+pub mod connection_configured_reducer;
 pub mod connection_create_reducer;
 pub mod connection_data_option_type;
 pub mod connection_data_table;
@@ -68,8 +70,10 @@ pub mod match_assign_server_reducer;
 pub mod match_configured_reducer;
 pub mod match_create_reducer;
 pub mod match_event_type;
+pub mod match_open_reducer;
 pub mod match_override_config_reducer;
 pub mod match_override_pre_config_reducer;
+pub mod match_restart_reducer;
 pub mod match_round_ext_table;
 pub mod match_round_player_ext_type;
 pub mod match_round_player_type;
@@ -244,6 +248,8 @@ pub use competition_v_1_type::CompetitionV1;
 pub use connection_action_match_type::ConnectionActionMatch;
 pub use connection_action_registration_type::ConnectionActionRegistration;
 pub use connection_action_type::ConnectionAction;
+pub use connection_action_update_reducer::connection_action_update;
+pub use connection_configured_reducer::connection_configured;
 pub use connection_create_reducer::connection_create;
 pub use connection_data_option_type::ConnectionDataOption;
 pub use connection_data_table::*;
@@ -285,8 +291,10 @@ pub use match_assign_server_reducer::match_assign_server;
 pub use match_configured_reducer::match_configured;
 pub use match_create_reducer::match_create;
 pub use match_event_type::MatchEvent;
+pub use match_open_reducer::match_open;
 pub use match_override_config_reducer::match_override_config;
 pub use match_override_pre_config_reducer::match_override_pre_config;
+pub use match_restart_reducer::match_restart;
 pub use match_round_ext_table::*;
 pub use match_round_player_ext_type::MatchRoundPlayerExt;
 pub use match_round_player_type::MatchRoundPlayer;
@@ -469,6 +477,13 @@ pub enum Reducer {
         parent_id: u32,
         with_template: u32,
     },
+    ConnectionActionUpdate {
+        connection_id: u32,
+        action: ConnectionAction,
+    },
+    ConnectionConfigured {
+        connection_id: u32,
+    },
     ConnectionCreate {
         origin: NodeHandle,
         target: NodeHandle,
@@ -502,6 +517,10 @@ pub enum Reducer {
         parent_id: u32,
         with_template: u32,
     },
+    MatchOpen {
+        match_id: u32,
+        open: bool,
+    },
     MatchOverrideConfig {
         id: u32,
         config: ServerConfig,
@@ -509,6 +528,9 @@ pub enum Reducer {
     MatchOverridePreConfig {
         id: u32,
         config: ServerConfig,
+    },
+    MatchRestart {
+        match_id: u32,
     },
     MatchSetPreparation {
         match_id: u32,
@@ -684,6 +706,8 @@ impl __sdk::Reducer for Reducer {
             Reducer::CompetitionNodePositionUpdate { .. } => "competition_node_position_update",
             Reducer::CompetitionNodePositionsUpdate { .. } => "competition_node_positions_update",
             Reducer::CompetitionTemplateCreate { .. } => "competition_template_create",
+            Reducer::ConnectionActionUpdate { .. } => "connection_action_update",
+            Reducer::ConnectionConfigured { .. } => "connection_configured",
             Reducer::ConnectionCreate { .. } => "connection_create",
             Reducer::CreateProject { .. } => "create_project",
             Reducer::InputCreate { .. } => "input_create",
@@ -691,8 +715,10 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
             Reducer::MatchCreate { .. } => "match_create",
+            Reducer::MatchOpen { .. } => "match_open",
             Reducer::MatchOverrideConfig { .. } => "match_override_config",
             Reducer::MatchOverridePreConfig { .. } => "match_override_pre_config",
+            Reducer::MatchRestart { .. } => "match_restart",
             Reducer::MatchSetPreparation { .. } => "match_set_preparation",
             Reducer::MatchTemplateCreate { .. } => "match_template_create",
             Reducer::MatchTryStart { .. } => "match_try_start",
@@ -782,6 +808,20 @@ impl __sdk::Reducer for Reducer {
                     with_template: with_template.clone(),
                 },
             ),
+            Reducer::ConnectionActionUpdate {
+                connection_id,
+                action,
+            } => __sats::bsatn::to_vec(
+                &connection_action_update_reducer::ConnectionActionUpdateArgs {
+                    connection_id: connection_id.clone(),
+                    action: action.clone(),
+                },
+            ),
+            Reducer::ConnectionConfigured { connection_id } => {
+                __sats::bsatn::to_vec(&connection_configured_reducer::ConnectionConfiguredArgs {
+                    connection_id: connection_id.clone(),
+                })
+            }
             Reducer::ConnectionCreate {
                 origin,
                 target,
@@ -840,6 +880,12 @@ impl __sdk::Reducer for Reducer {
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
             }),
+            Reducer::MatchOpen { match_id, open } => {
+                __sats::bsatn::to_vec(&match_open_reducer::MatchOpenArgs {
+                    match_id: match_id.clone(),
+                    open: open.clone(),
+                })
+            }
             Reducer::MatchOverrideConfig { id, config } => {
                 __sats::bsatn::to_vec(&match_override_config_reducer::MatchOverrideConfigArgs {
                     id: id.clone(),
@@ -852,6 +898,11 @@ impl __sdk::Reducer for Reducer {
                     config: config.clone(),
                 },
             ),
+            Reducer::MatchRestart { match_id } => {
+                __sats::bsatn::to_vec(&match_restart_reducer::MatchRestartArgs {
+                    match_id: match_id.clone(),
+                })
+            }
             Reducer::MatchSetPreparation { match_id } => {
                 __sats::bsatn::to_vec(&match_set_preparation_reducer::MatchSetPreparationArgs {
                     match_id: match_id.clone(),
