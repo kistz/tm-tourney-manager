@@ -296,20 +296,27 @@ impl TrackmaniaServer {
                 // That means wewait for the another activity on the tcp socket.
                 // If the tcp socket returns 0 it has closed and we disconnect.
                 // Otherwise we loop around and try to parse a full packet again above.
-                if 0 == reader.read_buf(&mut buffer).await.unwrap() {
+                match reader.read_buf(&mut buffer).await {
                     // The remote closed the connection. For this to be a clean
                     // shutdown, there should be no data in the read buffer. If
                     // there is, this means that the peer closed the socket while
                     // sending a frame.
-                    if buffer.is_empty() {
-                        //TODO do not exit the process but instead call closure that users must set on connect.
-                        error!("The Trackmania server ended the connection.");
-                        std::process::exit(1);
-                    } else {
-                        //TODO do not exit the process but instead call closure that users must set on connect.
-                        error!("connection reset by peer");
-                        std::process::exit(1);
+                    Ok(0) => {
+                        if buffer.is_empty() {
+                            //TODO do not exit the process but instead call closure that users must set on connect.
+                            error!("The Trackmania server ended the connection.");
+                            std::process::exit(1);
+                        } else {
+                            //TODO do not exit the process but instead call closure that users must set on connect.
+                            error!("connection reset by peer");
+                            std::process::exit(1);
+                        }
                     }
+                    Err(e) => {
+                        error!("The Read loop encountered an error. Aborting. Reason: {e}");
+                        std::process::exit(1)
+                    }
+                    _ => (),
                 }
             }
         });

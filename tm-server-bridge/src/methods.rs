@@ -3,7 +3,7 @@ use tm_server_manager_api_rs::{EventContext, EventRawServerMethod, server_method
 use crate::{SPACETIME, TRACKMANIA};
 
 pub fn method_call_received(_: &EventContext, method: &EventRawServerMethod) {
-    tracing::error!("{method:#?}");
+    tracing::debug!("Method Called: {method:#?}");
     let new = method.clone();
     tokio::spawn(async move {
         let response = TRACKMANIA

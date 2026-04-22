@@ -75,7 +75,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .set(std::env::var("TM_FILES").unwrap_or("./UserData".into()))
         .expect("The Path to the Trackmania Filesystem could not be established. Aborting.");
 
-    if !std::fs::exists(TRACKMANIA_FILES.wait()).is_ok_and(|b| b) {
+    let files = TRACKMANIA_FILES.wait();
+
+    if !std::fs::exists(files).is_ok_and(|b| b) {
         panic!(
             "The TM_FILES variable is set to {} but the directory does not exist.
             Consider mounting the correct directory if you are using a docker container.",
@@ -83,6 +85,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         );
     } else {
         tracing::info!("Successfully detected the trackmania filesystem.");
+    }
+
+    if let Err(err) = std::fs::create_dir_all(files.clone() + "/Scripts/Modes/Trackmania") {
+        tracing::error!(
+            "Could not create the scripts directory. Perhaps you are missing permissions?. Reason: {err}"
+        );
+        panic!()
     }
 
     {
