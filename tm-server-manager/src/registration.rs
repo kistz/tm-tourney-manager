@@ -279,11 +279,11 @@ impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
             return Err("Cannot be called on templates".into());
         }
 
-        if registration.status != RegistrationStatus::Ongoing {
-            return Err("Is not in ongoing state.".into());
+        if registration.status != RegistrationStatus::Configured {
+            return Err("Is not in Configured state.".into());
         }
 
-        registration.status = RegistrationStatus::Ended;
+        registration.status = RegistrationStatus::Ongoing;
 
         self.db().tab_registration().id().update(registration);
 
