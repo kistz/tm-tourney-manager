@@ -198,7 +198,7 @@ impl MatchStatus {
 }
 
 #[reducer]
-pub fn match_create(
+fn match_create(
     ctx: &ReducerContext,
     name: String,
     parent_id: u32,
@@ -249,7 +249,7 @@ pub fn match_create(
 /// the user has the permission to assign servers in the project
 /// and the server is lended to the project.
 #[reducer]
-pub fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Result<(), String> {
+fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Result<(), String> {
     let Some(tm_match) = ctx.db.tab_match().id().find(to) else {
         return Err("Supplied match was not found!".into());
     };
@@ -287,7 +287,7 @@ pub fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Res
 }
 
 #[reducer]
-pub fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut tm_match) = ctx.db.tab_match().id().find(id) else {
         return Err("Match was mot found!".into());
     };
@@ -307,7 +307,7 @@ pub fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 }
 
 #[reducer]
-pub fn match_override_pre_config(
+fn match_override_pre_config(
     ctx: &ReducerContext,
     id: u32,
     config: ServerConfig,
@@ -336,7 +336,7 @@ pub fn match_override_pre_config(
 }
 
 #[reducer]
-pub fn match_override_config(
+fn match_override_config(
     ctx: &ReducerContext,
     id: u32,
     config: ServerConfig,
@@ -377,93 +377,39 @@ fn match_set_preparation(ctx: &ReducerContext, match_id: u32) -> Result<(), Stri
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    authorized_match_set_preparation(ctx, match_id)
-}
-
-pub fn authorized_match_set_preparation(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
-    let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
-        return Err("Match not found!".into());
-    };
-
-    if tm_match.is_template() {
-        return Err("Method cannot be called on templates.".into());
-    }
-
-    if tm_match.status == MatchStatus::Configuring {
-        return Err("Match is still getting configured.".into());
-    }
-    if tm_match.config == 0 {
-        return Err(
-            "Match needs a configuration in order to advance to the upcoming state.".into(),
-        );
-    }
-
-    let server_id = if let Some(server_id) =
-        ctx.occupation_with_occupier(NodeHandle::MatchV1(match_id))
-    {
-        tm_match.status = MatchStatus::Preparation;
-        server_id
-    } else if tm_match.auto_provision_server {
-        let server_id = ctx.raw_server_pool_assign(NodeHandle::MatchV1(match_id))?;
-
-        tm_match.status = MatchStatus::Preparation;
-        server_id
-    } else {
-        return Err("Match has auto provisioning turned off and no server assigned! Cannot start the match!".into());
-    };
-
-    ctx.db.tab_match().id().update(tm_match);
-
-    ctx.db
-        .tab_match_state()
-        .try_insert(MatchState::new(match_id))?;
-
-    ctx.destination_claim(NodeHandle::MatchV1(match_id))?;
-
-    ctx.emit_raw_server_config(server_id, false)?;
-
-    Ok(())
+    ctx.match_set_preparation(match_id)
 }
 
 /// If the match is fully configured and ready start.
 /// This can also serve as a manual override for scheduled matches.
 #[reducer]
-pub fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
-    let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
+fn match_try_start(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
         return Err("Match not found!".into());
     };
-
-    if tm_match.is_template() {
-        return Err("Method cannot be called on templates.".into());
-    }
-
-    if tm_match.status != MatchStatus::Preparation {
-        return Err("Match needs to be prepared in order to be started.".into());
-    }
 
     ctx.auth_builder(tm_match.parent_id)
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    let Some(server_id) = ctx.occupation_with_occupier(NodeHandle::MatchV1(match_id)) else {
-        return Err("No server is assigned to the match.".into());
-    };
-
-    //TODO this is depending on player state (e.g. is there need to be specific players present are all there?)
-    tm_match.status = MatchStatus::Live;
-    ctx.db.tab_match().id().update(tm_match);
-
-    let mut state = ctx.db.tab_match_state().match_id().find(match_id).unwrap();
-    state.set_live();
-    ctx.db.tab_match_state().match_id().update(state);
-
-    ctx.emit_raw_server_config(server_id, false)?;
-
-    Ok(())
+    ctx.match_try_start(match_id)
 }
 
 #[reducer]
-pub fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), String> {
+fn match_restart(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match not found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    ctx.match_restart(match_id)
+}
+
+#[reducer]
+fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), String> {
     let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
         return Err("Match not found!".into());
     };
@@ -482,28 +428,6 @@ pub fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(),
 
     Ok(())
 }
-
-//TODO restore functionality.
-/* #[reducer]
-pub fn match_delete(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
-    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
-        return Err(format!("Match with id: {match_id} not found."));
-    };
-
-    ctx.auth_builder(tm_match.parent_id)
-        .permission(CompetitionPermissionsV1::MATCH_DELETE)
-        .authorize()?;
-
-    if !ctx.db.tab_match().id().delete(match_id) {
-        return Err(format!("Match with id: {match_id} not found."));
-    }
-
-    let handle = NodeHandle::MatchV1(match_id);
-
-    ctx.node_delete(handle)?;
-
-    Ok(())
-} */
 
 #[view(accessor=my_matches,public)]
 fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1> {
@@ -530,6 +454,9 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_recovery_exit_seamless(&self, match_id: u32);
     fn match_recovery_exit_forced(&self, match_id: u32);
     fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
+    fn match_try_start(&self, match_id: u32) -> Result<(), String>;
+    fn match_set_preparation(&self, match_id: u32) -> Result<(), String>;
+    fn match_restart(&self, match_id: u32) -> Result<(), String>;
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
     fn match_recovery_enter(&self, match_id: u32) {
@@ -633,6 +560,90 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         self.db().tab_match().id().update(tm_match);
 
         Ok(())
+    }
+
+    fn match_try_start(&self, match_id: u32) -> Result<(), String> {
+        let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
+            return Err("Match not found!".into());
+        };
+
+        if tm_match.is_template() {
+            return Err("Method cannot be called on templates.".into());
+        }
+
+        if tm_match.status != MatchStatus::Preparation {
+            return Err("Match needs to be prepared in order to be started.".into());
+        }
+
+        let Some(server_id) = self.occupation_with_occupier(NodeHandle::MatchV1(match_id)) else {
+            return Err("No server is assigned to the match.".into());
+        };
+
+        //TODO this is depending on player state (e.g. is there need to be specific players present are all there?)
+        tm_match.status = MatchStatus::Live;
+        self.db().tab_match().id().update(tm_match);
+
+        let mut state = self
+            .db()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+            .unwrap();
+        state.set_live();
+        self.db().tab_match_state().match_id().update(state);
+
+        self.emit_raw_server_config(server_id, false)?;
+
+        Ok(())
+    }
+
+    fn match_set_preparation(&self, match_id: u32) -> Result<(), String> {
+        let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
+            return Err("Match not found!".into());
+        };
+
+        if tm_match.is_template() {
+            return Err("Method cannot be called on templates.".into());
+        }
+
+        if tm_match.status == MatchStatus::Configuring {
+            return Err("Match is still getting configured.".into());
+        }
+        if tm_match.config == 0 {
+            return Err(
+                "Match needs a configuration in order to advance to the upcoming state.".into(),
+            );
+        }
+
+        let server_id = if let Some(server_id) =
+            self.occupation_with_occupier(NodeHandle::MatchV1(match_id))
+        {
+            tm_match.status = MatchStatus::Preparation;
+            server_id
+        } else if tm_match.auto_provision_server {
+            let server_id = self.raw_server_pool_assign(NodeHandle::MatchV1(match_id))?;
+
+            tm_match.status = MatchStatus::Preparation;
+            server_id
+        } else {
+            return Err("Match has auto provisioning turned off and no server assigned! Cannot start the match!".into());
+        };
+
+        self.db().tab_match().id().update(tm_match);
+
+        self.db()
+            .tab_match_state()
+            .try_insert(MatchState::new(match_id))?;
+
+        self.destination_claim(NodeHandle::MatchV1(match_id))?;
+
+        self.emit_raw_server_config(server_id, false)?;
+
+        Ok(())
+    }
+
+    fn match_restart(&self, match_id: u32) -> Result<(), String> {
+        todo!()
     }
 }
 

@@ -15,7 +15,7 @@ use crate::{
     raw_server::player::PermittedPlayer,
     registration::{RegistrationWrite, tab_registration, tab_registration__view},
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
-    tm_match::{MatchWrite, authorized_match_set_preparation, tab_match, tab_match__view},
+    tm_match::{MatchWrite, tab_match, tab_match__view},
     tm_server::{ServerWrite, tab_server__view},
     user::UserRead,
 };
@@ -131,7 +131,7 @@ pub trait NodeType {
 impl NodeType for NodeHandle {
     fn ready(&self, ctx: &ReducerContext) -> Result<(), String> {
         match self {
-            NodeHandle::MatchV1(match_id) => authorized_match_set_preparation(ctx, *match_id),
+            NodeHandle::MatchV1(match_id) => ctx.match_set_preparation(*match_id),
             NodeHandle::CompetitionV1(c) => todo!(), // trigger the input node.
             //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
@@ -229,7 +229,7 @@ impl<Db: DbContext> NodeRead for Db {
                 } else {
                     Err("Server could not be found.".into())
                 }
-            },
+            }
             NodeHandle::RegistrationV1(reg) => {
                 if let Some(reg) = self.db_read_only().tab_registration().id().find(reg) {
                     Ok(reg.get_comp_id())
