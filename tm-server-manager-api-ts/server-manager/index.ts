@@ -48,10 +48,12 @@ import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
 import MatchCreateReducer from "./match_create_reducer";
+import MatchManualRecoveryReducer from "./match_manual_recovery_reducer";
 import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchRestartReducer from "./match_restart_reducer";
+import MatchServerRevokeReducer from "./match_server_revoke_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
 import MatchTemplateCreateReducer from "./match_template_create_reducer";
 import MatchTryStartReducer from "./match_try_start_reducer";
@@ -129,6 +131,7 @@ import UnstableCompetitionMembersRow from "./unstable_competition_members_table"
 import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
 import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member_table";
 import UnstableRegistrationRow from "./unstable_registration_table";
+import UnstableRegistrationPlayerRow from "./unstable_registration_player_table";
 import UsersRow from "./users_table";
 
 /** Type-only namespace exports for generated type groups. */
@@ -337,6 +340,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, UnstableRegistrationRow),
+  unstable_registration_player: __table({
+    name: 'unstable_registration_player',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, UnstableRegistrationPlayerRow),
   users: __table({
     name: 'users',
     indexes: [
@@ -362,10 +372,12 @@ const reducersSchema = __reducers(
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
   __reducerSchema("match_create", MatchCreateReducer),
+  __reducerSchema("match_manual_recovery", MatchManualRecoveryReducer),
   __reducerSchema("match_open", MatchOpenReducer),
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
   __reducerSchema("match_restart", MatchRestartReducer),
+  __reducerSchema("match_server_revoke", MatchServerRevokeReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
   __reducerSchema("match_template_create", MatchTemplateCreateReducer),
   __reducerSchema("match_try_start", MatchTryStartReducer),

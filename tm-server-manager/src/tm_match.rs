@@ -260,7 +260,10 @@ fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Result<
         .permission(CompetitionPermissionsV1::MATCH_ASSIGN_SERVER)
         .authorize()?;
 
-    if tm_match.status != MatchStatus::Configuring && tm_match.status != MatchStatus::Configured {
+    if tm_match.status != MatchStatus::Configuring
+        && tm_match.status != MatchStatus::Configured
+        && tm_match.status != MatchStatus::Recovery
+    {
         return Err(
             "Match is currently not getting configured so assigning a new server is impossible."
                 .into(),
@@ -289,6 +292,38 @@ fn match_assign_server(ctx: &ReducerContext, to: u32, server_id: u32) -> Result<
 }
 
 #[reducer]
+fn match_server_revoke(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Supplied match was not found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_ASSIGN_SERVER)
+        .authorize()?;
+
+    if tm_match.status != MatchStatus::Configuring
+        && tm_match.status != MatchStatus::Configured
+        && tm_match.status != MatchStatus::Recovery
+    {
+        return Err(
+            "Match is currently not getting configured so revoking the server is impossible."
+                .into(),
+        );
+    }
+
+    if ctx
+        .occupation_with_occupier(NodeHandle::MatchV1(match_id))
+        .is_none()
+    {
+        return Err("Server is not occupied! Cannot revoke!".into());
+    }
+
+    ctx.raw_server_occupation_remove(NodeHandle::MatchV1(match_id))?;
+
+    Ok(())
+}
+
+#[reducer]
 fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     let Some(mut tm_match) = ctx.db.tab_match().id().find(id) else {
         return Err("Match was mot found!".into());
@@ -306,6 +341,19 @@ fn match_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     ctx.db.tab_match().id().update(tm_match);
 
     Ok(())
+}
+
+#[reducer]
+fn match_manual_recovery(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+    let Some(mut tm_match) = ctx.db.tab_match().id().find(id) else {
+        return Err("Match was mot found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    ctx.match_recovery_enter(id, true)
 }
 
 #[reducer]
@@ -452,7 +500,7 @@ pub(crate) trait MatchRead {}
 impl<Db: spacetimedb::DbContext> MatchRead for Db {}
 
 pub(crate) trait MatchWrite: MatchRead {
-    fn match_recovery_enter(&self, match_id: u32);
+    fn match_recovery_enter(&self, match_id: u32, manual: bool) -> Result<(), String>;
     fn match_recovery_exit_seamless(&self, match_id: u32);
     fn match_recovery_exit_forced(&self, match_id: u32);
     fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
@@ -461,7 +509,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_restart(&self, match_id: u32) -> Result<(), String>;
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
-    fn match_recovery_enter(&self, match_id: u32) {
+    fn match_recovery_enter(&self, match_id: u32, manual: bool) -> Result<(), String> {
         //SAFETY: if a occupation is inserted it must also exist.
         let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();
 
@@ -496,14 +544,21 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             let raw_server = self
                 .occupation_with_occupier(NodeHandle::MatchV1(match_id))
                 .unwrap();
-            if let Err(err) = self.match_auto_recovery_insert(
-                match_id,
-                self.raw_server_last_connection(raw_server),
-                TimeDuration::from_duration(Duration::from_mins(5)),
-            ) {
-                log::error!("Could not insert match auto recovery. Reason: {err}")
-            };
+
+            // Auto recovery only if we have not manually entered it.
+            #[allow(clippy::collapsible_if)]
+            if !manual {
+                if let Err(err) = self.match_auto_recovery_insert(
+                    match_id,
+                    self.raw_server_last_connection(raw_server),
+                    TimeDuration::from_duration(Duration::from_mins(5)),
+                ) {
+                    log::error!("Could not insert match auto recovery. Reason: {err}")
+                };
+            }
         }
+
+        Ok(())
     }
 
     fn match_recovery_exit_seamless(&self, match_id: u32) {
@@ -647,7 +702,19 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
     }
 
     fn match_restart(&self, match_id: u32) -> Result<(), String> {
-        todo!()
+        let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
+            return Err("Match not found!".into());
+        };
+
+        if tm_match.is_template() {
+            return Err("Method cannot be called on templates.".into());
+        }
+
+        if tm_match.status == MatchStatus::Recovery {
+            return Err("Match has to be in recovery in order to restart it.".into());
+        }
+
+        Ok(())
     }
 }
 

@@ -317,7 +317,7 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
         {
             let match_id = occupation.id();
 
-            self.match_recovery_enter(match_id);
+            self.match_recovery_enter(match_id, false);
         }
     }
 }
