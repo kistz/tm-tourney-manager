@@ -1,5 +1,8 @@
+use std::time::SystemTime;
+
 use spacetimedb::{
-    ReducerContext, Table, TimeDuration, Timestamp, Uuid, ViewContext, reducer, table, view,
+    DbContext, Local, ReducerContext, Table, TimeDuration, Timestamp, Uuid, ViewContext, reducer,
+    table, view,
 };
 use tm_server_types::method::{MethodCall, MethodResponse};
 
@@ -43,7 +46,7 @@ impl RawServerMethod {
 }
 
 #[reducer]
-pub fn server_method_call(
+fn server_method_call(
     ctx: &ReducerContext,
     server_login: String,
     call: MethodCall,
@@ -80,7 +83,7 @@ pub fn server_method_call(
 }
 
 #[reducer]
-pub fn server_method_response(
+fn server_method_response(
     ctx: &ReducerContext,
     call_id: u32,
     response: MethodResponse,
@@ -101,6 +104,53 @@ pub fn server_method_response(
     method.resposne = response;
 
     Ok(())
+}
+
+pub(crate) trait RawServerMethodWrite {
+    fn send_raw_server_message(
+        &self,
+        server_id: u32,
+        user_id: u32,
+        message: String,
+    ) -> Result<(), String>;
+}
+
+impl<Db: DbContext<DbView = Local>> RawServerMethodWrite for Db {
+    fn send_raw_server_message(
+        &self,
+        server_id: u32,
+        user_id: u32,
+        message: String,
+    ) -> Result<(), String> {
+        let Some(server) = self.db().tab_raw_server().id().find(server_id) else {
+            return Err(format!(
+                "Server with id {server_id} was not found or is not online."
+            ));
+        };
+
+        let method = self
+            .db()
+            .tab_raw_server_method()
+            .try_insert(RawServerMethod {
+                id: 0,
+                user_id,
+                call_time: Timestamp::from_system_time(SystemTime::now()),
+                response_time: Timestamp::from_time_duration_since_unix_epoch(TimeDuration::ZERO),
+                server_id: server.id,
+                call: MethodCall::ChatSendServerMessage(message),
+                resposne: MethodResponse::Pending,
+            })?;
+
+        self.db()
+            .event_raw_server_method()
+            .try_insert(EventRawServerMethod {
+                id: method.id,
+                server_id: method.server_id,
+                call: method.call,
+            })?;
+
+        Ok(())
+    }
 }
 
 /* //TODO eval if this can be done with event table

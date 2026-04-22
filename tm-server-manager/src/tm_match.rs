@@ -17,6 +17,7 @@ use crate::{
         TabRawServerRead, TabRawServerWrite,
         config::{RawServerContigRead, RawServerContigWrite},
         destination::TabRawServerDestinationWrite,
+        method::RawServerMethodWrite,
         occupation::{TabRawServerOccupationRead, TabRawServerOccupationWrite},
         tab_raw_server,
     },
@@ -578,6 +579,8 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         let Some(server_id) = self.occupation_with_occupier(NodeHandle::MatchV1(match_id)) else {
             return Err("No server is assigned to the match.".into());
         };
+
+        self.send_raw_server_message(server_id, 0, "The Match is now Live!".into())?;
 
         //TODO this is depending on player state (e.g. is there need to be specific players present are all there?)
         tm_match.status = MatchStatus::Live;
