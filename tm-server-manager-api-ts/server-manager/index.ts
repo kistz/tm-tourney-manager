@@ -39,6 +39,8 @@ import CompetitionCreateReducer from "./competition_create_reducer";
 import CompetitionNodePositionUpdateReducer from "./competition_node_position_update_reducer";
 import CompetitionNodePositionsUpdateReducer from "./competition_node_positions_update_reducer";
 import CompetitionTemplateCreateReducer from "./competition_template_create_reducer";
+import ConnectionActionUpdateReducer from "./connection_action_update_reducer";
+import ConnectionConfiguredReducer from "./connection_configured_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import InputCreateReducer from "./input_create_reducer";
@@ -46,6 +48,7 @@ import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
 import MatchCreateReducer from "./match_create_reducer";
+import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
@@ -349,6 +352,8 @@ const reducersSchema = __reducers(
   __reducerSchema("competition_node_position_update", CompetitionNodePositionUpdateReducer),
   __reducerSchema("competition_node_positions_update", CompetitionNodePositionsUpdateReducer),
   __reducerSchema("competition_template_create", CompetitionTemplateCreateReducer),
+  __reducerSchema("connection_action_update", ConnectionActionUpdateReducer),
+  __reducerSchema("connection_configured", ConnectionConfiguredReducer),
   __reducerSchema("connection_create", ConnectionCreateReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("input_create", InputCreateReducer),
@@ -356,6 +361,7 @@ const reducersSchema = __reducers(
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
   __reducerSchema("match_create", MatchCreateReducer),
+  __reducerSchema("match_open", MatchOpenReducer),
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),

@@ -33,21 +33,26 @@ pub(super) fn raw_server_player_add(
     if let Some(mut player) = ctx.db.tab_raw_server_player().account_id().find(account_id) {
         if player.server_id == server_id {
             if (player.spectator && spectator) || (!player.spectator && !spectator) {
-                return Err("Player was already in the state before the request.".into());
+                log::info!("Player was already in state before the request");
+                return Ok(());
             }
             player.spectator = spectator;
             ctx.db.tab_raw_server_player().account_id().update(player);
             Ok(())
         } else {
-            //TODO should we correct our mistake then because this should not be possible.
-            //On the one hand wwe should trust us more because all servers could be sending malicious request displacing the player.
-            //On the other hand every server can crash or disconnect failing to send the disconnection messages.
-            //I guess we should trust the server but do more validation if it makes sense that the player is actually there or not.
-            Err("Player was already connected to a server on the network.".into())
+            player.spectator = spectator;
+            player.server_id = server_id;
+            log::warn!(
+                "Player was already connected to {} but connected on {}. Updating but Susge",
+                player.server_id,
+                server_id
+            );
+
+            ctx.db.tab_raw_server_player().account_id().update(player);
+
+            Ok(())
         }
     } else {
-        //TODO check server side if its the server account id. We need to extract the server account id from the login token for that.
-
         ctx.db.tab_raw_server_player().try_insert(RawServerPlayer {
             server_id,
             account_id,

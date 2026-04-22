@@ -26,14 +26,24 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
                     log::error!("{err}");
                 };
             }
-            raw_server_player_add(ctx, account_id, player.is_spectator)?
+            if let Err(err) = raw_server_player_add(ctx, account_id, player.is_spectator) {
+                log::error!("Player Disconnect: {err}");
+            };
         }
         Event::PlayerDisconnect(player) => {
-            raw_server_player_remove(ctx, Uuid::parse_str(&player.account_id).unwrap())?
+            if let Err(err) =
+                raw_server_player_remove(ctx, Uuid::parse_str(&player.account_id).unwrap())
+            {
+                log::error!("Player Disconnect: {err}");
+            };
         }
         Event::PlayerInfoChanged(player) => {
             let spectator = player.spectator_status != 0;
-            raw_server_player_add(ctx, Uuid::parse_str(&player.account_id).unwrap(), spectator)?
+            if let Err(err) =
+                raw_server_player_add(ctx, Uuid::parse_str(&player.account_id).unwrap(), spectator)
+            {
+                log::error!("Player Disconnect: {err}");
+            };
         }
         _ => (),
     }
