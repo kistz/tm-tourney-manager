@@ -23,9 +23,18 @@ pub fn post_round_replay(
             return Err("Server is not occupied.".into());
         };
 
-        if occupation.is_match() {
-            ctx.insert_match_round_replay(occupation.id(), ending_round_timestamp, replay.clone())?;
-        }
+        if occupation.is_match()
+            && let Err(err) = ctx.insert_match_round_replay(
+                occupation.id(),
+                ending_round_timestamp,
+                replay.clone(),
+            )
+        {
+            log::error!(
+                "Could not save round replay for round time {ending_round_timestamp} Reson: {err}"
+            );
+            return Err(err);
+        };
 
         Ok(())
     })?;
