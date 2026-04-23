@@ -14,6 +14,7 @@ use super::end_server_type::EndServer;
 use super::end_turn_end_type::EndTurnEnd;
 use super::end_turn_start_type::EndTurnStart;
 use super::give_up_type::GiveUp;
+use super::knockout_elimination_type::KnockoutElimination;
 use super::loading_map_end_type::LoadingMapEnd;
 use super::loading_map_start_type::LoadingMapStart;
 use super::pause_type::Pause;
@@ -125,6 +126,8 @@ pub enum Event {
     Pause(Pause),
 
     Custom(Custom),
+
+    KnockoutElimination(KnockoutElimination),
 }
 
 impl __sdk::InModule for Event {

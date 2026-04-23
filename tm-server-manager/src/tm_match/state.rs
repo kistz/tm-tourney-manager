@@ -1,4 +1,5 @@
 use spacetimedb::{AnonymousViewContext, table, view};
+use tm_server_types::config::TmMode;
 
 use crate::tm_match::MatchStatus;
 
@@ -17,12 +18,12 @@ pub struct MatchState {
     // This would be free in terms of bytes.
     // Could be nice to evaluate score for special modes like time attack
     // or Knockout.
-    //#[default(0)]
-    //mode: u8,
+    #[default(TmMode::Rounds)]
+    mode: TmMode,
 }
 
 impl MatchState {
-    pub fn new(match_id: u32) -> Self {
+    pub fn new(match_id: u32, mode: TmMode) -> Self {
         Self {
             match_id,
             restarted: 0,
@@ -32,6 +33,7 @@ impl MatchState {
             paused: false,
             map_id: 0,
             status: MatchStatus::Preparation,
+            mode,
         }
     }
 
@@ -88,6 +90,10 @@ impl MatchState {
 
     pub(super) fn live_round(&self) -> bool {
         !self.is_warmup && !self.paused
+    }
+
+    pub(super) fn get_mode(&self) -> TmMode {
+        self.mode
     }
 }
 

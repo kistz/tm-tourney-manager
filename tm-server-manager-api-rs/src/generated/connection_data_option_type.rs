@@ -4,6 +4,8 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::connection_data_option_first_offset_n_type::ConnectionDataOptionFirstOffsetN;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub enum ConnectionDataOption {
@@ -14,6 +16,8 @@ pub enum ConnectionDataOption {
     LastN(u8),
 
     Custom(Vec<u8>),
+
+    FirstOffsetN(ConnectionDataOptionFirstOffsetN),
 }
 
 impl __sdk::InModule for ConnectionDataOption {

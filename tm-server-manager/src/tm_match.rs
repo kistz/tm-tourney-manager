@@ -688,11 +688,12 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             return Err("Match has auto provisioning turned off and no server assigned! Cannot start the match!".into());
         };
 
+        let config = self.raw_server_config(tm_match.config)?;
         self.db().tab_match().id().update(tm_match);
 
         self.db()
             .tab_match_state()
-            .try_insert(MatchState::new(match_id))?;
+            .try_insert(MatchState::new(match_id, config.get_mode().get_mode()))?;
 
         self.destination_claim(NodeHandle::MatchV1(match_id))?;
 

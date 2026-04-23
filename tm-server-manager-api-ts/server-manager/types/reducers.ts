@@ -16,6 +16,7 @@ import ConnectionConfiguredReducer from "../connection_configured_reducer";
 import ConnectionCreateReducer from "../connection_create_reducer";
 import CreateProjectReducer from "../create_project_reducer";
 import InputCreateReducer from "../input_create_reducer";
+import LeaderboardCreateReducer from "../leaderboard_create_reducer";
 import LendRawServerReducer from "../lend_raw_server_reducer";
 import MatchAssignServerReducer from "../match_assign_server_reducer";
 import MatchConfiguredReducer from "../match_configured_reducer";
@@ -80,6 +81,7 @@ export type ConnectionConfiguredParams = __Infer<typeof ConnectionConfiguredRedu
 export type ConnectionCreateParams = __Infer<typeof ConnectionCreateReducer>;
 export type CreateProjectParams = __Infer<typeof CreateProjectReducer>;
 export type InputCreateParams = __Infer<typeof InputCreateReducer>;
+export type LeaderboardCreateParams = __Infer<typeof LeaderboardCreateReducer>;
 export type LendRawServerParams = __Infer<typeof LendRawServerReducer>;
 export type MatchAssignServerParams = __Infer<typeof MatchAssignServerReducer>;
 export type MatchConfiguredParams = __Infer<typeof MatchConfiguredReducer>;

@@ -30,6 +30,7 @@ pub mod connection_action_type;
 pub mod connection_action_update_reducer;
 pub mod connection_configured_reducer;
 pub mod connection_create_reducer;
+pub mod connection_data_option_first_offset_n_type;
 pub mod connection_data_option_type;
 pub mod connection_data_table;
 pub mod connection_data_type;
@@ -56,9 +57,12 @@ pub mod give_up_type;
 pub mod input_create_reducer;
 pub mod input_v_1_type;
 pub mod kick_args_type;
+pub mod knockout_elimination_type;
 pub mod knockout_type;
 pub mod laps_number_type;
 pub mod last_chance_dnf_mode_type;
+pub mod leaderboard_create_reducer;
+pub mod leaderboard_v_1_type;
 pub mod lend_raw_server_reducer;
 pub mod loading_map_end_type;
 pub mod loading_map_start_type;
@@ -211,6 +215,7 @@ pub mod team_type;
 pub mod temp_match_leaderboard_table;
 pub mod temp_registration_player_table;
 pub mod time_attack_type;
+pub mod tm_mode_type;
 pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
 pub mod unregister_player_reducer;
@@ -254,6 +259,7 @@ pub use connection_action_type::ConnectionAction;
 pub use connection_action_update_reducer::connection_action_update;
 pub use connection_configured_reducer::connection_configured;
 pub use connection_create_reducer::connection_create;
+pub use connection_data_option_first_offset_n_type::ConnectionDataOptionFirstOffsetN;
 pub use connection_data_option_type::ConnectionDataOption;
 pub use connection_data_table::*;
 pub use connection_data_type::ConnectionData;
@@ -280,9 +286,12 @@ pub use give_up_type::GiveUp;
 pub use input_create_reducer::input_create;
 pub use input_v_1_type::InputV1;
 pub use kick_args_type::KickArgs;
+pub use knockout_elimination_type::KnockoutElimination;
 pub use knockout_type::Knockout;
 pub use laps_number_type::LapsNumber;
 pub use last_chance_dnf_mode_type::LastChanceDnfMode;
+pub use leaderboard_create_reducer::leaderboard_create;
+pub use leaderboard_v_1_type::LeaderboardV1;
 pub use lend_raw_server_reducer::lend_raw_server;
 pub use loading_map_end_type::LoadingMapEnd;
 pub use loading_map_start_type::LoadingMapStart;
@@ -435,6 +444,7 @@ pub use team_type::Team;
 pub use temp_match_leaderboard_table::*;
 pub use temp_registration_player_table::*;
 pub use time_attack_type::TimeAttack;
+pub use tm_mode_type::TmMode;
 pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
 pub use unregister_player_reducer::unregister_player;
@@ -503,6 +513,11 @@ pub enum Reducer {
         ending_at: __sdk::Timestamp,
     },
     InputCreate {
+        name: String,
+        parent_id: u32,
+        with_template: u32,
+    },
+    LeaderboardCreate {
         name: String,
         parent_id: u32,
         with_template: u32,
@@ -723,6 +738,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::ConnectionCreate { .. } => "connection_create",
             Reducer::CreateProject { .. } => "create_project",
             Reducer::InputCreate { .. } => "input_create",
+            Reducer::LeaderboardCreate { .. } => "leaderboard_create",
             Reducer::LendRawServer { .. } => "lend_raw_server",
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
@@ -863,6 +879,15 @@ impl __sdk::Reducer for Reducer {
                 parent_id,
                 with_template,
             } => __sats::bsatn::to_vec(&input_create_reducer::InputCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+                with_template: with_template.clone(),
+            }),
+            Reducer::LeaderboardCreate {
+                name,
+                parent_id,
+                with_template,
+            } => __sats::bsatn::to_vec(&leaderboard_create_reducer::LeaderboardCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),

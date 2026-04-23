@@ -1,5 +1,5 @@
 use spacetimedb::{ReducerContext, Table, Uuid, table};
-use tm_server_types::event::Event;
+use tm_server_types::{config::TmMode, event::Event};
 
 use crate::{
     competition::{connection::internal_graph_resolution_node_finished, node::NodeHandle},
@@ -46,19 +46,29 @@ pub(crate) fn handle_match_event(
 
                 let round = state.get_round();
 
-                let player = ctx
+                // This is mainly for TimeAttack where we are at the start multiple times.
+                if ctx
                     .db
                     .tab_match_round_player()
-                    .try_insert(MatchRoundPlayer::new(state.match_id, user_id, round))?;
-                ctx.db
-                    .tab_match_round_player_ext()
-                    .try_insert(MatchRoundPlayerExt::new(
-                        player.id,
-                        state.match_id,
-                        user_id,
-                        round,
-                        start_line.time,
-                    ))?;
+                    .match_round_player()
+                    .filter((state.match_id, round, user_id))
+                    .count()
+                    == 0
+                {
+                    let player = ctx
+                        .db
+                        .tab_match_round_player()
+                        .try_insert(MatchRoundPlayer::new(state.match_id, user_id, round))?;
+                    ctx.db
+                        .tab_match_round_player_ext()
+                        .try_insert(MatchRoundPlayerExt::new(
+                            player.id,
+                            state.match_id,
+                            user_id,
+                            round,
+                            start_line.time,
+                        ))?;
+                }
             }
         }
         Event::WayPoint(way_point) => {
@@ -132,6 +142,28 @@ pub(crate) fn handle_match_event(
                 ctx.db.tab_match_round_player_ext().id().update(entry);
             }
         }
+        Event::KnockoutElimination(knocked_players) => {
+            if state.live_round() {
+                let round = state.get_round();
+
+                for player in &knocked_players.account_ids {
+                    let account_id = Uuid::parse_str(player).unwrap();
+                    let user_id = ctx.user_id_from_account(account_id);
+
+                    let mut entry = ctx
+                        .db
+                        .tab_match_round_player()
+                        .match_round_player()
+                        .filter((state.match_id, round, user_id))
+                        .next()
+                        .unwrap();
+
+                    entry.set_points(-1);
+
+                    ctx.db.tab_match_round_player().id().update(entry);
+                }
+            }
+        }
         Event::StartMapStart(start_map) => {
             let account_id = Uuid::parse_str(&start_map.map.author_account_id).unwrap();
             let user_id = if !ctx.has_user(account_id) {
@@ -196,35 +228,38 @@ pub(crate) fn handle_match_event(
             log::info!("Match {} has started!", state.match_id)
         }
         Event::EndMatchEnd(_) => {
-            if state.get_round() == 0 {
-                log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
+            if state.get_round() == 0 && state.get_mode() == TmMode::TimeAttack {
+                log::info!("Skipping end because of time attack mode.");
+            } else {
+                if state.get_round() == 0 {
+                    log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
+                }
+                let Some(mut tm_match) = ctx.db.tab_match().id().find(state.match_id) else {
+                    return Err("Match not found".into());
+                };
+                tm_match.end_match();
+
+                state.end_match();
+                ctx.db.tab_match_state().match_id().update(state);
+
+                let tm_match = ctx.db.tab_match().id().update(tm_match);
+
+                if let Err(error) =
+                    ctx.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id))
+                {
+                    log::error!("Occupation could not be removed. Error {error}")
+                };
+
+                ctx.destination_free(NodeHandle::MatchV1(state.match_id));
+
+                if let Err(error) =
+                    internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
+                {
+                    log::error!("Graph resolution could not be completed. Error {error}")
+                };
+
+                log::info!("The match {} has successfully ended!", state.match_id);
             }
-
-            let Some(mut tm_match) = ctx.db.tab_match().id().find(state.match_id) else {
-                return Err("Match not found".into());
-            };
-            tm_match.end_match();
-
-            state.end_match();
-            ctx.db.tab_match_state().match_id().update(state);
-
-            let tm_match = ctx.db.tab_match().id().update(tm_match);
-
-            if let Err(error) =
-                ctx.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id))
-            {
-                log::error!("Occupation could not be removed. Error {error}")
-            };
-
-            ctx.destination_free(NodeHandle::MatchV1(state.match_id));
-
-            if let Err(error) =
-                internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
-            {
-                log::error!("Graph resolution could not be completed. Error {error}")
-            };
-
-            log::info!("The match {} has successfully ended!", state.match_id);
         }
         Event::WarmupStart => {
             state.set_wu(true);

@@ -9,24 +9,12 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import {
-  MatchStatus,
-  TmMode,
-} from "./types";
-
 
 export default __t.row({
+  id: __t.u32().primaryKey(),
+  userId: __t.u32().name("user_id"),
   matchId: __t.u32().name("match_id"),
-  mapId: __t.u32().name("map_id"),
-  restarted: __t.u16(),
+  time: __t.i32(),
+  points: __t.i32(),
   round: __t.u16(),
-  warmup: __t.u16(),
-  isWarmup: __t.bool().name("is_warmup"),
-  paused: __t.bool(),
-  get status() {
-    return MatchStatus;
-  },
-  get mode() {
-    return TmMode;
-  },
 });

@@ -162,8 +162,17 @@ export const ConnectionDataOption = __t.enum("ConnectionDataOption", {
   FirstN: __t.u8(),
   LastN: __t.u8(),
   Custom: __t.byteArray(),
+  get FirstOffsetN() {
+    return ConnectionDataOptionFirstOffsetN;
+  },
 });
 export type ConnectionDataOption = __Infer<typeof ConnectionDataOption>;
+
+export const ConnectionDataOptionFirstOffsetN = __t.object("ConnectionDataOptionFirstOffsetN", {
+  offset: __t.u8(),
+  take: __t.u8(),
+});
+export type ConnectionDataOptionFirstOffsetN = __Infer<typeof ConnectionDataOptionFirstOffsetN>;
 
 // The tagged union or sum type for the algebraic type `ConnectionKind`.
 export const ConnectionKind = __t.enum("ConnectionKind", {
@@ -381,6 +390,9 @@ export const Event = __t.enum("Event", {
   get Custom() {
     return Custom;
   },
+  get KnockoutElimination() {
+    return KnockoutElimination;
+  },
 });
 export type Event = __Infer<typeof Event>;
 
@@ -443,6 +455,11 @@ export const Knockout = __t.object("Knockout", {
 });
 export type Knockout = __Infer<typeof Knockout>;
 
+export const KnockoutElimination = __t.object("KnockoutElimination", {
+  accountIds: __t.array(__t.string()),
+});
+export type KnockoutElimination = __Infer<typeof KnockoutElimination>;
+
 // The tagged union or sum type for the algebraic type `LapsNumber`.
 export const LapsNumber = __t.enum("LapsNumber", {
   Validation: __t.unit(),
@@ -457,6 +474,14 @@ export const LastChanceDnfMode = __t.enum("LastChanceDnfMode", {
   OnlyLeastCheckpoints: __t.unit(),
 });
 export type LastChanceDnfMode = __Infer<typeof LastChanceDnfMode>;
+
+export const LeaderboardV1 = __t.object("LeaderboardV1", {
+  name: __t.string(),
+  id: __t.u32(),
+  parentId: __t.u32(),
+  template: __t.bool(),
+});
+export type LeaderboardV1 = __Infer<typeof LeaderboardV1>;
 
 export const LoadingMapEnd = __t.object("LoadingMapEnd", {
   restarted: __t.bool(),
@@ -563,6 +588,9 @@ export const MatchState = __t.object("MatchState", {
   paused: __t.bool(),
   get status() {
     return MatchStatus;
+  },
+  get mode() {
+    return TmMode;
   },
 });
 export type MatchState = __Infer<typeof MatchState>;
@@ -686,6 +714,7 @@ export const NodeHandle = __t.enum("NodeHandle", {
   InputV1: __t.u32(),
   OutputV1: __t.u32(),
   RegistrationV1: __t.u32(),
+  LeaderboardV1: __t.u32(),
 });
 export type NodeHandle = __Infer<typeof NodeHandle>;
 
@@ -1272,6 +1301,15 @@ export const TimeAttack = __t.object("TimeAttack", {
   timeLimit: __t.i32(),
 });
 export type TimeAttack = __Infer<typeof TimeAttack>;
+
+// The tagged union or sum type for the algebraic type `TmMode`.
+export const TmMode = __t.enum("TmMode", {
+  Rounds: __t.unit(),
+  ReverseCup: __t.unit(),
+  Knockout: __t.unit(),
+  TimeAttack: __t.unit(),
+});
+export type TmMode = __Infer<typeof TmMode>;
 
 export const UnloadingMapEnd = __t.object("UnloadingMapEnd", {
   time: __t.u32(),

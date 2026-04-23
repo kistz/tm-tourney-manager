@@ -6,24 +6,11 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub enum NodeHandle {
-    MatchV1(u32),
-
-    CompetitionV1(u32),
-
-    ScheduleV1(u32),
-
-    ServerV1(u32),
-
-    InputV1(u32),
-
-    OutputV1(u32),
-
-    RegistrationV1(u32),
-
-    LeaderboardV1(u32),
+pub struct ConnectionDataOptionFirstOffsetN {
+    pub offset: u8,
+    pub take: u8,
 }
 
-impl __sdk::InModule for NodeHandle {
+impl __sdk::InModule for ConnectionDataOptionFirstOffsetN {
     type Module = super::RemoteModule;
 }

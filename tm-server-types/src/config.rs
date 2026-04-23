@@ -153,6 +153,15 @@ impl ModeSettings {
         }
     }
 
+    pub fn get_mode(&self) -> TmMode {
+        match self {
+            ModeSettings::Rounds(_) => TmMode::Rounds,
+            ModeSettings::ReverseCup(_) => TmMode::ReverseCup,
+            ModeSettings::TimeAttack(_) => TmMode::TimeAttack,
+            ModeSettings::Knockout(_) => TmMode::Knockout,
+        }
+    }
+
     /// Returns the mode script of a custom mode.
     pub fn get_external_script(&self) -> Option<&str> {
         match self {
@@ -203,4 +212,15 @@ impl Default for MapPoolConfig {
             map_uids: vec!["olsKnq_qAghcVAnEkoeUnVHFZei".into()],
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
+#[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
+pub enum TmMode {
+    Rounds,
+    ReverseCup,
+    Knockout,
+    TimeAttack,
 }

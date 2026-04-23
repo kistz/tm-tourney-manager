@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use spacetimedb::{AnonymousViewContext, SpacetimeType, table, view};
+use spacetimedb::{AnonymousViewContext, Query, SpacetimeType, table, view};
 
 use crate::tm_match::state::tab_match_state__view;
 
@@ -158,7 +158,7 @@ fn temp_match_leaderboard(
 /// Round 0 is giving you a live view.
 /// If you want a accumulated view please you the match_leaderboard view instead.
 #[view(accessor=match_round,public)]
-pub fn match_round(
+fn match_round(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
 ) -> Vec<MatchRoundPlayer> {
     let match_id = 51u32;
@@ -183,9 +183,23 @@ pub fn match_round(
     standings
 }
 
+#[view(accessor=unstable_match_round,public)]
+fn unstable_match_round(
+    ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
+) -> impl Query<MatchRoundPlayer> {
+    ctx.from.tab_match_round_player()
+}
+
+#[view(accessor=unstable_match_round_ext,public)]
+fn unstable_match_round_ext(
+    ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
+) -> impl Query<MatchRoundPlayerExt> {
+    ctx.from.tab_match_round_player_ext()
+}
+
 /// If round 0 is supplied we take the current round.
 #[view(accessor=match_round_ext,public)]
-pub fn match_round_ext(
+fn match_round_ext(
     ctx: &AnonymousViewContext, /* match_id: u32, round: u16 */
 ) -> Vec<MatchRoundPlayerExt> {
     let match_id = 51u32;

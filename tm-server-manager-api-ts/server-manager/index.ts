@@ -44,6 +44,7 @@ import ConnectionConfiguredReducer from "./connection_configured_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import InputCreateReducer from "./input_create_reducer";
+import LeaderboardCreateReducer from "./leaderboard_create_reducer";
 import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
@@ -130,6 +131,8 @@ import UnstableCompetitionConnectionRow from "./unstable_competition_connection_
 import UnstableCompetitionMembersRow from "./unstable_competition_members_table";
 import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
 import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member_table";
+import UnstableMatchRoundRow from "./unstable_match_round_table";
+import UnstableMatchRoundExtRow from "./unstable_match_round_ext_table";
 import UnstableRegistrationRow from "./unstable_registration_table";
 import UnstableRegistrationPlayerRow from "./unstable_registration_player_table";
 import UsersRow from "./users_table";
@@ -333,6 +336,20 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, UnstableCompetitionRoleMemberRow),
+  unstable_match_round: __table({
+    name: 'unstable_match_round',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, UnstableMatchRoundRow),
+  unstable_match_round_ext: __table({
+    name: 'unstable_match_round_ext',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, UnstableMatchRoundExtRow),
   unstable_registration: __table({
     name: 'unstable_registration',
     indexes: [
@@ -368,6 +385,7 @@ const reducersSchema = __reducers(
   __reducerSchema("connection_create", ConnectionCreateReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("input_create", InputCreateReducer),
+  __reducerSchema("leaderboard_create", LeaderboardCreateReducer),
   __reducerSchema("lend_raw_server", LendRawServerReducer),
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),

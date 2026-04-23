@@ -5,6 +5,7 @@
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::match_status_type::MatchStatus;
+use super::tm_mode_type::TmMode;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
@@ -17,6 +18,7 @@ pub struct MatchState {
     pub is_warmup: bool,
     pub paused: bool,
     pub status: MatchStatus,
+    pub mode: TmMode,
 }
 
 impl __sdk::InModule for MatchState {
@@ -35,6 +37,7 @@ pub struct MatchStateCols {
     pub is_warmup: __sdk::__query_builder::Col<MatchState, bool>,
     pub paused: __sdk::__query_builder::Col<MatchState, bool>,
     pub status: __sdk::__query_builder::Col<MatchState, MatchStatus>,
+    pub mode: __sdk::__query_builder::Col<MatchState, TmMode>,
 }
 
 impl __sdk::__query_builder::HasCols for MatchState {
@@ -49,6 +52,7 @@ impl __sdk::__query_builder::HasCols for MatchState {
             is_warmup: __sdk::__query_builder::Col::new(table_name, "is_warmup"),
             paused: __sdk::__query_builder::Col::new(table_name, "paused"),
             status: __sdk::__query_builder::Col::new(table_name, "status"),
+            mode: __sdk::__query_builder::Col::new(table_name, "mode"),
         }
     }
 }

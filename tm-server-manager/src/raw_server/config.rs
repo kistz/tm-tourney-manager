@@ -33,6 +33,7 @@ struct EventRawServerState {
 
 pub(crate) trait RawServerContigRead {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle>;
+    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfig, String>;
 }
 impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle> {
@@ -60,6 +61,19 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
         );
 
         config_references
+    }
+
+    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfig, String> {
+        let Some(config) = self
+            .db_read_only()
+            .tab_raw_server_config()
+            .id()
+            .find(config_id)
+        else {
+            return Err("Config with id could not be found".into());
+        };
+
+        Ok(config.config)
     }
 }
 

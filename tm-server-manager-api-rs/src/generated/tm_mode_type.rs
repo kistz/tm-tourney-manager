@@ -6,24 +6,17 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub enum NodeHandle {
-    MatchV1(u32),
+#[derive(Copy, Eq, Hash)]
+pub enum TmMode {
+    Rounds,
 
-    CompetitionV1(u32),
+    ReverseCup,
 
-    ScheduleV1(u32),
+    Knockout,
 
-    ServerV1(u32),
-
-    InputV1(u32),
-
-    OutputV1(u32),
-
-    RegistrationV1(u32),
-
-    LeaderboardV1(u32),
+    TimeAttack,
 }
 
-impl __sdk::InModule for NodeHandle {
+impl __sdk::InModule for TmMode {
     type Module = super::RemoteModule;
 }

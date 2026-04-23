@@ -15,6 +15,9 @@ pub use warm_up::*;
 mod give_up;
 pub use give_up::GiveUp;
 
+mod knockout;
+pub use knockout::KnockoutElimination;
+
 mod scores;
 pub use scores::Scores;
 
@@ -111,6 +114,8 @@ pub enum Event {
     Pause(Pause),
 
     Custom(Custom),
+
+    KnockoutElimination(KnockoutElimination),
 }
 
 impl Event {
@@ -134,6 +139,9 @@ impl Event {
                     json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
                 ),
                 "Trackmania.Event.StartLine" => Event::StartLine(
+                    json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
+                ),
+                "Trackmania.Knockout.Elimination" => Event::KnockoutElimination(
                     json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
                 ),
 
