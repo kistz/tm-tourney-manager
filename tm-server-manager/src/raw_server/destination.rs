@@ -101,6 +101,9 @@ impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
         let server_id = self.occupation_with_occupier(node).unwrap();
         let competition_id = self.node_get_parent(node).unwrap();
         for player in players {
+            if player.only_spectator {
+                continue;
+            }
             self.db()
                 .tab_player_destination()
                 .try_insert(TabPlayerDestination {

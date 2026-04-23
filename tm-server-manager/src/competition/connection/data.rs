@@ -52,6 +52,11 @@ impl ConnectionData {
                 }
                 players
             }
+            ConnectionDataOption::FirstOffsetN(opt) => tm_match
+                .into_iter()
+                .skip(opt.offset as usize)
+                .take(opt.take as usize)
+                .collect(),
         };
         players
             .into_iter()
@@ -78,6 +83,11 @@ impl ConnectionData {
                 }
                 players
             }
+            ConnectionDataOption::FirstOffsetN(opt) => registration
+                .into_iter()
+                .skip(opt.offset as usize)
+                .take(opt.take as usize)
+                .collect(),
         };
         players
             .into_iter()
@@ -87,11 +97,12 @@ impl ConnectionData {
 }
 
 #[derive(Debug, SpacetimeType)]
-pub enum ConnectionDataOption {
+enum ConnectionDataOption {
     All,
     FirstN(u8),
     LastN(u8),
     Custom(Vec<u8>),
+    FirstOffsetN(ConnectionDataOptionFirstOffsetN),
 }
 
 #[view(accessor=connection_data,public)]
@@ -136,4 +147,10 @@ fn competition_connection_data_update(
     ctx.db.tab_connection_data().connection_id().update(data);
 
     Ok(())
+}
+
+#[derive(Debug, SpacetimeType)]
+struct ConnectionDataOptionFirstOffsetN {
+    offset: u8,
+    take: u8,
 }
