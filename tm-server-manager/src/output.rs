@@ -34,6 +34,10 @@ impl OutputV1 {
     pub(crate) fn is_template(&self) -> bool {
         self.template
     }
+
+    pub(crate) fn get_comp_id(&self) -> u32 {
+        self.parent_id
+    }
 }
 
 #[reducer]

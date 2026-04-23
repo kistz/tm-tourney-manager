@@ -11,7 +11,6 @@ use crate::{
         tab_competition,
     },
     input::{InputRead, InputWrite},
-    leaderboard::tab_leaderboard,
     output::{OutputRead, OutputWrite},
     registration::tab_registration,
     schedule::tab_schedule,
@@ -117,11 +116,11 @@ pub(super) fn competition_template_instantiate(
         .tab_server()
         .parent_id()
         .filter(competition_template.id);
-    let leaderboards = ctx
-        .db
-        .tab_leaderboard()
-        .parent_id()
-        .filter(competition_template.id);
+    /*  let leaderboards = ctx
+    .db
+    .tab_leaderboard()
+    .parent_id()
+    .filter(competition_template.id); */
     let inputs = ctx.inputs_in_parent(competition_template.id);
 
     // This is always maximnum 1 but keeping the pattern consistent
@@ -179,14 +178,14 @@ pub(super) fn competition_template_instantiate(
         server_map.insert(old_id, new_server);
     }
 
-    let mut leadearboard_map = HashMap::new();
+    /* let mut leadearboard_map = HashMap::new();
     for old_leaderboard in leaderboards {
         let old_id = old_leaderboard.id;
         let new_leadearboard = old_leaderboard.instantiate(new_comp.id, stay_template);
         let new_leaderboard = ctx.db.tab_leaderboard().try_insert(new_leadearboard)?;
         ctx.node_create(NodeHandle::LeaderboardV1(new_leaderboard.id))?;
         leadearboard_map.insert(old_id, new_leaderboard);
-    }
+    } */
 
     let mut input_map = HashMap::new();
     for old_input in inputs {
@@ -224,7 +223,7 @@ pub(super) fn competition_template_instantiate(
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
             NodeHandle::InputV1(n) => input_map.get(&n).unwrap().id,
             NodeHandle::OutputV1(n) => output_map.get(&n).unwrap().id,
-            NodeHandle::LeaderboardV1(n) => leadearboard_map.get(&n).unwrap().id,
+            NodeHandle::LeaderboardV1(n) => todo!(), // leadearboard_map.get(&n).unwrap().id,
         };
 
         let old_target = old_connection.connection_target();
@@ -236,7 +235,7 @@ pub(super) fn competition_template_instantiate(
             NodeHandle::RegistrationV1(i) => registration_map.get(&i).unwrap().id,
             NodeHandle::InputV1(n) => input_map.get(&n).unwrap().id,
             NodeHandle::OutputV1(n) => output_map.get(&n).unwrap().id,
-            NodeHandle::LeaderboardV1(n) => leadearboard_map.get(&n).unwrap().id,
+            NodeHandle::LeaderboardV1(n) => todo!(), //leadearboard_map.get(&n).unwrap().id,
         };
 
         let mut new_connection = old_connection.instantiate(new_comp.id);
