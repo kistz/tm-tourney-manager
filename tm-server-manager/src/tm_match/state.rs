@@ -14,6 +14,11 @@ pub struct MatchState {
     is_warmup: bool,
     paused: bool,
     status: MatchStatus,
+    // This would be free in terms of bytes.
+    // Could be nice to evaluate score for special modes like time attack
+    // or Knockout.
+    //#[default(0)]
+    //mode: u8,
 }
 
 impl MatchState {
