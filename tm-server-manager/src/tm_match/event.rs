@@ -221,7 +221,7 @@ pub(crate) fn handle_match_event(
             if let Err(error) =
                 internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
             {
-                log::error!("Occupation could not be removed. Error {error}")
+                log::error!("Graph resolution could not be completed. Error {error}")
             };
 
             log::info!("The match {} has successfully ended!", state.match_id);
