@@ -30,6 +30,10 @@ impl InputV1 {
         self.id = 0;
         self
     }
+
+    pub(crate) fn is_template(&self) -> bool {
+        self.template
+    }
 }
 
 #[reducer]
@@ -89,6 +93,7 @@ impl<Db: DbContext> InputRead for Db {
 pub(crate) trait InputWrite: InputRead {
     fn input_template_instantiate(&self, with_template: u32) -> Result<(), String>;
     fn input_insert(&self, input: InputV1) -> Result<InputV1, String>;
+    fn input_name_edit(&self, input_id: u32, name: String) -> Result<(), String>;
 }
 impl<Db: DbContext<DbView = Local>> InputWrite for Db {
     fn input_template_instantiate(&self, with_template: u32) -> Result<(), String> {
@@ -100,5 +105,15 @@ impl<Db: DbContext<DbView = Local>> InputWrite for Db {
             .tab_input()
             .try_insert(input)
             .map_err(|e| e.to_string())
+    }
+
+    fn input_name_edit(&self, input_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_input().id().find(input_id) else {
+            return Err("Match not found.".into());
+        };
+        tm_match.name = name;
+        self.db().tab_input().id().update(tm_match);
+
+        Ok(())
     }
 }

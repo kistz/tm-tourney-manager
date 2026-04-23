@@ -12,11 +12,14 @@ use crate::{
         roles::tab_competition_member__view,
         tab_competition, tab_competition__view,
     },
+    input::{InputWrite, tab_input},
+    leaderboard::{LeaderboardWrite, tab_leaderboard},
+    output::{OutputWrite, tab_output},
     raw_server::player::PermittedPlayer,
     registration::{RegistrationWrite, tab_registration, tab_registration__view},
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
     tm_match::{MatchWrite, tab_match, tab_match__view},
-    tm_server::{ServerWrite, tab_server__view},
+    tm_server::{ServerWrite, tab_server, tab_server__view},
     user::UserRead,
 };
 mod position;
@@ -33,6 +36,7 @@ pub enum NodeHandle {
     InputV1(u32),
     OutputV1(u32),
     RegistrationV1(u32),
+    LeaderboardV1(u32),
 }
 
 // This is done because of a petgraph trait bound.
@@ -56,6 +60,7 @@ impl NodeHandle {
             NodeHandle::InputV1(h) => (5, h),
             NodeHandle::OutputV1(h) => (6, h),
             NodeHandle::RegistrationV1(r) => (7, r),
+            NodeHandle::LeaderboardV1(l) => (8, l),
         }
     }
 
@@ -68,6 +73,7 @@ impl NodeHandle {
             5 => Self::InputV1(value),
             6 => Self::OutputV1(value),
             7 => Self::RegistrationV1(value),
+            8 => Self::LeaderboardV1(value),
             _ => unreachable!(),
         }
     }
@@ -86,14 +92,26 @@ impl NodeHandle {
                 let node = ctx.db.tab_schedule().id().find(s).unwrap();
                 node.is_template()
             }
-            NodeHandle::ServerV1(_) => todo!(),
-
+            NodeHandle::ServerV1(n) => {
+                let node = ctx.db.tab_server().id().find(n).unwrap();
+                node.is_template()
+            }
             NodeHandle::RegistrationV1(reg) => {
                 let node = ctx.db.tab_registration().id().find(reg).unwrap();
                 node.is_template()
             }
-            NodeHandle::InputV1(_) => todo!(),
-            NodeHandle::OutputV1(_) => todo!(),
+            NodeHandle::InputV1(n) => {
+                let node = ctx.db.tab_input().id().find(n).unwrap();
+                node.is_template()
+            }
+            NodeHandle::OutputV1(n) => {
+                let node = ctx.db.tab_output().id().find(n).unwrap();
+                node.is_template()
+            }
+            NodeHandle::LeaderboardV1(n) => {
+                let node = ctx.db.tab_leaderboard().id().find(n).unwrap();
+                node.is_template()
+            }
         }
     }
 
@@ -118,6 +136,9 @@ impl NodeHandle {
     pub(crate) fn is_schedule(&self) -> bool {
         matches!(self, NodeHandle::ScheduleV1(_))
     }
+    pub(crate) fn is_leaderboard(&self) -> bool {
+        matches!(self, NodeHandle::LeaderboardV1(_))
+    }
 
     pub(crate) fn id(&self) -> u32 {
         self.split().1
@@ -133,13 +154,13 @@ impl NodeType for NodeHandle {
         match self {
             NodeHandle::MatchV1(match_id) => ctx.match_set_preparation(*match_id),
             NodeHandle::CompetitionV1(c) => todo!(), // trigger the input node.
-            //NodeHandle::MonitoringV1(_) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),
-            //NodeHandle::PortalV1(_) => todo!(),
             NodeHandle::RegistrationV1(r) => unreachable!(),
             NodeHandle::InputV1(_) => todo!(),
             NodeHandle::OutputV1(_) => todo!(),
+            // Nothing should really happen here because the leaderboard will recompute itself.
+            NodeHandle::LeaderboardV1(_) => Ok(()),
         }
     }
 }
@@ -237,8 +258,27 @@ impl<Db: DbContext> NodeRead for Db {
                     Err("Registration could not be found.".into())
                 }
             }
-            NodeHandle::InputV1(_) => todo!(),
-            NodeHandle::OutputV1(_) => todo!(),
+            NodeHandle::InputV1(node) => {
+                if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
+                    Ok(node.get_comp_id())
+                } else {
+                    Err("Registration could not be found.".into())
+                }
+            }
+            NodeHandle::OutputV1(node) => {
+                if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
+                    Ok(node.get_comp_id())
+                } else {
+                    Err("Registration could not be found.".into())
+                }
+            }
+            NodeHandle::LeaderboardV1(node) => {
+                if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
+                    Ok(node.get_comp_id())
+                } else {
+                    Err("Registration could not be found.".into())
+                }
+            }
         }
     }
 }
@@ -295,8 +335,9 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
             NodeHandle::ServerV1(id) => self.server_name_edit(id, name)?,
             NodeHandle::ScheduleV1(id) => self.schedule_name_edit(id, name)?,
             NodeHandle::RegistrationV1(id) => self.registration_name_edit(id, name)?,
-            NodeHandle::InputV1(_) => todo!(),
-            NodeHandle::OutputV1(_) => todo!(),
+            NodeHandle::InputV1(id) => self.input_name_edit(id, name)?,
+            NodeHandle::OutputV1(id) => self.output_name_edit(id, name)?,
+            NodeHandle::LeaderboardV1(id) => self.leaderboard_name_edit(id, name)?,
         }
 
         Ok(())

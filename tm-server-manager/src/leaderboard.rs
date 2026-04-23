@@ -9,8 +9,8 @@ use crate::{
     },
 };
 
-#[table(accessor= tab_output)]
-pub struct OutputV1 {
+#[table(accessor= tab_leaderboard)]
+pub struct LeaderboardV1 {
     name: String,
 
     #[auto_inc]
@@ -23,7 +23,7 @@ pub struct OutputV1 {
     template: bool,
 }
 
-impl OutputV1 {
+impl LeaderboardV1 {
     pub(crate) fn instantiate(mut self, parent_id: u32, stay_template: bool) -> Self {
         self.template = stay_template;
         self.parent_id = parent_id;
@@ -37,7 +37,7 @@ impl OutputV1 {
 }
 
 #[reducer]
-fn output_create(
+fn leaderboard_create(
     ctx: &ReducerContext,
     name: String,
     parent_id: u32,
@@ -48,7 +48,7 @@ fn output_create(
     };
 
     ctx.auth_builder(parent_id)
-        .permission(CompetitionPermissionsV1::OUTPUT_CREATE)
+        //.permission(CompetitionPermissionsV1::LEADERB)
         .authorize()?;
 
     if parent_competition.is_template() {
@@ -61,25 +61,24 @@ fn output_create(
 
     // Try to load template if provided
     if with_template != 0 {
-        ctx.output_template_instantiate(with_template)?;
+        ctx.leaderboard_template_instantiate(with_template)?;
     } else {
-        // Create an uncommitted server
-        let output = OutputV1 {
+        let output = LeaderboardV1 {
             name,
             id: 0,
             parent_id,
             template: false,
         };
 
-        let output = ctx.db.tab_output().try_insert(output)?;
+        let output = ctx.db.tab_leaderboard().try_insert(output)?;
 
-        ctx.node_create(NodeHandle::OutputV1(output.id))?;
+        ctx.node_create(NodeHandle::LeaderboardV1(output.id))?;
     }
 
     Ok(())
 }
 
-pub(crate) trait OutputRead {
+/* pub(crate) trait OutputRead {
     fn outputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = OutputV1>;
 }
 impl<Db: DbContext> OutputRead for Db {
@@ -89,31 +88,34 @@ impl<Db: DbContext> OutputRead for Db {
             .parent_id()
             .filter(parent_id)
     }
+} */
+pub(crate) trait LeaderboardWrite {
+    fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String>;
+    fn leaderboard_insert(&self, output: LeaderboardV1) -> Result<LeaderboardV1, String>;
+    fn leaderboard_name_edit(&self, leadaerboard_i32: u32, name: String) -> Result<(), String>;
 }
-pub(crate) trait OutputWrite: OutputRead {
-    fn output_template_instantiate(&self, with_template: u32) -> Result<(), String>;
-    fn output_insert(&self, output: OutputV1) -> Result<OutputV1, String>;
-    fn output_name_edit(&self, output_id: u32, name: String) -> Result<(), String>;
-}
-impl<Db: DbContext<DbView = Local>> OutputWrite for Db {
-    fn output_template_instantiate(&self, with_template: u32) -> Result<(), String> {
+impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
+    fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String> {
         todo!()
     }
 
-    fn output_insert(&self, output: OutputV1) -> Result<OutputV1, String> {
-        self.db()
-            .tab_output()
-            .try_insert(output)
-            .map_err(|e| e.to_string())
+    fn leaderboard_insert(&self, output: LeaderboardV1) -> Result<LeaderboardV1, String> {
+        todo!()
     }
 
-    fn output_name_edit(&self, output_id: u32, name: String) -> Result<(), String> {
-        let Some(mut tm_match) = self.db().tab_output().id().find(output_id) else {
+    fn leaderboard_name_edit(&self, leadaerboard_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_leaderboard().id().find(leadaerboard_id) else {
             return Err("Match not found.".into());
         };
         tm_match.name = name;
-        self.db().tab_output().id().update(tm_match);
+        self.db().tab_leaderboard().id().update(tm_match);
 
         Ok(())
     }
 }
+
+// We should be able to iterate over every input and accumulate score or position.
+//After the accumulation there shuold also be math operations possible.
+
+// How would a distribution onto two servers work?
+// would require a 50/50 rotating live distribution of players

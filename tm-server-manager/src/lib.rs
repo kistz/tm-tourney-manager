@@ -2,7 +2,7 @@ use spacetimedb::{CaseConversionPolicy, Identity, ReducerContext, Uuid};
 
 use crate::{
     authorization::Authorization,
-    raw_server::{TabRawServerWrite, tab_raw_server},
+    raw_server::TabRawServerWrite,
     user::{UserV1 as UserStruct, UserWrite},
 };
 
@@ -10,10 +10,12 @@ pub mod authorization;
 pub mod competition;
 pub mod env;
 pub mod input;
+// Stabilize leaderboard node if its ready.
+#[cfg(not(feature = "production"))]
+pub mod leaderboard;
 pub mod maps;
 pub mod monitoring;
 pub mod output;
-pub mod portal;
 pub mod project;
 pub mod raw_server;
 pub mod record;

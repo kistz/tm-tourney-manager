@@ -39,6 +39,7 @@ impl TabConnectionAction {
                 NodeHandle::ServerV1(_) => unreachable!(),
                 NodeHandle::InputV1(_) => unreachable!(),
                 NodeHandle::OutputV1(_) => unreachable!(),
+                NodeHandle::LeaderboardV1(_) => unreachable!(),
                 NodeHandle::RegistrationV1(_) => {
                     ConnectionAction::RegistrationV1(ConnectionActionRegistration::Open)
                 }
@@ -164,6 +165,7 @@ pub(super) fn try_exec_action(connection: u32, target: NodeHandle, ctx: &Reducer
         NodeHandle::CompetitionV1(_) => unreachable!(),
         NodeHandle::ServerV1(_) => unreachable!(),
         NodeHandle::ScheduleV1(_) => unreachable!(),
+        NodeHandle::LeaderboardV1(_) => unreachable!(),
         NodeHandle::RegistrationV1(r) => {
             let registration_action = action.get_registration();
             match registration_action {

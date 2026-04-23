@@ -211,18 +211,18 @@ pub(crate) fn handle_match_event(
             let tm_match = ctx.db.tab_match().id().update(tm_match);
 
             if let Err(error) =
-                internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
-            {
-                log::error!("Occupation could not be removed. Error {error}")
-            };
-
-            if let Err(error) =
                 ctx.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id))
             {
                 log::error!("Occupation could not be removed. Error {error}")
             };
 
             ctx.destination_free(NodeHandle::MatchV1(state.match_id));
+
+            if let Err(error) =
+                internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
+            {
+                log::error!("Occupation could not be removed. Error {error}")
+            };
 
             log::info!("The match {} has successfully ended!", state.match_id);
         }

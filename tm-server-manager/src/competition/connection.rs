@@ -457,6 +457,7 @@ impl<Db: DbContext> ConnectionRead for Db {
             }
             NodeHandle::InputV1(_) => todo!(),
             NodeHandle::OutputV1(_) => todo!(),
+            NodeHandle::LeaderboardV1(_) => todo!(),
         }
     }
 }
