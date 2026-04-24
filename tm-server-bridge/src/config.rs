@@ -1,4 +1,6 @@
-use tokio::sync::Mutex;
+use std::time::Duration;
+
+use tokio::{sync::Mutex, time::sleep};
 
 use nadeo_api::{NadeoRequest, auth::AuthType, request::Method};
 use serde::{Deserialize, Serialize};
@@ -45,29 +47,7 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                     tracing::error!("Could not write the configuration file: {error}");
                 }
 
-                let loaded = server
-                    .load_match_settings("MatchSettings/manager.txt")
-                    .await;
-
-                if loaded.is_ok() {
-                    let mut locked = SERVER_METADATA
-                        .get_or_init(|| Mutex::new(new_metadata.clone()))
-                        .lock()
-                        .await;
-                    *locked = new_metadata.clone();
-                } else {
-                    tracing::error!("Could not load match settings file!")
-                }
-
-                if let Err(err) = server.restart_map().await {
-                    tracing::error!("Could not restart!. Reason: {err}");
-                };
-                if let Err(err) = server
-                    .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
-                    .await
-                {
-                    tracing::error!("Could not send server message!. Reason: {err}");
-                };
+                load_new_config(new_metadata).await;
                 return;
             };
             if config.get_maps().maps() != old_metadata.lock().await.config.maps.map_uids {
@@ -81,32 +61,45 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                 tracing::error!("Could not write the configuration file: {error}");
             }
 
-            let loaded = server
-                .load_match_settings("MatchSettings/manager.txt")
-                .await;
-
-            if loaded.is_ok() {
-                let mut locked = SERVER_METADATA
-                    .get_or_init(|| Mutex::new(new_metadata.clone()))
-                    .lock()
-                    .await;
-                *locked = new_metadata.clone();
-            } else {
-                tracing::error!("Could not load new config.")
-            }
-
-            if let Err(err) = server.restart_map().await {
-                tracing::error!("Could not restart!. Reason: {err}");
-            };
-
-            if let Err(err) = server
-                .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
-                .await
-            {
-                tracing::error!("Could not send server message!. Reason: {err}");
-            };
+            load_new_config(new_metadata).await;
         });
     });
+}
+
+async fn load_new_config(new_metadata: &EventRawServerState) {
+    let server = TRACKMANIA.wait();
+
+    let mut loaded = server
+        .load_match_settings("MatchSettings/manager.txt")
+        .await;
+
+    while loaded.is_err() {
+        sleep(Duration::from_secs(2)).await;
+        loaded = server
+            .load_match_settings("MatchSettings/manager.txt")
+            .await;
+    }
+
+    if loaded.is_ok() {
+        let mut locked = SERVER_METADATA
+            .get_or_init(|| Mutex::new(new_metadata.clone()))
+            .lock()
+            .await;
+        *locked = new_metadata.clone();
+    } else {
+        tracing::error!("Could not load new config.")
+    }
+
+    if let Err(err) = server.restart_map().await {
+        tracing::error!("Could not restart!. Reason: {err}");
+    };
+
+    if let Err(err) = server
+        .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
+        .await
+    {
+        tracing::error!("Could not send server message!. Reason: {err}");
+    };
 }
 
 async fn get_maps(maps: impl Iterator<Item = &String>) {
