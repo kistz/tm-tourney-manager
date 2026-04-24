@@ -40,6 +40,7 @@ pub struct MatchRoundPlayer {
     #[index(hash)]
     pub user_id: u32,
 
+    #[index(hash)]
     match_id: u32,
     time: i32,
     // The points of the round.
@@ -80,6 +81,7 @@ pub struct MatchRoundPlayerExt {
     user_id: u32,
     #[primary_key]
     pub id: u32,
+    #[index(hash)]
     match_id: u32,
     round: u16,
 }

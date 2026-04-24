@@ -156,7 +156,12 @@ pub(crate) fn handle_match_event(
                         .match_round_player()
                         .filter((state.match_id, round, user_id))
                         .next()
-                        .unwrap();
+                        .unwrap_or_else(|| {
+                            log::error!("Entry of player was not found.");
+                            let new_player = MatchRoundPlayer::new(state.match_id, user_id, round);
+
+                            ctx.db.tab_match_round_player().insert(new_player)
+                        });
 
                     entry.set_points(-1);
 

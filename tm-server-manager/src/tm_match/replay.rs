@@ -1,7 +1,7 @@
 use spacetimedb::{DbContext, ProcedureContext, Table, Uuid, procedure, table};
 
 #[table(accessor= tab_match_round_replay,index(accessor=match_round,hash(columns=[match_id,round])))]
-struct MatchRoundReplay {
+pub struct MatchRoundReplay {
     replay: Vec<u8>,
 
     #[index(hash)]

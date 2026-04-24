@@ -76,6 +76,14 @@ impl MatchState {
         self.status = MatchStatus::Recovery;
     }
 
+    pub(crate) fn restart(&mut self) {
+        self.restarted = 0;
+        self.round = 0;
+        self.warmup = 0;
+        self.is_warmup = false;
+        self.paused = false;
+    }
+
     pub(super) fn get_round(&self) -> u16 {
         self.round
     }

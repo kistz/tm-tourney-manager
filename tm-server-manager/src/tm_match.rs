@@ -25,6 +25,7 @@ use crate::{
     tm_match::{
         auto_recovery::RecoveryWrite,
         leaderboard::{tab_match_round_player, tab_match_round_player_ext},
+        replay::tab_match_round_replay,
         state::{MatchState, tab_match_state},
         template::match_template_instantiate,
     },
@@ -703,7 +704,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
     }
 
     fn match_restart(&self, match_id: u32) -> Result<(), String> {
-        let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
+        let Some(tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
             return Err("Match not found!".into());
         };
 
@@ -711,9 +712,41 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             return Err("Method cannot be called on templates.".into());
         }
 
-        if tm_match.status == MatchStatus::Recovery {
+        //TODO when is this possible?
+        if tm_match.status == MatchStatus::Live {
             return Err("Match has to be in recovery in order to restart it.".into());
         }
+
+        let mut state = self
+            .db()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+            .unwrap();
+
+        state.restart();
+
+        self.db().tab_match_state().match_id().update(state);
+
+        self.db()
+            .tab_match_round_player()
+            .match_id()
+            .delete(match_id);
+        self.db()
+            .tab_match_round_player_ext()
+            .match_id()
+            .delete(match_id);
+
+        self.db()
+            .tab_match_round_replay()
+            .match_id()
+            .delete(match_id);
+
+        let occu = self
+            .occupation_with_occupier(NodeHandle::MatchV1(match_id))
+            .unwrap();
+
+        self.emit_raw_server_config(occu, false)?;
 
         Ok(())
     }
