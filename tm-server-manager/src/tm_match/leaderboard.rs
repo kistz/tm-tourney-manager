@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 
 use spacetimedb::{AnonymousViewContext, Query, SpacetimeType, table, view};
+use tm_server_types::config::{ModeSettings, TmMode};
 
-use crate::tm_match::state::tab_match_state__view;
+use crate::{
+    raw_server::{config::RawServerContigRead, occupation::TabRawServerOccupationRead},
+    tm_match::{state::tab_match_state__view, tab_match__view},
+};
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub(super) enum PlayerAction {
@@ -228,50 +232,102 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
     /// Accumulates points of all previous rounds.
     /// Round 0 is giving you a live view.
     /// If you want points from individual rounds use the match_round view instead.
+    /// # Important.
+    /// Returns a SORTED VECTOR of the standings of the mode.
+    /// This is part of the contract and MUST not be changed.
     fn match_leaderboard(&self, match_id: u32, mut round: u16) -> Vec<MatchRoundPlayer> {
-        let entries: Vec<MatchRoundPlayer> = if round == 0 {
-            //TODO if the match is finished then do inclusive range.
-            let Some(state) = self
-                .db_read_only()
-                .tab_match_state()
-                .match_id()
-                .find(match_id)
-            else {
-                return Vec::new();
-            };
-            round = state.get_round();
-            self.db_read_only()
-                .tab_match_round_player()
-                .match_round_range()
-                .filter((match_id, 1..=round))
-                .collect()
-        } else {
-            self.db_read_only()
-                .tab_match_round_player()
-                .match_round_range()
-                .filter((match_id, 1..=round))
-                .collect()
+        let Some(state) = self
+            .db_read_only()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+        else {
+            return Vec::new();
         };
+        if round == 0 {
+            round = state.get_round();
+        };
+        let mut entries: Vec<MatchRoundPlayer> = self
+            .db_read_only()
+            .tab_match_round_player()
+            .match_round_range()
+            .filter((match_id, 1..=round))
+            .collect();
 
         let mut map = HashMap::<u32, MatchRoundPlayer>::new();
 
-        for entry in entries {
-            map.entry(entry.user_id)
-                .and_modify(|e| {
-                    e.points += entry.points;
-                    if entry.round > e.round {
-                        e.round = entry.round;
-                        e.id = entry.id;
-                    }
-                })
-                .or_insert(entry);
-        }
+        let returned = match state.get_mode() {
+            TmMode::Rounds => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            e.points += entry.points;
+                            if entry.round > e.round {
+                                e.round = entry.round;
+                                e.id = entry.id;
+                            }
+                        })
+                        .or_insert(entry);
+                }
 
-        let mut standings = map.into_values().collect::<Vec<_>>();
+                let mut standings = map.into_values().collect::<Vec<_>>();
 
-        // This is part of the contracft of the function!!!
-        // For calls in the module e.g. depending nodes requesting results. it needs to be sorted correctly.
-        standings.sort_by_key(|v| v.points);
-        standings
+                standings.sort_by_key(|v| v.points);
+                standings
+            }
+            TmMode::ReverseCup => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            e.points += entry.points;
+                            if entry.round > e.round {
+                                e.round = entry.round;
+                                e.id = entry.id;
+                            }
+                        })
+                        .or_insert(entry);
+                }
+
+                let mut standings = map.into_values().collect::<Vec<_>>();
+
+                let tm_match = self.db_read_only().tab_match().id().find(match_id).unwrap();
+                let cfg = self.raw_server_config(tm_match.config).unwrap();
+                let starting_points = match cfg.get_mode() {
+                    ModeSettings::ReverseCup(reverse_cup) => reverse_cup.starting_points,
+                    _ => unreachable!(),
+                };
+
+                for player in &mut standings {
+                    player.points += starting_points;
+                }
+
+                standings.sort_by_key(|v| v.points);
+                standings
+            }
+            TmMode::Knockout => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            if entry.points == -2 {
+                                *e = entry;
+                            }
+                        })
+                        .or_insert(entry);
+                }
+                let mut standings = map.into_values().collect::<Vec<_>>();
+
+                standings.sort_by_key(|v| v.round);
+                standings
+            }
+            TmMode::TimeAttack => {
+                entries.sort_by_key(|v| if v.time == 0 { i32::MAX } else { v.time });
+
+                entries
+            }
+        };
+
+        log::info!("{returned:?}");
+
+        returned
     }
 }
