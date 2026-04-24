@@ -212,7 +212,7 @@ impl TypedCallbacks for TrackmaniaServer {
         + Sync
         + 'static,
     ) {
-        self.on("ManiaPlanet.StartRound_Start", execute);
+        self.on("Maniaplanet.StartRound_Start", execute);
     }
 
     fn on_end_round_start(
@@ -222,7 +222,7 @@ impl TypedCallbacks for TrackmaniaServer {
         + Sync
         + 'static,
     ) {
-        self.on("ManiaPlanet.EndRound_Start", execute);
+        self.on("Maniaplanet.EndRound_Start", execute);
     }
 
     fn on_end_round_end(
@@ -232,7 +232,7 @@ impl TypedCallbacks for TrackmaniaServer {
         + Sync
         + 'static,
     ) {
-        self.on("ManiaPlanet.EndRound_End", execute);
+        self.on("Maniaplanet.EndRound_End", execute);
     }
 
     fn on_start_server_start(

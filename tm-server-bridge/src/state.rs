@@ -44,11 +44,20 @@ pub async fn setup_state_synchronization() {
 
     // Sync the replay of every round to the server.
     server.on_end_round_start(async |event: &EndRoundStart| {
+        tracing::info!("Trying to save replay of this round.");
         let file_name = format!("{}{}", event.count, event.time);
-        if let Err(error) = server.save_current_replay(&file_name).await {
-            tracing::error!("Failed to save Replay File after Round ended. Reason: {error}");
-            return;
+        match server.save_current_replay(&file_name).await {
+            Ok(b) if !b => {
+                tracing::error!("Did not save successfully.");
+                return;
+            }
+            Err(err) => {
+                tracing::error!("Failed to save Replay File after Round ended. Reason: {err}");
+                return;
+            }
+            _ => (),
         };
+
         let full_path = TRACKMANIA_FILES.wait().clone()
             + "/Replays/"
             + &std::env::var("TM_MASTERSERVER_LOGIN").unwrap()
@@ -62,13 +71,13 @@ pub async fn setup_state_synchronization() {
                     .read()
                     .procedures
                     .post_round_replay(event.time, file);
+                if let Err(error) = std::fs::remove_file(&full_path) {
+                    tracing::error!("Failed to delete the current replay file! Reason: {error}")
+                };
             }
             Err(error) => {
                 tracing::error!("Failed to read replay file. Reason: {error}")
             }
-        };
-        if let Err(error) = std::fs::remove_file(&full_path) {
-            tracing::error!("Failed to delete the current replay file! Reason: {error}")
         };
     });
 
