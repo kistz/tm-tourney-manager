@@ -233,12 +233,13 @@ pub(crate) fn handle_match_event(
             log::info!("Match {} has started!", state.match_id)
         }
         Event::EndMatchEnd(_) => {
-            if state.get_round() == 0 && state.get_mode() == TmMode::TimeAttack {
-                log::info!("Skipping end because of time attack mode.");
-            } else {
-                if state.get_round() == 0 {
+            if state.get_round() == 0 {
+                if state.get_mode() == TmMode::TimeAttack {
+                    log::info!("Skipping end because of time attack mode.");
+                } else {
                     log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
                 }
+            } else {
                 let Some(mut tm_match) = ctx.db.tab_match().id().find(state.match_id) else {
                     return Err("Match not found".into());
                 };
