@@ -13,6 +13,8 @@ pub fn post_round_replay(
 ) -> Result<(), String> {
     let sender = ctx.sender();
 
+    log::info!("Posted replay {sender}");
+
     ctx.try_with_tx(|ctx| {
         let server = match ctx.db.tab_raw_server_identity().identity().find(sender) {
             Some(server) => server,
