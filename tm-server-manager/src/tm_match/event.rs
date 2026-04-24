@@ -8,6 +8,7 @@ use crate::{
         destination::TabRawServerDestinationWrite, occupation::TabRawServerOccupationWrite,
     },
     tm_match::{
+        MatchWrite,
         leaderboard::{
             MatchRoundPlayer, MatchRoundPlayerExt, tab_match_round_player,
             tab_match_round_player_ext,
@@ -240,31 +241,14 @@ pub(crate) fn handle_match_event(
                     log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
                 }
             } else {
-                let Some(mut tm_match) = ctx.db.tab_match().id().find(state.match_id) else {
-                    return Err("Match not found".into());
-                };
-                tm_match.end_match();
+                ctx.match_end(state.match_id)?;
 
-                state.end_match();
-                ctx.db.tab_match_state().match_id().update(state);
-
-                let tm_match = ctx.db.tab_match().id().update(tm_match);
-
-                if let Err(error) =
-                    ctx.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id))
-                {
-                    log::error!("Occupation could not be removed. Error {error}")
-                };
-
-                ctx.destination_free(NodeHandle::MatchV1(state.match_id));
-
-                if let Err(error) =
-                    internal_graph_resolution_node_finished(ctx, NodeHandle::MatchV1(tm_match.id))
-                {
+                if let Err(error) = internal_graph_resolution_node_finished(
+                    ctx,
+                    NodeHandle::MatchV1(state.match_id),
+                ) {
                     log::error!("Graph resolution could not be completed. Error {error}")
                 };
-
-                log::info!("The match {} has successfully ended!", state.match_id);
             }
         }
         Event::WarmupStart => {

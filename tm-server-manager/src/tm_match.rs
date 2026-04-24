@@ -10,6 +10,7 @@ use crate::{
     authorization::Authorization,
     competition::{
         CompetitionPermissionsV1,
+        connection::internal_graph_resolution_node_finished,
         node::{NodeHandle, NodeWrite},
         server_pool::TabCompetitionServerPoolRead,
         tab_competition,
@@ -460,6 +461,23 @@ fn match_restart(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
 }
 
 #[reducer]
+fn match_end(ctx: &ReducerContext, match_id: u32) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match not found!".into());
+    };
+
+    if tm_match.status == MatchStatus::Ended {
+        return Err("Cannot end ended match".into());
+    }
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    ctx.match_end(match_id)
+}
+
+#[reducer]
 fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), String> {
     let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
         return Err("Match not found!".into());
@@ -508,6 +526,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_try_start(&self, match_id: u32, now: Timestamp) -> Result<(), String>;
     fn match_set_preparation(&self, match_id: u32) -> Result<(), String>;
     fn match_restart(&self, match_id: u32) -> Result<(), String>;
+    fn match_end(&self, match_id: u32) -> Result<(), String>;
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
     fn match_recovery_enter(&self, match_id: u32, manual: bool) -> Result<(), String> {
@@ -747,6 +766,34 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
             .unwrap();
 
         self.emit_raw_server_config(occu, false)?;
+
+        Ok(())
+    }
+
+    fn match_end(&self, match_id: u32) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_match().id().find(match_id) else {
+            return Err("Match not found".into());
+        };
+        tm_match.end_match();
+
+        let mut state = self
+            .db()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+            .unwrap();
+
+        state.end_match();
+        self.db().tab_match_state().match_id().update(state);
+        let tm_match = self.db().tab_match().id().update(tm_match);
+
+        if let Err(error) = self.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id)) {
+            log::error!("Occupation could not be removed. Error {error}")
+        };
+
+        self.destination_free(NodeHandle::MatchV1(state.match_id));
+
+        log::info!("The match {} has successfully ended!", state.match_id);
 
         Ok(())
     }
