@@ -272,7 +272,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
 
                 let mut standings = map.into_values().collect::<Vec<_>>();
 
-                standings.sort_by_key(|v| v.points);
+                standings.sort_by_key(|v| -v.points);
                 standings
             }
             TmMode::ReverseCup => {
@@ -301,6 +301,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                     player.points += starting_points;
                 }
 
+                //TODO this is wildly incorrect.
                 standings.sort_by_key(|v| v.points);
                 standings
             }

@@ -13,7 +13,7 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tokio::task::block_in_place(move || {
         let old_metadata = SERVER_METADATA.get();
         tokio::runtime::Handle::current().block_on(async move {
-            let server = TRACKMANIA.wait();
+            let server = TRACKMANIA.get().unwrap();
 
             let config = unsafe {
                 std::mem::transmute::<
@@ -67,17 +67,26 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
 }
 
 async fn load_new_config(new_metadata: &EventRawServerState) {
-    let server = TRACKMANIA.wait();
+    let server = TRACKMANIA.get().unwrap();
 
     let mut loaded = server
         .load_match_settings("MatchSettings/manager.txt")
         .await;
 
-    while loaded.is_err() {
+    while let Err(err) = loaded {
+        tracing::error!("Could not load match config. Reason: {}", err);
         sleep(Duration::from_secs(2)).await;
         loaded = server
             .load_match_settings("MatchSettings/manager.txt")
             .await;
+    }
+
+    let mut restarted = server.restart_map().await;
+
+    while let Err(err) = restarted {
+        tracing::error!("Could not restart!. Reason: {err}");
+        sleep(Duration::from_secs(2)).await;
+        restarted = server.restart_map().await;
     }
 
     if loaded.is_ok() {
@@ -89,10 +98,6 @@ async fn load_new_config(new_metadata: &EventRawServerState) {
     } else {
         tracing::error!("Could not load new config.")
     }
-
-    if let Err(err) = server.restart_map().await {
-        tracing::error!("Could not restart!. Reason: {err}");
-    };
 
     if let Err(err) = server
         .chat_send_server_massage("[tmservers.live] Loaded new configuration.")

@@ -18,7 +18,7 @@ use tokio::time::sleep;
 use crate::{SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 
 pub async fn setup_state_synchronization() {
-    let server = TRACKMANIA.wait();
+    let server = TRACKMANIA.get().unwrap();
 
     sync_players().await;
 
@@ -146,36 +146,11 @@ pub async fn setup_state_synchronization() {
                     tracing::error!("Cannot go to next map!. Reason: {err}");
                 };
             }
-
-            let _: i32 = server
-                .call("SaveMatchSettings", format!("{}.txt", event.time))
-                .await
-                .unwrap();
         }
     });
 
-    /* server.on_begin_match(async |_: &Unit| {
-        let config = unsafe {
-            std::mem::transmute::<
-                tm_server_manager_api_rs::ServerConfig,
-                tm_server_controller::config::ServerConfig,
-            >(SERVER_METADATA.wait().lock().await.config.clone())
-        };
-
-        tokio::spawn(async {
-            sleep(Duration::from_secs(2)).await;
-            let server = TRACKMANIA.wait();
-            if let Err(error) = server.set_mode_script_settings(config).await {
-                tracing::error!("{error}")
-            };
-        });
-    }); */
-
     server.on_start_map_start(async |_: &StartMap| {
         tracing::info!("Reapplying config on StartMapStart.");
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
 
         if let Some(lock) = SERVER_METADATA.get() {
             let config = unsafe {
@@ -188,17 +163,11 @@ pub async fn setup_state_synchronization() {
             if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
                 tracing::error!("{error}")
             };
-
-            let _: Result<(), tm_server_controller::ClientError> =
-                TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
         }
     });
 
     server.on_start_map_end(async |_: &StartMap| {
         tracing::info!("Reapplying config on StartMapEnd.");
-
-        let _: Result<(), tm_server_controller::ClientError> =
-            TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
 
         if let Some(lock) = SERVER_METADATA.get() {
             let config = unsafe {
@@ -220,7 +189,7 @@ pub async fn setup_state_synchronization() {
 
 /// Synchronizes all the state already present on the server with spacetime db.
 pub(super) async fn sync_players() {
-    let server = TRACKMANIA.wait();
+    let server = TRACKMANIA.get().unwrap();
     let spacetime = SPACETIME.read();
     if let Ok(players) = server.get_player_list().await {
         for player in players {
@@ -249,6 +218,7 @@ pub(super) async fn sync_players() {
 }
 
 pub fn check_allowed_players() {
+    tracing::info!("Checking allowed players...");
     tokio::task::block_in_place(move || {
         tokio::runtime::Handle::current().block_on(async move {
         if !SERVER_METADATA.wait().lock().await.open {
@@ -269,7 +239,7 @@ pub fn check_allowed_players() {
                             .wait()
                             .kick(
                                 server_player.account_id.clone(),
-                                "Not allowed to join the server.",
+                                "Not allowed to be on the server.",
                             )
                             .await
                         {
