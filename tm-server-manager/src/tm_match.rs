@@ -776,24 +776,19 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         };
         tm_match.end_match();
 
-        let mut state = self
-            .db()
-            .tab_match_state()
-            .match_id()
-            .find(match_id)
-            .unwrap();
+        if let Some(mut state) = self.db().tab_match_state().match_id().find(match_id) {
+            state.end_match();
+            self.db().tab_match_state().match_id().update(state);
+        }
+        self.db().tab_match().id().update(tm_match);
 
-        state.end_match();
-        self.db().tab_match_state().match_id().update(state);
-        let tm_match = self.db().tab_match().id().update(tm_match);
-
-        if let Err(error) = self.raw_server_occupation_remove(NodeHandle::MatchV1(state.match_id)) {
+        if let Err(error) = self.raw_server_occupation_remove(NodeHandle::MatchV1(match_id)) {
             log::error!("Occupation could not be removed. Error {error}")
         };
 
-        self.destination_free(NodeHandle::MatchV1(state.match_id));
+        self.destination_free(NodeHandle::MatchV1(match_id));
 
-        log::info!("The match {} has successfully ended!", state.match_id);
+        log::info!("The match {} has successfully ended!", match_id);
 
         Ok(())
     }
