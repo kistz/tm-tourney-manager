@@ -128,6 +128,10 @@ impl MyDbConnection {
         spacetime
             .db
             .raw_server_permitted_players()
+            .on_insert(|_, _| check_allowed_players());
+        spacetime
+            .db
+            .raw_server_permitted_players()
             .on_delete(|_, _| check_allowed_players());
 
         spacetime

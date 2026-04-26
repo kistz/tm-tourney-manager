@@ -86,50 +86,60 @@ pub async fn setup_state_synchronization() {
         move_player_to_destination(Uuid::parse_str(&event.account_id).unwrap()).await;
 
         // Server allowlist.
-        if !SERVER_METADATA.wait().lock().await.open {
-            let Some(player) = SPACETIME
-                .read()
-                .db
-                .raw_server_permitted_players()
-                .iter()
-                .find(|p| Uuid::parse_str(&event.account_id).unwrap() == p.account_id)
-            else {
-                tracing::warn!("Player tried to connect without the required permissions.");
-                if let Err(error) = TRACKMANIA
-                    .wait()
-                    .kick(event.account_id.clone(), "Not allowed to join the server.")
-                    .await
-                {
-                    tracing::error!("Could not kick player: {error}")
-                };
-
-                return;
+        if let Some(meta) = SERVER_METADATA.get()
+            && meta.lock().await.open
+        {
+            tracing::info!("Server is open skipping check if player is permitted.");
+            return;
+        } else {
+            tracing::info!("Not having SERVER_METADATA available yet. Assuming server is closed.");
+        }
+        let Some(player) = SPACETIME
+            .read()
+            .db
+            .raw_server_permitted_players()
+            .iter()
+            .find(|p| Uuid::parse_str(&event.account_id).unwrap() == p.account_id)
+        else {
+            tracing::warn!("Player tried to connect without the required permissions.");
+            if let Err(error) = TRACKMANIA
+                .wait()
+                .kick(
+                    event.account_id.clone(),
+                    "Not allowed to participate in the server.",
+                )
+                .await
+            {
+                tracing::error!("Could not kick player: {error}")
             };
-            if player.only_spectator {
-                tracing::warn!(
-                    "Player tried to connect as a player but is only allowed as a spectator."
-                );
-                if let Err(err) = TRACKMANIA
-                    .wait()
-                    .force_spectator(player.account_id.to_string(), 1)
-                    .await
-                {
-                    tracing::error!("Could not force player to spectator. Error {err}");
-                }
+
+            return;
+        };
+        if player.only_spectator {
+            tracing::warn!(
+                "Forcing player to spectator: {}",
+                player.account_id.to_uuid()
+            );
+            if let Err(err) = TRACKMANIA
+                .wait()
+                .force_spectator(player.account_id.to_string(), 1)
+                .await
+            {
+                tracing::error!("Could not force player to spectator. Error {err}");
             }
         }
     });
 
     server.on_start_server_end(async |event: &StartServer| {
         if let Some(lock) = SERVER_METADATA.get() {
-            let config = unsafe {
+            /* let config = unsafe {
                 std::mem::transmute::<
                     tm_server_manager_api_rs::ServerConfig,
                     tm_server_controller::config::ServerConfig,
                 >(lock.lock().await.config.clone())
             };
 
-            let server = TRACKMANIA.wait();
+            let server = TRACKMANIA.wait(); */
 
             if event.mode.updated {
                 //We need to load the settings again because we changed the script.
@@ -221,60 +231,73 @@ pub(super) async fn sync_players() {
 
 pub fn check_allowed_players() {
     tracing::info!(
-        "Checking allowed players... have new player list: {:?}",
+        "Checking allowed players... have new player list (account_id, only_spectator): {:?}",
         SPACETIME
             .read()
             .db
             .raw_server_permitted_players()
             .iter()
+            .map(|p| (p.account_id.to_string(), p.only_spectator))
             .collect::<Vec<_>>()
     );
     tokio::spawn(async {
-        if !SERVER_METADATA.wait().lock().await.open {
-            let server = TRACKMANIA.wait();
-            if let Ok(players) = server.get_player_list().await {
-                for server_player in players {
-                    let Some(player) = SPACETIME
-                        .read()
-                        .db
-                        .raw_server_permitted_players()
-                        .iter()
-                        .find(|p| {
-                            Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id
-                        })
-                    else {
-                        // This is the server itself so skip
-                        if server_player.flags & 0b100000 != 0 {
-                            continue;
-                        }
-                        tracing::warn!("Player tried to connect without the required permissions.");
-                        if let Err(error) = TRACKMANIA
-                            .wait()
-                            .kick(
-                                server_player.account_id.clone(),
-                                "Not allowed to be on the server.",
-                            )
-                            .await
-                        {
-                            tracing::error!("Could not kick player: {error}")
-                        };
-
-                        return;
+        if let Some(meta) = SERVER_METADATA.get()
+            && meta.lock().await.open
+        {
+            tracing::info!("Server is open skipping check of permitted playeres.");
+            return;
+        } else {
+            tracing::info!(
+                "Not having SERVER_METADATA available yet. Assuming server is not open."
+            );
+        }
+        let server = TRACKMANIA.get().unwrap();
+        tracing::info!("Server not open proceeding with kick...");
+        if let Ok(players) = server.get_player_list().await {
+            tracing::info!("Current Players on the server for allwoed player check: {players:?}");
+            for server_player in players {
+                let Some(player) = SPACETIME
+                    .read()
+                    .db
+                    .raw_server_permitted_players()
+                    .iter()
+                    .find(|p| Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id)
+                else {
+                    // This is the server itself so skip
+                    if server_player.flags & 0b100000 != 0 {
+                        continue;
+                    }
+                    tracing::info!(
+                        "Kicking player on the server which is not allowed anymore: {}",
+                        server_player.account_id
+                    );
+                    if let Err(error) = server
+                        .kick(
+                            server_player.account_id.clone(),
+                            "Not allowed to be on the server.",
+                        )
+                        .await
+                    {
+                        tracing::error!("Could not kick player: {error}")
                     };
-                    if player.only_spectator {
-                        tracing::warn!(
-                            "Player tried to connect as a player but is only allowed as a spectator."
-                        );
-                        if let Err(err) = TRACKMANIA
-                            .wait()
-                            .force_spectator(player.account_id.to_string(), 1)
-                            .await
-                        {
-                            tracing::error!("Could not force player to spectator. Error {err}");
-                        }
+
+                    return;
+                };
+                if player.only_spectator {
+                    tracing::warn!(
+                        "Forcing player as spectator. {}",
+                        player.account_id.to_string()
+                    );
+                    if let Err(err) = server
+                        .force_spectator(player.account_id.to_string(), 1)
+                        .await
+                    {
+                        tracing::error!("Could not force player to spectator. Error {err}");
                     }
                 }
             }
+        } else {
+            tracing::error!("Could not receive players list for kicking.");
         }
     });
 }
