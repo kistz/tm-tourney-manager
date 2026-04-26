@@ -152,7 +152,7 @@ pub trait NodeType {
 impl NodeType for NodeHandle {
     fn ready(&self, ctx: &ReducerContext) -> Result<(), String> {
         match self {
-            NodeHandle::MatchV1(match_id) => ctx.match_set_preparation(*match_id),
+            NodeHandle::MatchV1(match_id) => ctx.match_set_preparation(*match_id, ctx.timestamp),
             NodeHandle::CompetitionV1(c) => todo!(), // trigger the input node.
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(*s, ctx.timestamp),

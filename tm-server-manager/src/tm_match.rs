@@ -429,7 +429,7 @@ fn match_set_preparation(ctx: &ReducerContext, match_id: u32) -> Result<(), Stri
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    ctx.match_set_preparation(match_id)
+    ctx.match_set_preparation(match_id, ctx.timestamp)
 }
 
 /// If the match is fully configured and ready start.
@@ -524,7 +524,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_recovery_exit_forced(&self, match_id: u32);
     fn match_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
     fn match_try_start(&self, match_id: u32, now: Timestamp) -> Result<(), String>;
-    fn match_set_preparation(&self, match_id: u32) -> Result<(), String>;
+    fn match_set_preparation(&self, match_id: u32, now: Timestamp) -> Result<(), String>;
     fn match_restart(&self, match_id: u32) -> Result<(), String>;
     fn match_end(&self, match_id: u32) -> Result<(), String>;
 }
@@ -676,7 +676,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         Ok(())
     }
 
-    fn match_set_preparation(&self, match_id: u32) -> Result<(), String> {
+    fn match_set_preparation(&self, match_id: u32, now: Timestamp) -> Result<(), String> {
         let Some(mut tm_match) = self.db_read_only().tab_match().id().find(match_id) else {
             return Err("Match not found!".into());
         };
@@ -718,6 +718,13 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         self.destination_claim(NodeHandle::MatchV1(match_id))?;
 
         self.emit_raw_server_config(server_id, false)?;
+
+        self.send_raw_server_message(
+            server_id,
+            0,
+            now,
+            "$0f0The Match is now in preparation!".into(),
+        )?;
 
         Ok(())
     }

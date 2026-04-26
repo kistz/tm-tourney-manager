@@ -47,7 +47,8 @@ impl ServerConfig {
 		"#
         .to_string()
             + &self.mode.mode_header()
-            + r#"</gameinfos>
+            + r#"
+    </gameinfos>
 
   	<script_settings>"#
             + &self.common.into_xml()
@@ -223,4 +224,8 @@ pub enum TmMode {
     ReverseCup,
     Knockout,
     TimeAttack,
+}
+
+fn tm_bool(value: bool) -> &'static str {
+    if value { "True" } else { "False" }
 }

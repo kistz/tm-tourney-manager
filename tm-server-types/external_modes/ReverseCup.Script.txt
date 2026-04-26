@@ -46,6 +46,7 @@
 #Setting S_NbOfPlayers 0 as "Number of players awaited before starting the match (0 is automatic)"
 
 #Setting S_EnableCollisions False
+#Setting S_ScriptEnvironment "development"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Constants

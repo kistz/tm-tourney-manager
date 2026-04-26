@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use crate::config::{
     LapsNumber,
     helper::{RespawnBehaviour, WarmupDuration, WarmupTimeout},
+    tm_bool,
 };
 
 /// The configuration available in every game mode.
@@ -111,10 +112,10 @@ impl Common {
             self.chat_time,
             Into::<i32>::into(self.respawn_behaviour),
             self.delay_before_next_map,
-            self.synchronize_players_at_map_start,
-            self.synchronize_players_at_round_start,
-            self.trust_client_simulation,
-            self.use_crude_extrapolation,
+            tm_bool(self.synchronize_players_at_map_start),
+            tm_bool(self.synchronize_players_at_round_start),
+            tm_bool(self.trust_client_simulation),
+            tm_bool(self.use_crude_extrapolation),
             Into::<i32>::into(self.warmup_duration),
             Into::<i32>::into(self.warmup_timeout),
             self.warmup_number,

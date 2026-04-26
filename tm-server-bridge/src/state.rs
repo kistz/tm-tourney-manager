@@ -120,7 +120,7 @@ pub async fn setup_state_synchronization() {
         }
     });
 
-    server.on_start_server_start(async |event: &StartServer| {
+    server.on_start_server_end(async |event: &StartServer| {
         if let Some(lock) = SERVER_METADATA.get() {
             let config = unsafe {
                 std::mem::transmute::<
@@ -133,26 +133,29 @@ pub async fn setup_state_synchronization() {
 
             if event.mode.updated {
                 //We need to load the settings again because we changed the script.
-                if let Err(error) = server.set_mode_script_settings(config).await {
+                /* if let Err(error) = server.set_mode_script_settings(config).await {
                     tracing::error!("{error}")
-                };
-                if let Err(err) = server.restart_map().await {
-                    tracing::error!("Cannot restart!. Reason: {err}");
-                };
+                }; */
                 tracing::info!("Mode Script was updated");
             } else {
                 tracing::info!("Mode Script stayed the same");
-                if let Err(err) = server.next_map().await {
+                /* if let Err(err) = server.next_map().await {
                     tracing::error!("Cannot go to next map!. Reason: {err}");
-                };
+                }; */
             }
+            /*  if let Err(err) = server.restart_map().await {
+                tracing::error!("Cannot restart!. Reason: {err}");
+            }; */
         }
     });
 
-    server.on_start_map_start(async |_: &StartMap| {
-        tracing::info!("Reapplying config on StartMapStart.");
+    server.on_start_map_start(async |start: &StartMap| {
+        tracing::info!("Starting new map");
 
-        if let Some(lock) = SERVER_METADATA.get() {
+        if start.restarted
+            && let Some(lock) = SERVER_METADATA.get()
+        {
+            tracing::info!("Reapplying config on StartMapStart.");
             let config = unsafe {
                 std::mem::transmute::<
                     tm_server_manager_api_rs::ServerConfig,
@@ -166,10 +169,12 @@ pub async fn setup_state_synchronization() {
         }
     });
 
-    server.on_start_map_end(async |_: &StartMap| {
-        tracing::info!("Reapplying config on StartMapEnd.");
-
-        if let Some(lock) = SERVER_METADATA.get() {
+    server.on_start_map_end(async |start: &StartMap| {
+        tracing::info!("Ending to start new map");
+        if start.restarted
+            && let Some(lock) = SERVER_METADATA.get()
+        {
+            tracing::info!("Reapplying config on StartMapEnd.");
             let config = unsafe {
                 std::mem::transmute::<
                     tm_server_manager_api_rs::ServerConfig,
@@ -180,9 +185,6 @@ pub async fn setup_state_synchronization() {
             if let Err(error) = TRACKMANIA.wait().set_mode_script_settings(config).await {
                 tracing::error!("{error}")
             };
-
-            let _: Result<(), tm_server_controller::ClientError> =
-                TRACKMANIA.wait().call("GetModeScriptSettings", ()).await;
         }
     });
 }
@@ -218,9 +220,16 @@ pub(super) async fn sync_players() {
 }
 
 pub fn check_allowed_players() {
-    tracing::info!("Checking allowed players...");
-    tokio::task::block_in_place(move || {
-        tokio::runtime::Handle::current().block_on(async move {
+    tracing::info!(
+        "Checking allowed players... have new player list: {:?}",
+        SPACETIME
+            .read()
+            .db
+            .raw_server_permitted_players()
+            .iter()
+            .collect::<Vec<_>>()
+    );
+    tokio::spawn(async {
         if !SERVER_METADATA.wait().lock().await.open {
             let server = TRACKMANIA.wait();
             if let Ok(players) = server.get_player_list().await {
@@ -234,6 +243,10 @@ pub fn check_allowed_players() {
                             Uuid::parse_str(&server_player.account_id).unwrap() == p.account_id
                         })
                     else {
+                        // This is the server itself so skip
+                        if server_player.flags & 0b100000 != 0 {
+                            continue;
+                        }
                         tracing::warn!("Player tried to connect without the required permissions.");
                         if let Err(error) = TRACKMANIA
                             .wait()
@@ -264,21 +277,18 @@ pub fn check_allowed_players() {
             }
         }
     });
-    });
 }
 
 pub fn check_players_have_destination() {
-    tokio::task::block_in_place(move || {
-        tokio::runtime::Handle::current().block_on(async move {
-            let server = TRACKMANIA.wait();
-            if let Ok(players) = server.get_player_list().await {
-                for server_player in players {
-                    move_player_to_destination(Uuid::parse_str(&server_player.account_id).unwrap())
-                        .await;
-                }
+    tokio::spawn(async move {
+        let server = TRACKMANIA.wait();
+        if let Ok(players) = server.get_player_list().await {
+            for server_player in players {
+                move_player_to_destination(Uuid::parse_str(&server_player.account_id).unwrap())
+                    .await;
             }
-        });
-    })
+        }
+    });
 }
 
 pub async fn seamless_recovery() {
@@ -321,7 +331,7 @@ async fn move_player_to_destination(account_id: Uuid) {
         .iter()
         .find(|p| account_id == p.account_id)
     {
-        let mut seconds = 10;
+        /* let mut seconds = 10;
         while seconds > 0 {
             if let Err(err) = server
                 .chat_send_to_account(format!(
@@ -333,7 +343,7 @@ async fn move_player_to_destination(account_id: Uuid) {
             };
             seconds -= 2;
             sleep(Duration::from_secs(2)).await;
-        }
+        } */
 
         if let Err(error) = server
             .send_open_link_to_account(

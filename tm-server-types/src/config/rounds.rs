@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::config::{MapsPerMatch, PointsLimit, RoundsPerMap, helper::FinishTimeout};
+use crate::config::{MapsPerMatch, PointsLimit, RoundsPerMap, helper::FinishTimeout, tm_bool};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -31,7 +31,7 @@ impl Rounds {
             Into::<i32>::into(self.maps_per_match),
             points_repartition_format(&self.points_repartition),
             Into::<i32>::into(self.finish_timeout),
-            self.use_tie_breaker
+            tm_bool(self.use_tie_breaker)
         )
     }
 

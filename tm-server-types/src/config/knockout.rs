@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::config::{MapsPerMatch, RoundsPerMap, helper::FinishTimeout};
+use crate::config::{RoundsPerMap, helper::FinishTimeout};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -21,7 +21,7 @@ impl Knockout {
         <setting name="S_FinishTimeout" value="{}" type="integer"/>
         <setting name="S_RoundsWithoutElimination" value="{}" type="integer"/>
         <setting name="S_EliminatedPlayersNbRanks" value="{}" type="text"/>
-
+        <setting name="S_PointsRepartition" value="" type="text"/>
             "#,
             Into::<i32>::into(self.rounds_per_map),
             Into::<i32>::into(self.finish_timeout),
@@ -51,6 +51,7 @@ impl Knockout {
             "S_RoundsWithoutElimination".into(),
             dxr::Value::Integer(Into::<i32>::into(self.rounds_without_elimination)),
         );
+        map.insert("S_PointsRepartition".into(), dxr::Value::String("".into()));
 
         map
     }

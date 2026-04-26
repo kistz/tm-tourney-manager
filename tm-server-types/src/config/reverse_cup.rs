@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::config::{MapsPerMatch, RoundsPerMap, helper::FinishTimeout};
+use crate::config::{MapsPerMatch, RoundsPerMap, helper::FinishTimeout, tm_bool};
 
 /// The script has the rounds script as a base so it is inheriting all the settings.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,17 +48,16 @@ impl ReverseCup {
         <setting name="S_DNF_LossPoints" value="{}" type="integer"/>
         <setting name="S_LastChance_DNF_Mode" value="{}" type="integer"/>
         <setting name="S_NbOfPlayers" value="{}" type="integer"/>
-        <setting name="S_NbOfWinners" value="{}" type="integer"/>
-        
+        <setting name="S_NbOfWinners" value="{}" type="integer"/>       
             "#,
             Into::<i32>::into(self.rounds_per_map),
             Into::<i32>::into(self.maps_per_match),
             points_repartition_format(&self.points_repartition),
             Into::<i32>::into(self.finish_timeout),
             self.starting_points,
-            self.disable_last_chance,
-            self.allow_fast_forward_rounds,
-            self.fast_forward_points_repartition,
+            tm_bool(self.disable_last_chance),
+            tm_bool(self.allow_fast_forward_rounds),
+            tm_bool(self.fast_forward_points_repartition),
             self.dnf_points_loss,
             Into::<i32>::into(self.last_chance_dnf_mode),
             self.number_of_players,

@@ -10,50 +10,42 @@ use tm_server_manager_api_rs::{EventContext, EventRawServerState};
 use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES};
 
 pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
-    tokio::task::block_in_place(move || {
+    tracing::info!("Received new Server metadata. Trying to apply...");
+    let new_metadata = new_metadata.clone();
+    tokio::spawn(async move {
         let old_metadata = SERVER_METADATA.get();
-        tokio::runtime::Handle::current().block_on(async move {
-            let server = TRACKMANIA.get().unwrap();
+        //let server = TRACKMANIA.get().unwrap();
 
-            let config = unsafe {
-                std::mem::transmute::<
-                    tm_server_manager_api_rs::ServerConfig,
-                    tm_server_controller::config::ServerConfig,
-                >(new_metadata.config.clone())
-            };
+        let config = unsafe {
+            std::mem::transmute::<
+                tm_server_manager_api_rs::ServerConfig,
+                tm_server_controller::config::ServerConfig,
+            >(new_metadata.config.clone())
+        };
 
-            // Get the script if its a non built in mode.
-            if let Some(script) = config.get_mode().get_external_script() {
-                let full_path = TRACKMANIA_FILES.wait().clone()
-                    + "/Scripts/"
-                    + config.get_mode().script_name()
-                    + ".Script.txt";
+        // Get the script if its a non built in mode.
+        if let Some(script) = config.get_mode().get_external_script() {
+            let full_path = TRACKMANIA_FILES.wait().clone()
+                + "/Scripts/"
+                + config.get_mode().script_name()
+                + ".Script.txt";
 
-                if let Err(error) = std::fs::write(&full_path, script) {
-                    tracing::error!("Could not write the mode script file: {error}");
-                }
+            if let Err(error) = std::fs::write(&full_path, script) {
+                tracing::error!("Could not write the mode script file: {error}");
             }
+        }
 
-            _ = server
-                .chat_send_server_massage("[tmservers.live] New configuration is loading.")
-                .await;
-            let Some(old_metadata) = old_metadata else {
-                get_maps(config.iter_maps()).await;
-                let config = config.into_xml();
+        /* _ = server
+        .chat_send_server_massage("[tmservers.live] New configuration is loading.")
+        .await; */
 
-                let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
+        tracing::info!("New configuration is loading.");
 
-                if let Err(error) = std::fs::write(&full_path, config) {
-                    tracing::error!("Could not write the configuration file: {error}");
-                }
-
-                load_new_config(new_metadata).await;
-                return;
-            };
-            if config.get_maps().maps() != old_metadata.lock().await.config.maps.map_uids {
-                get_maps(config.iter_maps()).await;
-            }
+        /*  let Some(old_metadata) = old_metadata else {
+            get_maps(config.iter_maps()).await;
             let config = config.into_xml();
+
+            tracing::info!("New saved config is: {config}");
 
             let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
 
@@ -61,8 +53,21 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
                 tracing::error!("Could not write the configuration file: {error}");
             }
 
-            load_new_config(new_metadata).await;
-        });
+            load_new_config(&new_metadata).await;
+            return;
+        }; */
+        get_maps(config.iter_maps()).await;
+        let config = config.into_xml();
+
+        tracing::info!("New saved config is: {config}");
+
+        let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
+
+        if let Err(error) = std::fs::write(&full_path, config) {
+            tracing::error!("Could not write the configuration file: {error}");
+        }
+
+        load_new_config(&new_metadata).await;
     });
 }
 
@@ -81,12 +86,12 @@ async fn load_new_config(new_metadata: &EventRawServerState) {
             .await;
     }
 
-    let mut restarted = server.restart_map().await;
+    let mut restarted = server.next_map().await;
 
     while let Err(err) = restarted {
         tracing::error!("Could not restart!. Reason: {err}");
         sleep(Duration::from_secs(2)).await;
-        restarted = server.restart_map().await;
+        restarted = server.next_map().await;
     }
 
     if loaded.is_ok() {
@@ -100,11 +105,13 @@ async fn load_new_config(new_metadata: &EventRawServerState) {
     }
 
     if let Err(err) = server
-        .chat_send_server_massage("[tmservers.live] Loaded new configuration.")
+        .chat_send_server_massage("Applied new configuration.")
         .await
     {
         tracing::error!("Could not send server message!. Reason: {err}");
     };
+
+    tracing::info!("Applied new configuration.");
 }
 
 async fn get_maps(maps: impl Iterator<Item = &String>) {
