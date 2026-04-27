@@ -605,6 +605,7 @@ export const MatchStatus = __t.enum("MatchStatus", {
   Locked: __t.unit(),
   Recovery: __t.unit(),
   RecoveryPreparation: __t.unit(),
+  LiveComitted: __t.unit(),
 });
 export type MatchStatus = __Infer<typeof MatchStatus>;
 

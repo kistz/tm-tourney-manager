@@ -50,6 +50,7 @@ impl __sdk::__query_builder::HasCols for MatchRoundPlayer {
 /// Provides typed access to indexed columns for query building.
 pub struct MatchRoundPlayerIxCols {
     pub id: __sdk::__query_builder::IxCol<MatchRoundPlayer, u32>,
+    pub match_id: __sdk::__query_builder::IxCol<MatchRoundPlayer, u32>,
     pub user_id: __sdk::__query_builder::IxCol<MatchRoundPlayer, u32>,
 }
 
@@ -58,6 +59,7 @@ impl __sdk::__query_builder::HasIxCols for MatchRoundPlayer {
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         MatchRoundPlayerIxCols {
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
+            match_id: __sdk::__query_builder::IxCol::new(table_name, "match_id"),
             user_id: __sdk::__query_builder::IxCol::new(table_name, "user_id"),
         }
     }

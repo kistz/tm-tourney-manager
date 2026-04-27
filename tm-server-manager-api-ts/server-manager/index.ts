@@ -49,6 +49,7 @@ import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
 import MatchCreateReducer from "./match_create_reducer";
+import MatchEndReducer from "./match_end_reducer";
 import MatchManualRecoveryReducer from "./match_manual_recovery_reducer";
 import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
@@ -390,6 +391,7 @@ const reducersSchema = __reducers(
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
   __reducerSchema("match_create", MatchCreateReducer),
+  __reducerSchema("match_end", MatchEndReducer),
   __reducerSchema("match_manual_recovery", MatchManualRecoveryReducer),
   __reducerSchema("match_open", MatchOpenReducer),
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),

@@ -23,6 +23,8 @@ pub enum MatchStatus {
     Recovery,
 
     RecoveryPreparation,
+
+    LiveComitted,
 }
 
 impl __sdk::InModule for MatchStatus {

@@ -73,6 +73,7 @@ pub mod maps_per_match_type;
 pub mod match_assign_server_reducer;
 pub mod match_configured_reducer;
 pub mod match_create_reducer;
+pub mod match_end_reducer;
 pub mod match_event_type;
 pub mod match_manual_recovery_reducer;
 pub mod match_open_reducer;
@@ -223,6 +224,8 @@ pub mod unstable_competition_connection_table;
 pub mod unstable_competition_members_table;
 pub mod unstable_competition_role_member_table;
 pub mod unstable_competition_role_table;
+pub mod unstable_match_round_ext_table;
+pub mod unstable_match_round_table;
 pub mod unstable_registration_player_table;
 pub mod unstable_registration_table;
 pub mod user_identity_type;
@@ -302,6 +305,7 @@ pub use maps_per_match_type::MapsPerMatch;
 pub use match_assign_server_reducer::match_assign_server;
 pub use match_configured_reducer::match_configured;
 pub use match_create_reducer::match_create;
+pub use match_end_reducer::match_end;
 pub use match_event_type::MatchEvent;
 pub use match_manual_recovery_reducer::match_manual_recovery;
 pub use match_open_reducer::match_open;
@@ -452,6 +456,8 @@ pub use unstable_competition_connection_table::*;
 pub use unstable_competition_members_table::*;
 pub use unstable_competition_role_member_table::*;
 pub use unstable_competition_role_table::*;
+pub use unstable_match_round_ext_table::*;
+pub use unstable_match_round_table::*;
 pub use unstable_registration_player_table::*;
 pub use unstable_registration_table::*;
 pub use user_identity_type::UserIdentity;
@@ -537,6 +543,9 @@ pub enum Reducer {
         name: String,
         parent_id: u32,
         with_template: u32,
+    },
+    MatchEnd {
+        match_id: u32,
     },
     MatchManualRecovery {
         id: u32,
@@ -743,6 +752,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
             Reducer::MatchCreate { .. } => "match_create",
+            Reducer::MatchEnd { .. } => "match_end",
             Reducer::MatchManualRecovery { .. } => "match_manual_recovery",
             Reducer::MatchOpen { .. } => "match_open",
             Reducer::MatchOverrideConfig { .. } => "match_override_config",
@@ -919,6 +929,11 @@ impl __sdk::Reducer for Reducer {
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
             }),
+            Reducer::MatchEnd { match_id } => {
+                __sats::bsatn::to_vec(&match_end_reducer::MatchEndArgs {
+                    match_id: match_id.clone(),
+                })
+            }
             Reducer::MatchManualRecovery { id } => {
                 __sats::bsatn::to_vec(&match_manual_recovery_reducer::MatchManualRecoveryArgs {
                     id: id.clone(),
@@ -1257,6 +1272,8 @@ pub struct DbUpdate {
     unstable_competition_members: __sdk::TableUpdate<CompetitionMember>,
     unstable_competition_role: __sdk::TableUpdate<CompetitionRole>,
     unstable_competition_role_member: __sdk::TableUpdate<CompetitionRoleMember>,
+    unstable_match_round: __sdk::TableUpdate<MatchRoundPlayer>,
+    unstable_match_round_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
     unstable_registration: __sdk::TableUpdate<Registration>,
     unstable_registration_player: __sdk::TableUpdate<RegisterationPlayer>,
     users: __sdk::TableUpdate<UserV1>,
@@ -1354,6 +1371,12 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                         unstable_competition_role_member_table::parse_table_update(table_update)?,
                     )
                 }
+                "unstable_match_round" => db_update.unstable_match_round.append(
+                    unstable_match_round_table::parse_table_update(table_update)?,
+                ),
+                "unstable_match_round_ext" => db_update.unstable_match_round_ext.append(
+                    unstable_match_round_ext_table::parse_table_update(table_update)?,
+                ),
                 "unstable_registration" => db_update.unstable_registration.append(
                     unstable_registration_table::parse_table_update(table_update)?,
                 ),
@@ -1478,6 +1501,18 @@ impl __sdk::DbUpdate for DbUpdate {
             "unstable_competition_role_member",
             &self.unstable_competition_role_member,
         );
+        diff.unstable_match_round = cache
+            .apply_diff_to_table::<MatchRoundPlayer>(
+                "unstable_match_round",
+                &self.unstable_match_round,
+            )
+            .with_updates_by_pk(|row| &row.id);
+        diff.unstable_match_round_ext = cache
+            .apply_diff_to_table::<MatchRoundPlayerExt>(
+                "unstable_match_round_ext",
+                &self.unstable_match_round_ext,
+            )
+            .with_updates_by_pk(|row| &row.id);
         diff.unstable_registration = cache
             .apply_diff_to_table::<Registration>(
                 "unstable_registration",
@@ -1575,6 +1610,12 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "unstable_competition_role_member" => db_update
                     .unstable_competition_role_member
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "unstable_match_round" => db_update
+                    .unstable_match_round
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "unstable_match_round_ext" => db_update
+                    .unstable_match_round_ext
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "unstable_registration" => db_update
                     .unstable_registration
@@ -1676,6 +1717,12 @@ impl __sdk::DbUpdate for DbUpdate {
                 "unstable_competition_role_member" => db_update
                     .unstable_competition_role_member
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "unstable_match_round" => db_update
+                    .unstable_match_round
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "unstable_match_round_ext" => db_update
+                    .unstable_match_round_ext
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "unstable_registration" => db_update
                     .unstable_registration
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1726,6 +1773,8 @@ pub struct AppliedDiff<'r> {
     unstable_competition_members: __sdk::TableAppliedDiff<'r, CompetitionMember>,
     unstable_competition_role: __sdk::TableAppliedDiff<'r, CompetitionRole>,
     unstable_competition_role_member: __sdk::TableAppliedDiff<'r, CompetitionRoleMember>,
+    unstable_match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
+    unstable_match_round_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
     unstable_registration: __sdk::TableAppliedDiff<'r, Registration>,
     unstable_registration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
     users: __sdk::TableAppliedDiff<'r, UserV1>,
@@ -1858,6 +1907,16 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<CompetitionRoleMember>(
             "unstable_competition_role_member",
             &self.unstable_competition_role_member,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
+            "unstable_match_round",
+            &self.unstable_match_round,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayerExt>(
+            "unstable_match_round_ext",
+            &self.unstable_match_round_ext,
             event,
         );
         callbacks.invoke_table_row_callbacks::<Registration>(
@@ -2542,6 +2601,8 @@ impl __sdk::SpacetimeModule for RemoteModule {
         unstable_competition_members_table::register_table(client_cache);
         unstable_competition_role_table::register_table(client_cache);
         unstable_competition_role_member_table::register_table(client_cache);
+        unstable_match_round_table::register_table(client_cache);
+        unstable_match_round_ext_table::register_table(client_cache);
         unstable_registration_table::register_table(client_cache);
         unstable_registration_player_table::register_table(client_cache);
         users_table::register_table(client_cache);
@@ -2573,6 +2634,8 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "unstable_competition_members",
         "unstable_competition_role",
         "unstable_competition_role_member",
+        "unstable_match_round",
+        "unstable_match_round_ext",
         "unstable_registration",
         "unstable_registration_player",
         "users",
