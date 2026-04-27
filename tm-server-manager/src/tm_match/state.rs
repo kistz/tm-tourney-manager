@@ -42,7 +42,7 @@ impl MatchState {
     }
 
     pub(crate) fn is_live(&self) -> bool {
-        matches!(self.status, MatchStatus::Live)
+        matches!(self.status, MatchStatus::Live) || matches!(self.status, MatchStatus::LiveComitted)
     }
 
     pub(crate) fn set_map(&mut self, id: u32) {
@@ -66,6 +66,10 @@ impl MatchState {
 
     pub(crate) fn set_live(&mut self) {
         self.status = MatchStatus::Live;
+    }
+
+    pub(crate) fn set_live_commited(&mut self) {
+        self.status = MatchStatus::LiveComitted;
     }
 
     pub(crate) fn end_match(&mut self) {
@@ -98,6 +102,10 @@ impl MatchState {
 
     pub(super) fn live_round(&self) -> bool {
         !self.is_warmup && !self.paused
+    }
+
+    pub(super) fn is_live_commited(&self) -> bool {
+        matches!(self.status, MatchStatus::LiveComitted)
     }
 
     pub(super) fn get_mode(&self) -> TmMode {

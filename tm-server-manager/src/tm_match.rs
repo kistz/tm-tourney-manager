@@ -107,6 +107,7 @@ impl MatchV1 {
                 }
             }
             MatchStatus::Live => self.config,
+            MatchStatus::LiveComitted => self.config,
             MatchStatus::Ended => self.config,
             MatchStatus::Locked => {
                 panic!("should not ask for a config if match is locked.")
@@ -126,7 +127,7 @@ impl MatchV1 {
 
     /// Evaluates is the Match is in the "Match" state of its lifecycle.
     pub fn is_live(&self) -> bool {
-        self.status == MatchStatus::Live
+        self.status == MatchStatus::Live || self.status == MatchStatus::LiveComitted
     }
 
     pub fn is_recovery(&self) -> bool {
@@ -184,6 +185,7 @@ pub enum MatchStatus {
     Locked,
     Recovery,
     RecoveryPreparation,
+    LiveComitted,
 }
 
 impl MatchStatus {
@@ -197,6 +199,7 @@ impl MatchStatus {
             MatchStatus::Locked => false,
             MatchStatus::Recovery => false,
             MatchStatus::RecoveryPreparation => false,
+            MatchStatus::LiveComitted => false,
         }
     }
 }

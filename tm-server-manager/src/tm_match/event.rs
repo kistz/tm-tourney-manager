@@ -231,6 +231,8 @@ pub(crate) fn handle_match_event(
             }
         }
         Event::StartMatchStart(_) => {
+            state.set_live_commited();
+            ctx.db.tab_match_state().match_id().update(state);
             log::info!("Match {} has started!", state.match_id)
         }
         Event::EndMatchEnd(_) => {
@@ -241,14 +243,19 @@ pub(crate) fn handle_match_event(
                     log::info!("Match said it ended but we are on round 0 so it is probably wrong.")
                 }
             } else {
-                ctx.match_end(state.match_id)?;
+                #[allow(clippy::collapsible_else_if)]
+                if state.is_live_commited() {
+                    ctx.match_end(state.match_id)?;
 
-                if let Err(error) = internal_graph_resolution_node_finished(
-                    ctx,
-                    NodeHandle::MatchV1(state.match_id),
-                ) {
-                    log::error!("Graph resolution could not be completed. Error {error}")
-                };
+                    if let Err(error) = internal_graph_resolution_node_finished(
+                        ctx,
+                        NodeHandle::MatchV1(state.match_id),
+                    ) {
+                        log::error!("Graph resolution could not be completed. Error {error}")
+                    };
+                } else {
+                    log::error!("Match said it ended but it was not yet commited.")
+                }
             }
         }
         Event::WarmupStart => {
