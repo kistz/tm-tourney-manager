@@ -7,15 +7,12 @@ use serde::{Deserialize, Serialize};
 use tm_server_controller::method::XmlRpcMethods;
 use tm_server_manager_api_rs::{EventContext, EventRawServerState};
 
-use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES};
+use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES, state::check_allowed_players};
 
 pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tracing::info!("Received new Server metadata. Trying to apply...");
     let new_metadata = new_metadata.clone();
     tokio::spawn(async move {
-        let old_metadata = SERVER_METADATA.get();
-        //let server = TRACKMANIA.get().unwrap();
-
         let config = unsafe {
             std::mem::transmute::<
                 tm_server_manager_api_rs::ServerConfig,
@@ -35,27 +32,8 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
             }
         }
 
-        /* _ = server
-        .chat_send_server_massage("[tmservers.live] New configuration is loading.")
-        .await; */
-
         tracing::info!("New configuration is loading.");
 
-        /*  let Some(old_metadata) = old_metadata else {
-            get_maps(config.iter_maps()).await;
-            let config = config.into_xml();
-
-            tracing::info!("New saved config is: {config}");
-
-            let full_path = TRACKMANIA_FILES.wait().clone() + "/Maps/MatchSettings/manager.txt";
-
-            if let Err(error) = std::fs::write(&full_path, config) {
-                tracing::error!("Could not write the configuration file: {error}");
-            }
-
-            load_new_config(&new_metadata).await;
-            return;
-        }; */
         get_maps(config.iter_maps()).await;
         let config = config.into_xml();
 
@@ -68,6 +46,11 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
         }
 
         load_new_config(&new_metadata).await;
+
+        // We wait before checking to ensure the new allowlist is there.
+        // This is not the cleanest solution but is fine for now.
+        sleep(Duration::from_secs(2)).await;
+        check_allowed_players();
     });
 }
 

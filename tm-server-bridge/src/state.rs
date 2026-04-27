@@ -85,6 +85,8 @@ pub async fn setup_state_synchronization() {
         // Player destination
         move_player_to_destination(Uuid::parse_str(&event.account_id).unwrap()).await;
 
+        let server = TRACKMANIA.get().unwrap();
+
         // Server allowlist.
         if let Some(meta) = SERVER_METADATA.get()
             && meta.lock().await.open
@@ -102,8 +104,7 @@ pub async fn setup_state_synchronization() {
             .find(|p| Uuid::parse_str(&event.account_id).unwrap() == p.account_id)
         else {
             tracing::warn!("Player tried to connect without the required permissions.");
-            if let Err(error) = TRACKMANIA
-                .wait()
+            if let Err(error) = server
                 .kick(
                     event.account_id.clone(),
                     "Not allowed to participate in the server.",
@@ -131,31 +132,10 @@ pub async fn setup_state_synchronization() {
     });
 
     server.on_start_server_end(async |event: &StartServer| {
-        if let Some(lock) = SERVER_METADATA.get() {
-            /* let config = unsafe {
-                std::mem::transmute::<
-                    tm_server_manager_api_rs::ServerConfig,
-                    tm_server_controller::config::ServerConfig,
-                >(lock.lock().await.config.clone())
-            };
-
-            let server = TRACKMANIA.wait(); */
-
-            if event.mode.updated {
-                //We need to load the settings again because we changed the script.
-                /* if let Err(error) = server.set_mode_script_settings(config).await {
-                    tracing::error!("{error}")
-                }; */
-                tracing::info!("Mode Script was updated");
-            } else {
-                tracing::info!("Mode Script stayed the same");
-                /* if let Err(err) = server.next_map().await {
-                    tracing::error!("Cannot go to next map!. Reason: {err}");
-                }; */
-            }
-            /*  if let Err(err) = server.restart_map().await {
-                tracing::error!("Cannot restart!. Reason: {err}");
-            }; */
+        if event.mode.updated {
+            tracing::info!("Mode Script was updated");
+        } else {
+            tracing::info!("Mode Script stayed the same");
         }
     });
 
@@ -281,7 +261,7 @@ pub fn check_allowed_players() {
                         tracing::error!("Could not kick player: {error}")
                     };
 
-                    return;
+                    continue;
                 };
                 if player.only_spectator {
                     tracing::warn!(
@@ -290,6 +270,17 @@ pub fn check_allowed_players() {
                     );
                     if let Err(err) = server
                         .force_spectator(player.account_id.to_string(), 1)
+                        .await
+                    {
+                        tracing::error!("Could not force player to spectator. Error {err}");
+                    }
+                } else {
+                    tracing::warn!(
+                        "Releasing player from spectator only. {}",
+                        player.account_id.to_string()
+                    );
+                    if let Err(err) = server
+                        .force_spectator(player.account_id.to_string(), 0)
                         .await
                     {
                         tracing::error!("Could not force player to spectator. Error {err}");
