@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, ReducerContext, Table, reducer, table};
+use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
 
 use crate::{
     authorization::Authorization,
@@ -7,11 +7,18 @@ use crate::{
         node::{NodeHandle, NodeWrite},
         tab_competition,
     },
+    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
 };
+
+mod filter;
+mod merge;
+mod remap;
 
 #[table(accessor= tab_leaderboard)]
 pub struct LeaderboardV1 {
     name: String,
+
+    settings: LeaderboardSettings,
 
     #[auto_inc]
     #[primary_key]
@@ -34,6 +41,29 @@ impl LeaderboardV1 {
     pub(crate) fn is_template(&self) -> bool {
         self.template
     }
+}
+
+#[derive(Debug, SpacetimeType)]
+enum LeaderboardSettings {
+    Remap(LbRemapSettings),
+    Merge(LbMergeSettings),
+    //Split(),
+    Filter(LbFilterSettings),
+}
+
+#[derive(Debug, SpacetimeType)]
+enum LbParams {
+    Score,
+    Time,
+    Position,
+}
+
+#[derive(Debug, SpacetimeType)]
+enum LbManipulationKind {
+    Subtract,
+    Add,
+    Multiply,
+    Divide,
 }
 
 #[reducer]
@@ -68,6 +98,7 @@ fn leaderboard_create(
             id: 0,
             parent_id,
             template: false,
+            settings: todo!(),
         };
 
         let output = ctx.db.tab_leaderboard().try_insert(output)?;
