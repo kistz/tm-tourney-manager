@@ -72,7 +72,7 @@ fn connection_action_update(
         return Err("connection could not be found!".into());
     };
 
-    match connection.connection_target() {
+    match connection.target() {
         NodeHandle::MatchV1(_) => {
             if !action.is_match() {
                 return Err("Wrong action".into());

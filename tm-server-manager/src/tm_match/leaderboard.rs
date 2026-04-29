@@ -51,10 +51,12 @@ pub struct MatchRoundPlayer {
     points: i32,
 
     round: u16,
+    #[default(0)]
+    position: u16,
 }
 
 impl MatchRoundPlayer {
-    pub fn new(match_id: u32, user_id: u32, round: u16) -> Self {
+    pub(super) fn new(match_id: u32, user_id: u32, round: u16) -> Self {
         Self {
             user_id,
             match_id,
@@ -62,15 +64,32 @@ impl MatchRoundPlayer {
             time: 0,
             points: 0,
             id: 0,
+            position: 0,
         }
     }
 
-    pub fn set_time(&mut self, points: i32) {
+    pub(super) fn set_time(&mut self, points: i32) {
         self.time = points;
     }
 
-    pub fn set_points(&mut self, points: i32) {
+    pub(super) fn set_points(&mut self, points: i32) {
         self.points = points;
+    }
+
+    pub(super) fn set_position(&mut self, position: u16) {
+        self.position = position;
+    }
+
+    pub(crate) fn get_time(&self) -> i32 {
+        self.time
+    }
+
+    pub(crate) fn get_position(&self) -> u16 {
+        self.position
+    }
+
+    pub(crate) fn get_score(&self) -> i32 {
+        self.points
     }
 }
 
@@ -227,6 +246,7 @@ fn match_round_ext(
 
 pub(crate) trait MatchLeadearboardRead {
     fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
+    fn match_rounds(&self, match_id: u32) -> Vec<MatchRoundPlayer>;
 }
 impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
     /// Accumulates points of all previous rounds.
@@ -330,5 +350,13 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
         log::info!("{returned:?}");
 
         returned
+    }
+
+    fn match_rounds(&self, match_id: u32) -> Vec<MatchRoundPlayer> {
+        self.db_read_only()
+            .tab_match_round_player()
+            .match_id()
+            .filter(match_id)
+            .collect()
     }
 }

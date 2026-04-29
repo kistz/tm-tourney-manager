@@ -18,7 +18,7 @@ use crate::{
     },
     raw_server::player::PermittedPlayer,
     registration::player::RegistrationRead,
-    tm_match::leaderboard::MatchLeadearboardRead,
+    tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
     user::UserRead,
 };
 
@@ -50,11 +50,11 @@ pub struct TabConnection {
 }
 
 impl TabConnection {
-    pub(crate) fn connection_origin(&self) -> NodeHandle {
+    pub(crate) fn origin(&self) -> NodeHandle {
         NodeHandle::combine(self.origin_variant, self.origin_id)
     }
 
-    pub(crate) fn connection_target(&self) -> NodeHandle {
+    pub(crate) fn target(&self) -> NodeHandle {
         NodeHandle::combine(self.target_variant, self.target_id)
     }
 
@@ -214,8 +214,8 @@ fn connection_create(
         .into_iter()
         .map(|c| {
             (
-                *map.get(&c.connection_origin()).unwrap(),
-                *map.get(&c.connection_target()).unwrap(),
+                *map.get(&c.origin()).unwrap(),
+                *map.get(&c.target()).unwrap(),
                 c.kind,
             )
         })
@@ -405,13 +405,15 @@ pub(crate) trait ConnectionRead {
         &self,
         connection: TabConnection,
     ) -> Vec<PermittedPlayer>;
+
+    //fn connection_receive_leaderboard(&self, connection: TabConnection) -> Vec<PermittedPlayer>;
 }
 impl<Db: DbContext> ConnectionRead for Db {
     fn connection_filter_permitted_players(
         &self,
         connection: TabConnection,
     ) -> Vec<PermittedPlayer> {
-        match connection.connection_origin() {
+        match connection.origin() {
             NodeHandle::MatchV1(m) => {
                 let rules = self
                     .db_read_only()
@@ -435,31 +437,20 @@ impl<Db: DbContext> ConnectionRead for Db {
             NodeHandle::CompetitionV1(c) => todo!(),
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(_) => todo!(),
-            NodeHandle::RegistrationV1(r) => {
-                let rules = self
-                    .db_read_only()
-                    .tab_connection_data()
-                    .connection_id()
-                    .find(connection.id)
-                    .unwrap();
-
-                let leaderboard = self.registration_player(r);
-
-                //TODO maybe factor this out into a trait and impl it for the respective thing
-                // maybe we also need to split the data portion out into separate tables for each connection.
-                rules
-                    .apply_registration(leaderboard)
-                    .into_iter()
-                    .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect()
-            }
+            NodeHandle::RegistrationV1(r) => todo!(),
             NodeHandle::InputV1(_) => todo!(),
             NodeHandle::OutputV1(_) => todo!(),
             NodeHandle::LeaderboardV1(_) => todo!(),
         }
     }
+
+    /* fn connection_receive_leaderboard(&self, connection: TabConnection) -> Vec<MatchRoundPlayer> {
+        match connection.origin() {
+            NodeHandle::MatchV1(match_id) => self.,
+            //TODO this should also handle other stuff like input/output/competition which can propagate these things.
+            _ => unreachable!(),
+        }
+    } */
 }
 /* pub(crate) trait ConnectionWrite: ConnectionRead {}
 impl<Db: DbContext<DbView = Local>> ConnectionWrite for Db {} */

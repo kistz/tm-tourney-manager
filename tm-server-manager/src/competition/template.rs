@@ -207,7 +207,7 @@ pub(super) fn competition_template_instantiate(
 
     // Rewire all connections with the corresponding maps.
     for old_connection in connections {
-        let old_origin = old_connection.connection_origin();
+        let old_origin = old_connection.origin();
         let new_origin = match old_origin {
             NodeHandle::CompetitionV1(i) => {
                 if let Some(comp) = competition_map.get(&i) {
@@ -226,7 +226,7 @@ pub(super) fn competition_template_instantiate(
             NodeHandle::LeaderboardV1(n) => todo!(), // leadearboard_map.get(&n).unwrap().id,
         };
 
-        let old_target = old_connection.connection_target();
+        let old_target = old_connection.target();
         let new_target = match old_target {
             NodeHandle::MatchV1(m) => match_map.get(&m).unwrap().id,
             NodeHandle::CompetitionV1(i) => competition_map.get(&i).unwrap().id,
