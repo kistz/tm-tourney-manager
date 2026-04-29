@@ -69,6 +69,18 @@ pub(crate) fn handle_match_event(
                             round,
                             start_line.time,
                         ))?;
+                } else {
+                    let mut entry = ctx
+                        .db
+                        .tab_match_round_player_ext()
+                        .match_round_player()
+                        .filter((state.match_id, round, user_id))
+                        .next()
+                        .unwrap();
+
+                    entry.add_start_line(start_line.time);
+
+                    ctx.db.tab_match_round_player_ext().id().update(entry);
                 }
             }
         }
@@ -90,8 +102,13 @@ pub(crate) fn handle_match_event(
                 if way_point.is_end_race {
                     let mut round_player =
                         ctx.db.tab_match_round_player().id().find(entry.id).unwrap();
-                    round_player.set_time(way_point.racetime as i32);
-                    ctx.db.tab_match_round_player().id().update(round_player);
+
+                    if round_player.get_time() > way_point.racetime as i32
+                        || round_player.get_time() == 0
+                    {
+                        round_player.set_time(way_point.racetime as i32);
+                        ctx.db.tab_match_round_player().id().update(round_player);
+                    }
 
                     entry.add_finish(way_point.speed, way_point.racetime);
                 } else if way_point.is_end_lap {

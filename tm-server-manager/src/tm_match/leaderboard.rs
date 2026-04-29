@@ -135,6 +135,10 @@ impl MatchRoundPlayerExt {
         self.round_actions
             .push(PlayerAction::Finish(PlayerActionCheckpoint { speed, time }));
     }
+    pub(crate) fn add_start_line(&mut self, server_time: u32) {
+        self.round_actions
+            .push(PlayerAction::StartLine(server_time));
+    }
 
     pub(crate) fn add_respawn(&mut self, speed: f32, server_time: u32) {
         let first = *self.round_actions.first().unwrap();
