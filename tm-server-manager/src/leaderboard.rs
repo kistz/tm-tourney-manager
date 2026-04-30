@@ -69,12 +69,25 @@ enum LbParams {
     Position,
 }
 
-struct LbEntry {
-    user_id: u32,
-    round: u16,
-    position: u16,
-    score: i32,
-    time: i32,
+#[derive(Debug, SpacetimeType, Clone, Copy)]
+pub struct LbEntry {
+    pub user_id: u32,
+    pub round: u16,
+    pub position: u16,
+    pub score: i32,
+    pub time: i32,
+}
+
+impl LbEntry {
+    pub(crate) fn new(user_id: u32) -> Self {
+        LbEntry {
+            user_id,
+            round: 0,
+            position: 0,
+            score: 0,
+            time: 0,
+        }
+    }
 }
 
 #[reducer]
@@ -109,7 +122,8 @@ fn leaderboard_create(
             id: 0,
             parent_id,
             template: false,
-            settings: todo!(),
+            status: LeaderboardStatus::Configuring,
+            settings: Vec::new(),
         };
 
         let output = ctx.db.tab_leaderboard().try_insert(output)?;
@@ -190,7 +204,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
 
         for (index, setting) in settings.into_iter().enumerate() {
             leaderboard = match setting {
-                LbSettings::Remap(lb_remap_settings) => lb_remap_settings.evaluate(leaderboard),
+                LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
                 LbSettings::Merge(lb_merge_settings) => lb_merge_settings.evaluate(leaderboard),
                 LbSettings::Filter(lb_filter_settings) => lb_filter_settings.evaluate(leaderboard),
             }

@@ -6,6 +6,7 @@ use crate::{
         CompetitionPermissionsV1,
         connection::{ConnectionStatus, tab_connection},
     },
+    leaderboard::LbEntry,
     registration::player::RegisterationPlayer,
     tm_match::leaderboard::MatchRoundPlayer,
 };
@@ -47,6 +48,34 @@ impl ConnectionData {
                 let mut players = Vec::with_capacity(items.len());
                 for item in items {
                     if let Some(player) = tm_match.get(*item as usize) {
+                        players.push(*player);
+                    }
+                }
+                players
+            }
+            ConnectionDataOption::FirstOffsetN(opt) => tm_match
+                .into_iter()
+                .skip(opt.offset as usize)
+                .take(opt.take as usize)
+                .collect(),
+        };
+        players
+            .into_iter()
+            //.map(|p| PermittedPlayer::new(p.account_id, false, false))
+            .collect()
+    }
+
+    pub(super) fn apply_leaderboard(&self, tm_match: Vec<LbEntry>) -> Vec<LbEntry> {
+        let players = match &self.options {
+            ConnectionDataOption::All => tm_match,
+            ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),
+            ConnectionDataOption::LastN(l) => {
+                tm_match.into_iter().rev().take(*l as usize).collect()
+            }
+            ConnectionDataOption::Custom(items) => {
+                let mut players = Vec::with_capacity(items.len());
+                for item in items {
+                    if let Some(player) = tm_match.get((*item - 1) as usize) {
                         players.push(*player);
                     }
                 }

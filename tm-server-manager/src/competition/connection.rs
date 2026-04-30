@@ -16,6 +16,7 @@ use crate::{
         },
         node::{NodeHandle, NodeRead, NodeType},
     },
+    leaderboard::LeadearboardRead,
     raw_server::player::PermittedPlayer,
     registration::player::RegistrationRead,
     tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
@@ -440,7 +441,26 @@ impl<Db: DbContext> ConnectionRead for Db {
             NodeHandle::RegistrationV1(r) => todo!(),
             NodeHandle::InputV1(_) => todo!(),
             NodeHandle::OutputV1(_) => todo!(),
-            NodeHandle::LeaderboardV1(_) => todo!(),
+            NodeHandle::LeaderboardV1(l) => {
+                let rules = self
+                    .db_read_only()
+                    .tab_connection_data()
+                    .connection_id()
+                    .find(connection.id)
+                    .unwrap();
+
+                let leaderboard = self.leaderboard_final(l);
+
+                //TODO maybe factor this out into a trait and impl it for the respective thing
+                // maybe we also need to split the data portion out into separate tables for each connection.
+                rules
+                    .apply_leaderboard(leaderboard)
+                    .into_iter()
+                    .map(|p| {
+                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                    })
+                    .collect()
+            }
         }
     }
 

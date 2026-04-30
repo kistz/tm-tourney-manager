@@ -12,9 +12,7 @@ pub(super) struct LbFilterSettings {
     kind: LbFilterKind,
     param: LbParams,
     filter: LbFilterIdent,
-    //manipulation: LbManipulationKind,
-    // TODO should this be a f32???
-    //manipulation_value: i32,
+    fallback: LbFilterFallback,
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
@@ -23,9 +21,13 @@ enum LbFilterIdent {
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
+enum LbFilterFallback {
+    Worst,
+}
+
+#[derive(Debug, SpacetimeType, Clone, Copy)]
 enum LbFilterKind {
-    Match,
-    Maps,
+    //Maps,
     Rounds,
     // Actions // TODO we should be able to inspect the actions of the player.
 }
@@ -45,13 +47,16 @@ impl LbFilterSettings {
         for rows in map.values_mut() {
             match self.kind {
                 //LbFilterKind::Match => todo!(),
-                LbFilterKind::Maps => todo!(),
+                //LbFilterKind::Maps => todo!(),
                 //TODO valiidate that the sort does all edge cases.
                 LbFilterKind::Rounds => rows.sort_by(|a, b| match self.param {
-                    // Inverted because more score = better.
-                    LbParams::Score => (-a.get_score()).cmp(&(-b.get_score())),
-                    LbParams::Time => a.get_time().cmp(&b.get_time()),
-                    LbParams::Position => a.get_position().cmp(&b.get_position()),
+                    LbParams::Score => a.score.cmp(&b.score),
+                    // e.g. -43 seconds is more than -44 seconds.
+                    // because otherwise 43 would be less than 44
+                    // but less is better so we need invert.
+                    LbParams::Time => (-a.time).cmp(&(-b.time)),
+                    // Same reson as above. A lower position is better.
+                    LbParams::Position => b.position.cmp(&a.position),
                 }),
             }
 
