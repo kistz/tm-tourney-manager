@@ -39,9 +39,9 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
         }
         Event::PlayerInfoChanged(player) => {
             let spectator = player.spectator_status != 0;
-            if let Err(err) =
-                raw_server_player_add(ctx, Uuid::parse_str(&player.account_id).unwrap(), spectator)
-            {
+            let account_id = Uuid::parse_str(&player.account_id).unwrap();
+            ctx.user_update_name(account_id, player.nick_name.clone());
+            if let Err(err) = raw_server_player_add(ctx, account_id, spectator) {
                 log::error!("Player Disconnect: {err}");
             };
         }

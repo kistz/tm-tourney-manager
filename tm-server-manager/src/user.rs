@@ -158,6 +158,7 @@ impl<Db: spacetimedb::DbContext> UserRead for Db {
 pub(crate) trait UserWrite: UserRead {
     fn user_insert(&self, user: UserV1) -> Result<u32, String>;
     fn user_login(&self, user_id: u32, identity: Identity) -> Result<(), String>;
+    fn user_update_name(&self, account_id: Uuid, name: String);
 }
 impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> UserWrite for Db {
     fn user_insert(&self, new_user: UserV1) -> Result<u32, String> {
@@ -194,5 +195,19 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> UserWrite for Db {
         }
 
         Ok(())
+    }
+
+    fn user_update_name(&self, account_id: Uuid, name: String) {
+        if let Some(mut user) = self.db().tab_user().account_id().find(account_id) {
+            if user.name == name {
+                return;
+            }
+
+            user.name = name;
+
+            self.db().tab_user().id().update(user);
+        } else {
+            log::warn!("Tried to update name for account_id that does not exist")
+        }
     }
 }
