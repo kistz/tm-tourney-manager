@@ -226,8 +226,6 @@ impl<Db: DbContext> CompetitionRead for Db {
             parent_id = 0;
         }
 
-        log::warn!("Comp ancestors of {}: {:?}", competition_id, ancestors);
-
         ancestors
     }
 
@@ -247,8 +245,6 @@ impl<Db: DbContext> CompetitionRead for Db {
                 );
             }
         }
-
-        log::warn!("Comp descendants of {}: {:?}", competition_id, descendants);
 
         descendants
     }

@@ -2,7 +2,10 @@ use std::collections::{HashMap, HashSet};
 
 use spacetimedb::SpacetimeType;
 
-use crate::{leaderboard::LbParams, tm_match::leaderboard::MatchRoundPlayer};
+use crate::{
+    leaderboard::{LbEntry, LbParams},
+    tm_match::leaderboard::MatchRoundPlayer,
+};
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub(super) struct LbFilterSettings {
@@ -28,8 +31,8 @@ enum LbFilterKind {
 }
 
 impl LbFilterSettings {
-    pub(super) fn evaluate(self, leaderboard: Vec<MatchRoundPlayer>) -> Vec<MatchRoundPlayer> {
-        let mut map: HashMap<u32, Vec<MatchRoundPlayer>> = HashMap::new();
+    pub(super) fn evaluate(self, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
+        let mut map: HashMap<u32, Vec<LbEntry>> = HashMap::new();
 
         for row in leaderboard {
             map.entry(row.user_id)
@@ -41,7 +44,7 @@ impl LbFilterSettings {
 
         for rows in map.values_mut() {
             match self.kind {
-                LbFilterKind::Match => todo!(),
+                //LbFilterKind::Match => todo!(),
                 LbFilterKind::Maps => todo!(),
                 //TODO valiidate that the sort does all edge cases.
                 LbFilterKind::Rounds => rows.sort_by(|a, b| match self.param {
@@ -75,3 +78,9 @@ impl LbFilterSettings {
 // position should always be recomputed i guess
 // the match is a problem when propagating... this is because the leadearboard is now also something which is able to be searched for 🤔
 // this means the connection should give me the leaderboard and then we also shoud do a new struct i reckon.
+
+// separate by map
+// for each map filter rounds best 5/6 merge rounds averge position
+
+// match is match or leadarboard or probably also monitoring in the future.
+// how to incorporate this? map_id: u32, | for match its pf for leadaerboard its harder.

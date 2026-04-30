@@ -69,6 +69,14 @@ enum LbParams {
     Position,
 }
 
+struct LbEntry {
+    user_id: u32,
+    round: u16,
+    position: u16,
+    score: i32,
+    time: i32,
+}
+
 #[reducer]
 fn leaderboard_create(
     ctx: &ReducerContext,
@@ -113,10 +121,11 @@ fn leaderboard_create(
 }
 
 pub(crate) trait LeadearboardRead {
-    fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<MatchRoundPlayer>;
+    fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry>;
+    fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry>;
 }
 impl<Db: DbContext> LeadearboardRead for Db {
-    fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<MatchRoundPlayer> {
+    fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry> {
         let Some(lb) = self
             .db_read_only()
             .tab_leaderboard()
@@ -159,12 +168,20 @@ impl<Db: DbContext> LeadearboardRead for Db {
             }
 
             match depending_connection.origin() {
-                NodeHandle::MatchV1(m) => leaderboard.extend(self.match_rounds(m));,
+                NodeHandle::MatchV1(m) => {
+                    leaderboard.extend(self.match_rounds(m).into_iter().map(|r| LbEntry {
+                        user_id: r.user_id,
+                        round: r.get_round(),
+                        position: r.get_position(),
+                        score: r.get_score(),
+                        time: r.get_time(),
+                    }))
+                }
                 NodeHandle::LeaderboardV1(l) => leaderboard.extend(self.leaderboard_evaluation(l)),
                 //TODO handle rest of the cases: Input/Output/Competition should be possible since they can passthrough other stuff.
-                _=> {
+                _ => {
                     log::error!("Tried to fetch a leadarboard of the wrong node.");
-                    return Vec::new()
+                    return Vec::new();
                 }
             };
 
@@ -178,6 +195,17 @@ impl<Db: DbContext> LeadearboardRead for Db {
                 LbSettings::Filter(lb_filter_settings) => lb_filter_settings.evaluate(leaderboard),
             }
         }
+
+        leaderboard
+    }
+
+    fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry> {
+        let leaderboard = self.leaderboard_evaluation(leaderboard_id);
+        if leaderboard.is_empty() {
+            log::error!("leaderboard returned empty vec.");
+            return Vec::new();
+        }
+        //TODO
 
         leaderboard
     }
@@ -221,7 +249,6 @@ impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
 // this is important because a player is its own "entity" and it makes no sense
 // to have one in a leadearboard multiple times.
 
-
 // Matches have two "channels" rounds leadarboard and match leadarboard.
 // The match leadarboard is only virtually constructed.
 // Does this mean the leaderboard node should do the same??? -> i guess ja
@@ -234,7 +261,6 @@ impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
 // This means in order to apply the filter input we would have to evaluate the match leadarboard
 // and then get the players which are currently in front and remap it to the rounds again.
 // do we want to allow that or not? -> rn it would be alriiiight??
-// 
+//
 
-
-// all of the above also means that upon multiple input connections you HAVE to merge them together in the first setting. 
+// all of the above also means that upon multiple input connections you HAVE to merge them together in the first setting.

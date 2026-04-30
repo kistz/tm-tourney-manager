@@ -84,6 +84,10 @@ impl MatchRoundPlayer {
         self.time
     }
 
+    pub(crate) fn get_round(&self) -> u16 {
+        self.round
+    }
+
     pub(crate) fn get_position(&self) -> u16 {
         self.position
     }

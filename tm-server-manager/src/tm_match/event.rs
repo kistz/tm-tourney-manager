@@ -4,9 +4,6 @@ use tm_server_types::{config::TmMode, event::Event};
 use crate::{
     competition::{connection::internal_graph_resolution_node_finished, node::NodeHandle},
     maps::{TabTmMap, tab_tm_map},
-    raw_server::{
-        destination::TabRawServerDestinationWrite, occupation::TabRawServerOccupationWrite,
-    },
     tm_match::{
         MatchWrite,
         leaderboard::{
@@ -15,7 +12,6 @@ use crate::{
         },
         replay::MatchReplayWrite,
         state::{MatchState, tab_match_state},
-        tab_match,
     },
     user::{UserRead, UserV1, UserWrite},
 };
@@ -91,33 +87,40 @@ pub(crate) fn handle_match_event(
 
                 let round = state.get_round();
 
-                let mut entry = ctx
+                if let Some(mut entry) = ctx
                     .db
                     .tab_match_round_player_ext()
                     .match_round_player()
                     .filter((state.match_id, round, user_id))
                     .next()
-                    .unwrap();
+                {
+                    if way_point.is_end_race {
+                        let mut round_player =
+                            ctx.db.tab_match_round_player().id().find(entry.id).unwrap();
 
-                if way_point.is_end_race {
-                    let mut round_player =
-                        ctx.db.tab_match_round_player().id().find(entry.id).unwrap();
+                        if round_player.get_time() > way_point.racetime as i32
+                            || round_player.get_time() == 0
+                        {
+                            round_player.set_time(way_point.racetime as i32);
+                            ctx.db.tab_match_round_player().id().update(round_player);
+                        }
 
-                    if round_player.get_time() > way_point.racetime as i32
-                        || round_player.get_time() == 0
-                    {
-                        round_player.set_time(way_point.racetime as i32);
-                        ctx.db.tab_match_round_player().id().update(round_player);
+                        entry.add_finish(way_point.speed, way_point.racetime);
+                    } else if way_point.is_end_lap {
+                        entry.add_lap(way_point.speed, way_point.racetime);
+                    } else {
+                        entry.add_checkpoint(way_point.speed, way_point.racetime);
                     }
 
-                    entry.add_finish(way_point.speed, way_point.racetime);
-                } else if way_point.is_end_lap {
-                    entry.add_lap(way_point.speed, way_point.racetime);
+                    ctx.db.tab_match_round_player_ext().id().update(entry);
                 } else {
-                    entry.add_checkpoint(way_point.speed, way_point.racetime);
+                    log::error!(
+                        "Checkpoint without StartLine... Match: {}, Round: {}, Player: {}",
+                        state.match_id,
+                        round,
+                        user_id
+                    );
                 }
-
-                ctx.db.tab_match_round_player_ext().id().update(entry);
             }
         }
         Event::Respawn(respawn) => {
@@ -127,17 +130,24 @@ pub(crate) fn handle_match_event(
 
                 let round = state.get_round();
 
-                let mut entry = ctx
+                if let Some(mut entry) = ctx
                     .db
                     .tab_match_round_player_ext()
                     .match_round_player()
                     .filter((state.match_id, round, user_id))
                     .next()
-                    .unwrap();
+                {
+                    entry.add_respawn(respawn.speed, respawn.time);
 
-                entry.add_respawn(respawn.speed, respawn.time);
-
-                ctx.db.tab_match_round_player_ext().id().update(entry);
+                    ctx.db.tab_match_round_player_ext().id().update(entry);
+                } else {
+                    log::error!(
+                        "Respawn without StartLine... Match: {}, Round: {}, Player: {}",
+                        state.match_id,
+                        round,
+                        user_id
+                    );
+                }
             }
         }
         Event::GiveUp(give_up) => {
@@ -147,17 +157,24 @@ pub(crate) fn handle_match_event(
 
                 let round = state.get_round();
 
-                let mut entry = ctx
+                if let Some(mut entry) = ctx
                     .db
                     .tab_match_round_player_ext()
                     .match_round_player()
                     .filter((state.match_id, round, user_id))
                     .next()
-                    .unwrap();
+                {
+                    entry.give_up(give_up.time);
 
-                entry.give_up(give_up.time);
-
-                ctx.db.tab_match_round_player_ext().id().update(entry);
+                    ctx.db.tab_match_round_player_ext().id().update(entry);
+                } else {
+                    log::error!(
+                        "GiveUp without StartLine... Match: {}, Round: {}, Player: {}",
+                        state.match_id,
+                        round,
+                        user_id
+                    );
+                }
             }
         }
         Event::KnockoutElimination(knocked_players) => {
@@ -319,6 +336,7 @@ pub(crate) fn handle_match_event(
                 struct ScoresPlayer {
                     user_id: u32,
                     round_points: i32,
+                    position: u16,
                 }
 
                 let scores = scores
@@ -330,6 +348,7 @@ pub(crate) fn handle_match_event(
                         ScoresPlayer {
                             user_id,
                             round_points: p.round_points,
+                            position: p.rank as u16,
                         }
                     })
                     .collect::<Vec<_>>();
@@ -339,6 +358,7 @@ pub(crate) fn handle_match_event(
 
                     if let Some(found) = found {
                         player_round.set_points(found.round_points);
+                        player_round.set_position(found.position);
                         ctx.db.tab_match_round_player().id().update(player_round);
                     } else {
                         log::error!(

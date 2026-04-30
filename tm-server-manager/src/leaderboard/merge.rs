@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use spacetimedb::SpacetimeType;
 
-use crate::{leaderboard::LbParams, tm_match::leaderboard::MatchRoundPlayer};
+use crate::{
+    leaderboard::{LbEntry, LbParams},
+    tm_match::leaderboard::MatchRoundPlayer,
+};
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub(super) struct LbMergeSettings {
@@ -25,7 +28,7 @@ enum LbMergeAction {
 }
 
 impl LbMergeSettings {
-    pub(super) fn evaluate(self, leaderboard: Vec<MatchRoundPlayer>) -> Vec<MatchRoundPlayer> {
+    pub(super) fn evaluate(self, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
         let iter = leaderboard.into_iter();
 
         let mut output = Vec::new();
