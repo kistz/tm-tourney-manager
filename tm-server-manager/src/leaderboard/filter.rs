@@ -44,7 +44,9 @@ impl LbFilterSettings {
                 .or_insert(vec![row]);
         }
 
-        for rows in map.values_mut() {
+        let map_len = map.len();
+
+        for (user_id, rows) in &mut map {
             match self.kind {
                 //LbFilterKind::Match => todo!(),
                 //LbFilterKind::Maps => todo!(),
@@ -61,7 +63,40 @@ impl LbFilterSettings {
             }
 
             match self.filter {
-                LbFilterIdent::Best(n) => rows.truncate(n as usize),
+                LbFilterIdent::Best(n) => {
+                    rows.truncate(n as usize);
+                    if rows.len() < (n as usize) {
+                        let missing = n - rows.len() as u16;
+                        match self.fallback {
+                            LbFilterFallback::Worst => match self.param {
+                                LbParams::Score => {
+                                    for _ in 0..missing {
+                                        rows.push(LbEntry {
+                                            user_id: *user_id,
+                                            round: 0,
+                                            position: map_len as u16,
+                                            //TODO is worst score as 0 sufficient?
+                                            score: 0,
+                                            time: 0,
+                                        });
+                                    }
+                                }
+                                LbParams::Time => todo!(),
+                                LbParams::Position => {
+                                    for _ in 0..missing {
+                                        rows.push(LbEntry {
+                                            user_id: *user_id,
+                                            round: 0,
+                                            position: map_len as u16,
+                                            score: 0,
+                                            time: 0,
+                                        });
+                                    }
+                                }
+                            },
+                        }
+                    }
+                }
             };
         }
 

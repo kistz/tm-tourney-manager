@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use petgraph::acyclic::Acyclic;
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table,
+    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, Uuid,
     ViewContext, reducer, view,
 };
 
@@ -14,12 +14,17 @@ use crate::{
             action::{TabConnectionAction, tab_connection_action, try_exec_action},
             data::{ConnectionData, tab_connection_data, tab_connection_data__view},
         },
-        node::{NodeHandle, NodeRead, NodeType},
+        node::{NodeHandle, NodeRead},
     },
+    input::tab_input__view,
     leaderboard::LeadearboardRead,
     raw_server::player::PermittedPlayer,
     registration::player::RegistrationRead,
-    tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
+    schedule::ScheduleWrite,
+    tm_match::{
+        MatchWrite,
+        leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
+    },
     user::UserRead,
 };
 
@@ -384,7 +389,43 @@ pub(crate) fn internal_graph_resolution_node_finished(
         // When no more pending connections are left it is safe to implicitly start depending nodes.
         if pending_connections.is_empty() {
             log::warn!("The node can be started now.");
-            if let Err(error) = affected_connection.target.ready(ctx) {
+
+            let result = match affected_connection.target {
+                NodeHandle::MatchV1(match_id) => ctx.match_set_preparation(match_id, ctx.timestamp),
+                NodeHandle::CompetitionV1(c) => {
+                    let inputs = ctx.db_read_only().tab_input().parent_id().filter(c);
+
+                    for input in inputs {
+                        let result = internal_graph_resolution_node_finished(
+                            ctx,
+                            NodeHandle::InputV1(input.id),
+                        );
+
+                        if let Err(error) = result {
+                            log::error!(
+                                "Implicit Flow: Node should have been ready but action failed. Error: {error}"
+                            );
+                        }
+                    }
+
+                    Ok(())
+                }
+                NodeHandle::ScheduleV1(s) => ctx.schedule_start_relative(s, ctx.timestamp),
+                NodeHandle::ServerV1(_) => unreachable!(),
+                NodeHandle::RegistrationV1(_) => unreachable!(),
+                NodeHandle::InputV1(n) => {
+                    internal_graph_resolution_node_finished(ctx, NodeHandle::InputV1(n))
+                }
+                NodeHandle::OutputV1(_) => todo!(),
+                NodeHandle::LeaderboardV1(n) => {
+                    // We can pass this through since the leadearboard has no state by itself.
+                    // This means that if matches dpeend on it they will be triggered and if its
+                    // a lead leadearboard where nothing is connected to it will just trigger nothing.
+                    internal_graph_resolution_node_finished(ctx, NodeHandle::LeaderboardV1(n))
+                }
+            };
+
+            if let Err(error) = result {
                 //TODO maybe add a table for node problems?
                 // maybe there also should be a intended to progress state in the nodes.
                 log::error!(
@@ -435,11 +476,55 @@ impl<Db: DbContext> ConnectionRead for Db {
                     })
                     .collect()
             }
-            NodeHandle::CompetitionV1(c) => todo!(),
+            NodeHandle::CompetitionV1(c) => todo!(), // TODO redirect to the output node.
             NodeHandle::ServerV1(_) => todo!(),
             NodeHandle::ScheduleV1(_) => todo!(),
-            NodeHandle::RegistrationV1(r) => todo!(),
-            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::RegistrationV1(r) => {
+                let rules = self
+                    .db_read_only()
+                    .tab_connection_data()
+                    .connection_id()
+                    .find(connection.id)
+                    .unwrap();
+
+                let leaderboard = self.registration_player(r);
+
+                //TODO maybe factor this out into a trait and impl it for the respective thing
+                // maybe we also need to split the data portion out into separate tables for each connection.
+                rules
+                    .apply_registration(leaderboard)
+                    .into_iter()
+                    .map(|p| {
+                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                    })
+                    .collect()
+            }
+            NodeHandle::InputV1(n) => {
+                let Some(input) = self.db_read_only().tab_input().id().find(n) else {
+                    return Vec::new();
+                };
+                let comp = input.get_comp_id();
+
+                let mut map: HashMap<Uuid, PermittedPlayer> = HashMap::new();
+
+                let depending_connections = self
+                    .db_read_only()
+                    .tab_connection()
+                    .origins_of()
+                    .filter(NodeHandle::CompetitionV1(comp).split())
+                    .filter(|c| c.is_data());
+
+                for depending_connection in depending_connections {
+                    let permitted_players = self
+                        .connection_filter_permitted_players(depending_connection)
+                        .into_iter()
+                        .map(|p| (p.account_id, p));
+                    // This overrides the existing entrys.
+                    map.extend(permitted_players);
+                }
+
+                map.into_values().collect()
+            }
             NodeHandle::OutputV1(_) => todo!(),
             NodeHandle::LeaderboardV1(l) => {
                 let rules = self

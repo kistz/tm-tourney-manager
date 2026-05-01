@@ -26,13 +26,11 @@ enum LbMergeKind {
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 enum LbMergeAction {
     Average,
-    Summate,
+    //Summate,
 }
 
 impl LbMergeSettings {
     pub(super) fn evaluate(self, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
-        let iter = leaderboard.into_iter();
-
         /* let mut output = Vec::new();
 
         // Player<Matches<Maps<Rounds<MatchRoundPlayer>>>>
@@ -63,30 +61,68 @@ impl LbMergeSettings {
                                             acc.score += x.score;
                                             acc
                                         });
-                                        //TODO make float var sort with that and then cast abck to int.
-                                        let accumulated.score as
-                                    accumulated.score = (accumulated.score / num_rounds as );
+                                    //TODO make float var sort with that and then cast abck to int.
+                                    //let float = accumulated.score as f32 / num_rounds as f32;
+                                    let avg = (accumulated.score as f32 / num_rounds as f32) as i32;
+                                    accumulated.score = avg;
+
                                     map.insert(player, accumulated);
                                 }
-                                LbParams::Time => todo!(),
-                                LbParams::Position => todo!(),
+                                LbParams::Time => {
+                                    let mut accumulated =
+                                        rounds.into_iter().fold(thing, |mut acc, x| {
+                                            acc.time += x.time;
+                                            acc
+                                        });
+                                    //TODO make float var sort with that and then cast abck to int.
+                                    //let float = accumulated.score as f32 / num_rounds as f32;
+                                    let avg = (accumulated.time as f32 / num_rounds as f32) as i32;
+                                    accumulated.time = avg;
+
+                                    map.insert(player, accumulated);
+                                }
+                                LbParams::Position => {
+                                    let mut accumulated =
+                                        rounds.into_iter().fold(thing, |mut acc, x| {
+                                            acc.position += x.position;
+                                            acc
+                                        });
+                                    //TODO make float var sort with that and then cast abck to int.
+                                    //let float = accumulated.score as f32 / num_rounds as f32;
+                                    let avg =
+                                        (accumulated.position as f32 / num_rounds as f32) as u16;
+                                    accumulated.position = avg;
+
+                                    map.insert(player, accumulated);
+                                }
                             }
                         }
                         match self.param {
                             LbParams::Score => {
-                                let mut vec = map.into_values().into_iter().collect::<Vec<_>>();
+                                let mut vec = map.into_values().collect::<Vec<_>>();
                                 vec.sort_by_key(|f| f.score);
+                                // readjust the position.
+                                vec.iter_mut()
+                                    .enumerate()
+                                    .for_each(|(i, e)| e.position = (i + 1) as u16);
                                 vec
                             }
-                            LbParams::Time => todo!(),
-                            LbParams::Position => todo!(),
-                        }
-                    }
-                    LbMergeAction::Summate => todo!(),
-                }
-            } /* LbMergeKind::Matches => {
+                            LbParams::Time => {
+                                let mut vec = map.into_values().collect::<Vec<_>>();
+                                vec.sort_by_key(|f| f.time);
 
-              }, */
+                                vec
+                            }
+                            LbParams::Position => {
+                                let mut vec = map.into_values().collect::<Vec<_>>();
+                                vec.sort_by_key(|f| f.position);
+
+                                vec
+                            }
+                        }
+                    } //LbMergeAction::Summate => todo!(),
+                }
+            } //LbMergeKind::Matches => {}
         }
     }
 }

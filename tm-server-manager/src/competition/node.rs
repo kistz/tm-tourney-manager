@@ -145,7 +145,7 @@ impl NodeHandle {
     }
 }
 
-pub trait NodeType {
+/* pub trait NodeType {
     fn ready(&self, ctx: &ReducerContext) -> Result<(), String>;
 }
 
@@ -163,7 +163,7 @@ impl NodeType for NodeHandle {
             NodeHandle::LeaderboardV1(_) => Ok(()),
         }
     }
-}
+} */
 
 pub(crate) trait NodeRead {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer>;

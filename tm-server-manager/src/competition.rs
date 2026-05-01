@@ -6,9 +6,11 @@ use spacetimedb::{
 use crate::{
     authorization::Authorization,
     competition::{
+        connection::internal_graph_resolution_node_finished,
         roles::{CompetitionMember, tab_competition_member},
         template::competition_template_instantiate,
     },
+    input::tab_input__view,
 };
 
 pub(super) mod connection;
@@ -116,7 +118,7 @@ fn competition_create(
         competition_template_instantiate(ctx, parent_id, with_template, name)?;
     } else {
         //SAFETY: The competition gets commnited afterwards.
-        let new_competition = unsafe { CompetitionV1::new(name, parent_id) };
+        let new_competition = CompetitionV1::new(name, parent_id);
         ctx.db.tab_competition().try_insert(new_competition)?;
     }
 
@@ -262,7 +264,7 @@ impl<Db: DbContext> CompetitionRead for Db {
 
 pub(crate) trait CompetitionWrite: CompetitionRead {
     fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String>;
-    fn competition_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
+    fn competition_name_edit(&self, competition_id: u32, name: String) -> Result<(), String>;
 }
 impl<Db: DbContext<DbView = Local>> CompetitionWrite for Db {
     fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String> {
@@ -276,8 +278,8 @@ impl<Db: DbContext<DbView = Local>> CompetitionWrite for Db {
         Ok(comp.id)
     }
 
-    fn competition_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
-        let Some(mut tm_match) = self.db().tab_competition().id().find(match_id) else {
+    fn competition_name_edit(&self, competition_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_competition().id().find(competition_id) else {
             return Err("Match not found.".into());
         };
         tm_match.name = name;

@@ -36,172 +36,162 @@ pub(crate) fn handle_match_event(
 ) -> Result<(), String> {
     match &event {
         // We use this to always insert participating players of the round in the leaderboard.
-        Event::StartLine(start_line) => {
-            if state.live_round() {
-                let account_id = Uuid::parse_str(&start_line.account_id).unwrap();
+        Event::StartLine(start_line) if state.live_round() => {
+            let account_id = Uuid::parse_str(&start_line.account_id).unwrap();
+            let user_id = ctx.user_id_from_account(account_id);
+
+            let round = state.get_round();
+
+            // This is mainly for TimeAttack where we are at the start multiple times.
+            if ctx
+                .db
+                .tab_match_round_player()
+                .match_round_player()
+                .filter((state.match_id, round, user_id))
+                .count()
+                == 0
+            {
+                let player = ctx
+                    .db
+                    .tab_match_round_player()
+                    .try_insert(MatchRoundPlayer::new(state.match_id, user_id, round))?;
+                ctx.db
+                    .tab_match_round_player_ext()
+                    .try_insert(MatchRoundPlayerExt::new(
+                        player.id,
+                        state.match_id,
+                        user_id,
+                        round,
+                        start_line.time,
+                    ))?;
+            } else {
+                let mut entry = ctx
+                    .db
+                    .tab_match_round_player_ext()
+                    .match_round_player()
+                    .filter((state.match_id, round, user_id))
+                    .next()
+                    .unwrap();
+
+                entry.add_start_line(start_line.time);
+
+                ctx.db.tab_match_round_player_ext().id().update(entry);
+            }
+        }
+        Event::WayPoint(way_point) if state.live_round() => {
+            let account_id = Uuid::parse_str(&way_point.account_id).unwrap();
+            let user_id = ctx.user_id_from_account(account_id);
+
+            let round = state.get_round();
+
+            if let Some(mut entry) = ctx
+                .db
+                .tab_match_round_player_ext()
+                .match_round_player()
+                .filter((state.match_id, round, user_id))
+                .next()
+            {
+                if way_point.is_end_race {
+                    let mut round_player =
+                        ctx.db.tab_match_round_player().id().find(entry.id).unwrap();
+
+                    if round_player.get_time() > way_point.racetime as i32
+                        || round_player.get_time() == 0
+                    {
+                        round_player.set_time(way_point.racetime as i32);
+                        ctx.db.tab_match_round_player().id().update(round_player);
+                    }
+
+                    entry.add_finish(way_point.speed, way_point.racetime);
+                } else if way_point.is_end_lap {
+                    entry.add_lap(way_point.speed, way_point.racetime);
+                } else {
+                    entry.add_checkpoint(way_point.speed, way_point.racetime);
+                }
+
+                ctx.db.tab_match_round_player_ext().id().update(entry);
+            } else {
+                log::error!(
+                    "Checkpoint without StartLine... Match: {}, Round: {}, Player: {}",
+                    state.match_id,
+                    round,
+                    user_id
+                );
+            }
+        }
+        Event::Respawn(respawn) if state.live_round() => {
+            let account_id = Uuid::parse_str(&respawn.account_id).unwrap();
+            let user_id = ctx.user_id_from_account(account_id);
+
+            let round = state.get_round();
+
+            if let Some(mut entry) = ctx
+                .db
+                .tab_match_round_player_ext()
+                .match_round_player()
+                .filter((state.match_id, round, user_id))
+                .next()
+            {
+                entry.add_respawn(respawn.speed, respawn.time);
+
+                ctx.db.tab_match_round_player_ext().id().update(entry);
+            } else {
+                log::error!(
+                    "Respawn without StartLine... Match: {}, Round: {}, Player: {}",
+                    state.match_id,
+                    round,
+                    user_id
+                );
+            }
+        }
+        Event::GiveUp(give_up) if state.live_round() => {
+            let account_id = Uuid::parse_str(&give_up.account_id).unwrap();
+            let user_id = ctx.user_id_from_account(account_id);
+
+            let round = state.get_round();
+
+            if let Some(mut entry) = ctx
+                .db
+                .tab_match_round_player_ext()
+                .match_round_player()
+                .filter((state.match_id, round, user_id))
+                .next()
+            {
+                entry.give_up(give_up.time);
+
+                ctx.db.tab_match_round_player_ext().id().update(entry);
+            } else {
+                log::error!(
+                    "GiveUp without StartLine... Match: {}, Round: {}, Player: {}",
+                    state.match_id,
+                    round,
+                    user_id
+                );
+            }
+        }
+        Event::KnockoutElimination(knocked_players) if state.live_round() => {
+            let round = state.get_round();
+
+            for player in &knocked_players.account_ids {
+                let account_id = Uuid::parse_str(player).unwrap();
                 let user_id = ctx.user_id_from_account(account_id);
 
-                let round = state.get_round();
-
-                // This is mainly for TimeAttack where we are at the start multiple times.
-                if ctx
+                let mut entry = ctx
                     .db
                     .tab_match_round_player()
                     .match_round_player()
                     .filter((state.match_id, round, user_id))
-                    .count()
-                    == 0
-                {
-                    let player = ctx
-                        .db
-                        .tab_match_round_player()
-                        .try_insert(MatchRoundPlayer::new(state.match_id, user_id, round))?;
-                    ctx.db
-                        .tab_match_round_player_ext()
-                        .try_insert(MatchRoundPlayerExt::new(
-                            player.id,
-                            state.match_id,
-                            user_id,
-                            round,
-                            start_line.time,
-                        ))?;
-                } else {
-                    let mut entry = ctx
-                        .db
-                        .tab_match_round_player_ext()
-                        .match_round_player()
-                        .filter((state.match_id, round, user_id))
-                        .next()
-                        .unwrap();
-
-                    entry.add_start_line(start_line.time);
-
-                    ctx.db.tab_match_round_player_ext().id().update(entry);
-                }
-            }
-        }
-        Event::WayPoint(way_point) => {
-            if state.live_round() {
-                let account_id = Uuid::parse_str(&way_point.account_id).unwrap();
-                let user_id = ctx.user_id_from_account(account_id);
-
-                let round = state.get_round();
-
-                if let Some(mut entry) = ctx
-                    .db
-                    .tab_match_round_player_ext()
-                    .match_round_player()
-                    .filter((state.match_id, round, user_id))
                     .next()
-                {
-                    if way_point.is_end_race {
-                        let mut round_player =
-                            ctx.db.tab_match_round_player().id().find(entry.id).unwrap();
+                    .unwrap_or_else(|| {
+                        log::error!("Entry of player was not found.");
+                        let new_player = MatchRoundPlayer::new(state.match_id, user_id, round);
 
-                        if round_player.get_time() > way_point.racetime as i32
-                            || round_player.get_time() == 0
-                        {
-                            round_player.set_time(way_point.racetime as i32);
-                            ctx.db.tab_match_round_player().id().update(round_player);
-                        }
+                        ctx.db.tab_match_round_player().insert(new_player)
+                    });
 
-                        entry.add_finish(way_point.speed, way_point.racetime);
-                    } else if way_point.is_end_lap {
-                        entry.add_lap(way_point.speed, way_point.racetime);
-                    } else {
-                        entry.add_checkpoint(way_point.speed, way_point.racetime);
-                    }
+                entry.set_points(-1);
 
-                    ctx.db.tab_match_round_player_ext().id().update(entry);
-                } else {
-                    log::error!(
-                        "Checkpoint without StartLine... Match: {}, Round: {}, Player: {}",
-                        state.match_id,
-                        round,
-                        user_id
-                    );
-                }
-            }
-        }
-        Event::Respawn(respawn) => {
-            if state.live_round() {
-                let account_id = Uuid::parse_str(&respawn.account_id).unwrap();
-                let user_id = ctx.user_id_from_account(account_id);
-
-                let round = state.get_round();
-
-                if let Some(mut entry) = ctx
-                    .db
-                    .tab_match_round_player_ext()
-                    .match_round_player()
-                    .filter((state.match_id, round, user_id))
-                    .next()
-                {
-                    entry.add_respawn(respawn.speed, respawn.time);
-
-                    ctx.db.tab_match_round_player_ext().id().update(entry);
-                } else {
-                    log::error!(
-                        "Respawn without StartLine... Match: {}, Round: {}, Player: {}",
-                        state.match_id,
-                        round,
-                        user_id
-                    );
-                }
-            }
-        }
-        Event::GiveUp(give_up) => {
-            if state.live_round() {
-                let account_id = Uuid::parse_str(&give_up.account_id).unwrap();
-                let user_id = ctx.user_id_from_account(account_id);
-
-                let round = state.get_round();
-
-                if let Some(mut entry) = ctx
-                    .db
-                    .tab_match_round_player_ext()
-                    .match_round_player()
-                    .filter((state.match_id, round, user_id))
-                    .next()
-                {
-                    entry.give_up(give_up.time);
-
-                    ctx.db.tab_match_round_player_ext().id().update(entry);
-                } else {
-                    log::error!(
-                        "GiveUp without StartLine... Match: {}, Round: {}, Player: {}",
-                        state.match_id,
-                        round,
-                        user_id
-                    );
-                }
-            }
-        }
-        Event::KnockoutElimination(knocked_players) => {
-            if state.live_round() {
-                let round = state.get_round();
-
-                for player in &knocked_players.account_ids {
-                    let account_id = Uuid::parse_str(player).unwrap();
-                    let user_id = ctx.user_id_from_account(account_id);
-
-                    let mut entry = ctx
-                        .db
-                        .tab_match_round_player()
-                        .match_round_player()
-                        .filter((state.match_id, round, user_id))
-                        .next()
-                        .unwrap_or_else(|| {
-                            log::error!("Entry of player was not found.");
-                            let new_player = MatchRoundPlayer::new(state.match_id, user_id, round);
-
-                            ctx.db.tab_match_round_player().insert(new_player)
-                        });
-
-                    entry.set_points(-1);
-
-                    ctx.db.tab_match_round_player().id().update(entry);
-                }
+                ctx.db.tab_match_round_player().id().update(entry);
             }
         }
         Event::StartMapStart(start_map) => {
@@ -257,12 +247,10 @@ pub(crate) fn handle_match_event(
                 log::error!("Could not update match_round_replay_time. Reason: {err}");
             }
         }
-        Event::StartRoundStart(_) => {
-            if state.live_round() {
-                state.new_round();
+        Event::StartRoundStart(_) if state.live_round() => {
+            state.new_round();
 
-                ctx.db.tab_match_state().match_id().update(state);
-            }
+            ctx.db.tab_match_state().match_id().update(state);
         }
         Event::StartMatchStart(_) => {
             state.set_live_commited();
@@ -323,49 +311,46 @@ pub(crate) fn handle_match_event(
             state.set_pause(pause.active);
             ctx.db.tab_match_state().match_id().update(state);
         }
-        Event::Scores(scores) => {
-            if state.live_round() && scores.section == "PreEndRound" {
-                // Because we delete after a pause this is empty and hence does not modify anything.
-                let player_rounds = ctx
-                    .db
-                    .tab_match_round_player()
-                    .match_round()
-                    .filter((state.match_id, state.get_round()));
+        Event::Scores(scores) if state.live_round() && scores.section == "PreEndRound" => {
+            // Because we delete after a pause this is empty and hence does not modify anything.
+            let player_rounds = ctx
+                .db
+                .tab_match_round_player()
+                .match_round()
+                .filter((state.match_id, state.get_round()));
 
-                #[derive(Debug)]
-                struct ScoresPlayer {
-                    user_id: u32,
-                    round_points: i32,
-                    position: u16,
-                }
+            #[derive(Debug)]
+            struct ScoresPlayer {
+                user_id: u32,
+                round_points: i32,
+                position: u16,
+            }
 
-                let scores = scores
-                    .players
-                    .iter()
-                    .map(|p| {
-                        let user_id =
-                            ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
-                        ScoresPlayer {
-                            user_id,
-                            round_points: p.round_points,
-                            position: p.rank as u16,
-                        }
-                    })
-                    .collect::<Vec<_>>();
+            let scores = scores
+                .players
+                .iter()
+                .map(|p| {
+                    let user_id = ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
+                    ScoresPlayer {
+                        user_id,
+                        round_points: p.round_points,
+                        position: p.rank as u16,
+                    }
+                })
+                .collect::<Vec<_>>();
 
-                for mut player_round in player_rounds {
-                    let found = scores.iter().find(|p| p.user_id == player_round.user_id);
+            for mut player_round in player_rounds {
+                let found = scores.iter().find(|p| p.user_id == player_round.user_id);
 
-                    if let Some(found) = found {
-                        player_round.set_points(found.round_points);
-                        player_round.set_position(found.position);
-                        ctx.db.tab_match_round_player().id().update(player_round);
-                    } else {
-                        log::error!(
-                            "Player of a round could not be found in the scores even tho he was on the start line..?"
-                        )
-                    };
-                }
+                if let Some(found) = found {
+                    player_round.set_points(found.round_points);
+                    player_round.set_position(found.position);
+                    ctx.db.tab_match_round_player().id().update(player_round);
+                } else {
+                    log::error!(
+                        "Player of a round could not be found in the scores even tho he was on the start line..?"
+                    )
+                };
             }
         }
         _ => (),

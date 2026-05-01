@@ -15,6 +15,9 @@ pub use warm_up::*;
 mod give_up;
 pub use give_up::GiveUp;
 
+mod skip_outro;
+pub use skip_outro::SkipOutro;
+
 mod knockout;
 pub use knockout::KnockoutElimination;
 
@@ -116,6 +119,7 @@ pub enum Event {
     Custom(Custom),
 
     KnockoutElimination(KnockoutElimination),
+    SkipOutro(SkipOutro),
 }
 
 impl Event {
@@ -135,6 +139,10 @@ impl Event {
                 "Trackmania.Event.GiveUp" => Event::GiveUp(
                     json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
                 ),
+                "Trackmania.Event.SkipOutro" => Event::SkipOutro(
+                    json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
+                ),
+
                 "Trackmania.Scores" => Event::Scores(
                     json::from_str(&mut body).map_err(|e| (name.to_string(), e, body))?,
                 ),
