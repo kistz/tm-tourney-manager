@@ -47,7 +47,7 @@ impl ConnectionData {
             ConnectionDataOption::Custom(items) => {
                 let mut players = Vec::with_capacity(items.len());
                 for item in items {
-                    if let Some(player) = tm_match.get(*item as usize) {
+                    if let Some(player) = tm_match.get((*item - 1) as usize) {
                         players.push(*player);
                     }
                 }
@@ -106,7 +106,7 @@ impl ConnectionData {
             ConnectionDataOption::Custom(items) => {
                 let mut players = Vec::with_capacity(items.len());
                 for item in items {
-                    if let Some(player) = registration.get(*item as usize) {
+                    if let Some(player) = registration.get((*item - 1) as usize) {
                         players.push(*player);
                     }
                 }
