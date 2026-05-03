@@ -10,8 +10,6 @@ pub mod authorization;
 pub mod competition;
 pub mod env;
 pub mod input;
-// Stabilize leaderboard node if its ready.
-#[cfg(not(feature = "production"))]
 pub mod leaderboard;
 pub mod maps;
 pub mod monitoring;

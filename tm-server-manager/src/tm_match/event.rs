@@ -1,5 +1,5 @@
 use spacetimedb::{ReducerContext, Table, Uuid, table};
-use tm_server_types::{config::TmMode, event::Event};
+use tm_server_types::{base::RoundTime, config::TmMode, event::Event};
 
 use crate::{
     competition::{connection::internal_graph_resolution_node_finished, node::NodeHandle},
@@ -323,10 +323,10 @@ pub(crate) fn handle_match_event(
             struct ScoresPlayer {
                 user_id: u32,
                 round_points: i32,
-                position: u16,
+                time: i32,
             }
 
-            let scores = scores
+            let mut scores = scores
                 .players
                 .iter()
                 .map(|p| {
@@ -334,17 +334,29 @@ pub(crate) fn handle_match_event(
                     ScoresPlayer {
                         user_id,
                         round_points: p.round_points,
-                        position: p.rank as u16,
+                        time: if let RoundTime::Time(time) = p.previous_racetime {
+                            time as i32
+                        } else {
+                            -1
+                        },
                     }
                 })
                 .collect::<Vec<_>>();
+
+            // Reconstruct the position because the mode does not give it back.
+            match state.get_mode() {
+                TmMode::Rounds => scores.sort_by_key(|k| -k.round_points),
+                TmMode::ReverseCup => scores.sort_by_key(|k| k.round_points),
+                TmMode::Knockout => todo!(),
+                TmMode::TimeAttack => scores.sort_by_key(|k| -k.time),
+            }
 
             for mut player_round in player_rounds {
                 let found = scores.iter().find(|p| p.user_id == player_round.user_id);
 
                 if let Some(found) = found {
                     player_round.set_points(found.round_points);
-                    player_round.set_position(found.position);
+                    //player_round.set_position(found.position);
                     ctx.db.tab_match_round_player().id().update(player_round);
                 } else {
                     log::error!(

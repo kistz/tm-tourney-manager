@@ -378,7 +378,7 @@ fn match_override_pre_config(
         if configs.len() == 1 {
             ctx.raw_server_config_update(tm_match.pre_config, config)?;
         } else {
-            let config = ctx.raw_server_config_new(config)?;
+            let config = ctx.raw_server_config_new(config, 0)?;
             tm_match.pre_config = config;
 
             ctx.db.tab_match().id().update(tm_match);
@@ -412,7 +412,7 @@ fn match_override_config(
     if configs.len() == 1 {
         ctx.raw_server_config_update(tm_match.config, config)?;
     } else {
-        let config = ctx.raw_server_config_new(config)?;
+        let config = ctx.raw_server_config_new(config, 0)?;
         tm_match.config = config;
 
         ctx.db.tab_match().id().update(tm_match);

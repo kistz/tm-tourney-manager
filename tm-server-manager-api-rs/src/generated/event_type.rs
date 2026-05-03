@@ -27,6 +27,7 @@ use super::player_info_type::PlayerInfo;
 use super::podium_type::Podium;
 use super::respawn_type::Respawn;
 use super::scores_type::Scores;
+use super::skip_outro_type::SkipOutro;
 use super::start_line_type::StartLine;
 use super::start_map_type::StartMap;
 use super::start_match_type::StartMatch;
@@ -128,6 +129,8 @@ pub enum Event {
     Custom(Custom),
 
     KnockoutElimination(KnockoutElimination),
+
+    SkipOutro(SkipOutro),
 }
 
 impl __sdk::InModule for Event {

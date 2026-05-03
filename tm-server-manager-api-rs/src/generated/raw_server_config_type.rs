@@ -11,6 +11,7 @@ use super::server_config_type::ServerConfig;
 pub struct RawServerConfig {
     pub id: u32,
     pub config: ServerConfig,
+    pub competition_id: u32,
 }
 
 impl __sdk::InModule for RawServerConfig {
@@ -23,6 +24,7 @@ impl __sdk::InModule for RawServerConfig {
 pub struct RawServerConfigCols {
     pub id: __sdk::__query_builder::Col<RawServerConfig, u32>,
     pub config: __sdk::__query_builder::Col<RawServerConfig, ServerConfig>,
+    pub competition_id: __sdk::__query_builder::Col<RawServerConfig, u32>,
 }
 
 impl __sdk::__query_builder::HasCols for RawServerConfig {
@@ -31,6 +33,7 @@ impl __sdk::__query_builder::HasCols for RawServerConfig {
         RawServerConfigCols {
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             config: __sdk::__query_builder::Col::new(table_name, "config"),
+            competition_id: __sdk::__query_builder::Col::new(table_name, "competition_id"),
         }
     }
 }

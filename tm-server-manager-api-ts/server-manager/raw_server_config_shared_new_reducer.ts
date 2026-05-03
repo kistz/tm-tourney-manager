@@ -10,12 +10,13 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export default __t.row({
-  id: __t.u32().primaryKey(),
-  userId: __t.u32().name("user_id"),
-  matchId: __t.u32().name("match_id"),
-  time: __t.i32(),
-  points: __t.i32(),
-  round: __t.u16(),
-  position: __t.u16(),
-});
+import {
+  ServerConfig,
+} from "./types";
+
+export default {
+  competitionId: __t.u32(),
+  get config() {
+    return ServerConfig;
+  },
+};

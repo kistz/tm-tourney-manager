@@ -4,13 +4,18 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::lb_settings_type::LbSettings;
+use super::leaderboard_status_type::LeaderboardStatus;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub struct LeaderboardV1 {
     pub name: String,
+    pub settings: Vec<LbSettings>,
     pub id: u32,
     pub parent_id: u32,
     pub template: bool,
+    pub status: LeaderboardStatus,
 }
 
 impl __sdk::InModule for LeaderboardV1 {
@@ -22,9 +27,11 @@ impl __sdk::InModule for LeaderboardV1 {
 /// Provides typed access to columns for query building.
 pub struct LeaderboardV1Cols {
     pub name: __sdk::__query_builder::Col<LeaderboardV1, String>,
+    pub settings: __sdk::__query_builder::Col<LeaderboardV1, Vec<LbSettings>>,
     pub id: __sdk::__query_builder::Col<LeaderboardV1, u32>,
     pub parent_id: __sdk::__query_builder::Col<LeaderboardV1, u32>,
     pub template: __sdk::__query_builder::Col<LeaderboardV1, bool>,
+    pub status: __sdk::__query_builder::Col<LeaderboardV1, LeaderboardStatus>,
 }
 
 impl __sdk::__query_builder::HasCols for LeaderboardV1 {
@@ -32,9 +39,11 @@ impl __sdk::__query_builder::HasCols for LeaderboardV1 {
     fn cols(table_name: &'static str) -> Self::Cols {
         LeaderboardV1Cols {
             name: __sdk::__query_builder::Col::new(table_name, "name"),
+            settings: __sdk::__query_builder::Col::new(table_name, "settings"),
             id: __sdk::__query_builder::Col::new(table_name, "id"),
             parent_id: __sdk::__query_builder::Col::new(table_name, "parent_id"),
             template: __sdk::__query_builder::Col::new(table_name, "template"),
+            status: __sdk::__query_builder::Col::new(table_name, "status"),
         }
     }
 }

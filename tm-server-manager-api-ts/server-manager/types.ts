@@ -393,6 +393,9 @@ export const Event = __t.enum("Event", {
   get KnockoutElimination() {
     return KnockoutElimination;
   },
+  get SkipOutro() {
+    return SkipOutro;
+  },
 });
 export type Event = __Infer<typeof Event>;
 
@@ -475,11 +478,137 @@ export const LastChanceDnfMode = __t.enum("LastChanceDnfMode", {
 });
 export type LastChanceDnfMode = __Infer<typeof LastChanceDnfMode>;
 
+// The tagged union or sum type for the algebraic type `LbFilterFallback`.
+export const LbFilterFallback = __t.enum("LbFilterFallback", {
+  Worst: __t.unit(),
+});
+export type LbFilterFallback = __Infer<typeof LbFilterFallback>;
+
+// The tagged union or sum type for the algebraic type `LbFilterIdent`.
+export const LbFilterIdent = __t.enum("LbFilterIdent", {
+  Best: __t.u16(),
+});
+export type LbFilterIdent = __Infer<typeof LbFilterIdent>;
+
+// The tagged union or sum type for the algebraic type `LbFilterKind`.
+export const LbFilterKind = __t.enum("LbFilterKind", {
+  Rounds: __t.unit(),
+});
+export type LbFilterKind = __Infer<typeof LbFilterKind>;
+
+export const LbFilterSettings = __t.object("LbFilterSettings", {
+  get kind() {
+    return LbFilterKind;
+  },
+  get param() {
+    return LbParams;
+  },
+  get filter() {
+    return LbFilterIdent;
+  },
+  get fallback() {
+    return LbFilterFallback;
+  },
+});
+export type LbFilterSettings = __Infer<typeof LbFilterSettings>;
+
+// The tagged union or sum type for the algebraic type `LbManipulationKind`.
+export const LbManipulationKind = __t.enum("LbManipulationKind", {
+  Subtract: __t.unit(),
+  Add: __t.unit(),
+  Multiply: __t.unit(),
+  Divide: __t.unit(),
+});
+export type LbManipulationKind = __Infer<typeof LbManipulationKind>;
+
+// The tagged union or sum type for the algebraic type `LbMergeAction`.
+export const LbMergeAction = __t.enum("LbMergeAction", {
+  Average: __t.unit(),
+});
+export type LbMergeAction = __Infer<typeof LbMergeAction>;
+
+// The tagged union or sum type for the algebraic type `LbMergeKind`.
+export const LbMergeKind = __t.enum("LbMergeKind", {
+  Rounds: __t.unit(),
+});
+export type LbMergeKind = __Infer<typeof LbMergeKind>;
+
+export const LbMergeSettings = __t.object("LbMergeSettings", {
+  get kind() {
+    return LbMergeKind;
+  },
+  get action() {
+    return LbMergeAction;
+  },
+  get param() {
+    return LbParams;
+  },
+});
+export type LbMergeSettings = __Infer<typeof LbMergeSettings>;
+
+// The tagged union or sum type for the algebraic type `LbParams`.
+export const LbParams = __t.enum("LbParams", {
+  Score: __t.unit(),
+  Time: __t.unit(),
+  Position: __t.unit(),
+});
+export type LbParams = __Infer<typeof LbParams>;
+
+// The tagged union or sum type for the algebraic type `LbRemapKind`.
+export const LbRemapKind = __t.enum("LbRemapKind", {
+  Match: __t.unit(),
+  Rounds: __t.unit(),
+});
+export type LbRemapKind = __Infer<typeof LbRemapKind>;
+
+export const LbRemapSettings = __t.object("LbRemapSettings", {
+  get kind() {
+    return LbRemapKind;
+  },
+  get param() {
+    return LbParams;
+  },
+  get manipulation() {
+    return LbManipulationKind;
+  },
+  manipulationValue: __t.i32(),
+});
+export type LbRemapSettings = __Infer<typeof LbRemapSettings>;
+
+// The tagged union or sum type for the algebraic type `LbSettings`.
+export const LbSettings = __t.enum("LbSettings", {
+  get Remap() {
+    return LbRemapSettings;
+  },
+  get Merge() {
+    return LbMergeSettings;
+  },
+  get Filter() {
+    return LbFilterSettings;
+  },
+});
+export type LbSettings = __Infer<typeof LbSettings>;
+
+// The tagged union or sum type for the algebraic type `LeaderboardStatus`.
+export const LeaderboardStatus = __t.enum("LeaderboardStatus", {
+  Configuring: __t.unit(),
+  Configured: __t.unit(),
+  Ongoing: __t.unit(),
+  Ended: __t.unit(),
+});
+export type LeaderboardStatus = __Infer<typeof LeaderboardStatus>;
+
 export const LeaderboardV1 = __t.object("LeaderboardV1", {
   name: __t.string(),
+  get settings() {
+    return __t.array(LbSettings);
+  },
   id: __t.u32(),
   parentId: __t.u32(),
   template: __t.bool(),
+  get status() {
+    return LeaderboardStatus;
+  },
 });
 export type LeaderboardV1 = __Infer<typeof LeaderboardV1>;
 
@@ -547,6 +676,7 @@ export const MatchRoundPlayer = __t.object("MatchRoundPlayer", {
   time: __t.i32(),
   points: __t.i32(),
   round: __t.u16(),
+  position: __t.u16(),
 });
 export type MatchRoundPlayer = __Infer<typeof MatchRoundPlayer>;
 
@@ -908,6 +1038,7 @@ export const RawServerConfig = __t.object("RawServerConfig", {
   get config() {
     return ServerConfig;
   },
+  competitionId: __t.u32(),
 });
 export type RawServerConfig = __Infer<typeof RawServerConfig>;
 
@@ -1178,6 +1309,12 @@ export const ServerV1 = __t.object("ServerV1", {
   autoProvision: __t.bool(),
 });
 export type ServerV1 = __Infer<typeof ServerV1>;
+
+export const SkipOutro = __t.object("SkipOutro", {
+  accountId: __t.string(),
+  time: __t.u32(),
+});
+export type SkipOutro = __Infer<typeof SkipOutro>;
 
 export const StartLine = __t.object("StartLine", {
   accountId: __t.string(),

@@ -1,9 +1,10 @@
-use spacetimedb::{Table, table};
+use spacetimedb::{ReducerContext, Table, reducer, table};
 use tm_server_types::config::ServerConfig;
 
 use crate::{
-    competition::node::NodeHandle, raw_server::occupation::TabRawServerOccupationRead,
-    tm_match::tab_match__view, tm_server::tab_server__view,
+    authorization::Authorization, competition::node::NodeHandle,
+    raw_server::occupation::TabRawServerOccupationRead, tm_match::tab_match__view,
+    tm_server::tab_server__view,
 };
 
 #[table(accessor=tab_raw_server_config)]
@@ -13,11 +14,19 @@ struct RawServerConfig {
     id: u32,
 
     config: ServerConfig,
+
+    // This is a shared config associated with a competition.
+    #[default(0)]
+    competition_id: u32,
 }
 
 impl RawServerConfig {
-    pub fn new(config: ServerConfig) -> Self {
-        Self { id: 0, config }
+    pub fn new(config: ServerConfig, competition_id: u32) -> Self {
+        Self {
+            id: 0,
+            config,
+            competition_id,
+        }
     }
 }
 
@@ -84,7 +93,11 @@ pub(crate) trait RawServerContigWrite {
         new_config: ServerConfig,
     ) -> Result<(), String>;
 
-    fn raw_server_config_new(&self, new_config: ServerConfig) -> Result<u32, String>;
+    fn raw_server_config_new(
+        &self,
+        new_config: ServerConfig,
+        competition_id: u32,
+    ) -> Result<u32, String>;
 
     fn emit_raw_server_config(&self, server_id: u32, seamless: bool) -> Result<(), String>;
 }
@@ -95,24 +108,27 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
         config_id: u32,
         new_config: ServerConfig,
     ) -> Result<(), String> {
-        self.db()
-            .tab_raw_server_config()
-            .id()
-            .update(RawServerConfig {
-                id: config_id,
-                config: new_config,
-            });
+        let Some(mut config) = self.db().tab_raw_server_config().id().find(config_id) else {
+            return Err("Config not found".into());
+        };
+        config.config = new_config;
+
+        self.db().tab_raw_server_config().id().update(config);
 
         Ok(())
     }
 
-    fn raw_server_config_new(&self, new_config: ServerConfig) -> Result<u32, String> {
-        //TODO clean up old config or smth.
-
+    /// The compeition_id determines if it is a shared config.
+    /// If it is null it is a solo config if not then its associated with the compeition.
+    fn raw_server_config_new(
+        &self,
+        new_config: ServerConfig,
+        competition_id: u32,
+    ) -> Result<u32, String> {
         let id = self
             .db()
             .tab_raw_server_config()
-            .try_insert(RawServerConfig::new(new_config))?;
+            .try_insert(RawServerConfig::new(new_config, competition_id))?;
 
         Ok(id.id)
     }
@@ -180,3 +196,18 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
 
 // -> Yoink 16 -> Yoink 16.
 // How would we implement a conditional node????
+
+#[reducer]
+fn raw_server_config_shared_new(
+    ctx: &ReducerContext,
+    competition_id: u32,
+    config: ServerConfig,
+) -> Result<(), String> {
+    ctx.auth_builder(competition_id)
+        //.permission(CompetitionPermissionsV1::TODO)
+        .authorize()?;
+
+    ctx.raw_server_config_new(config, competition_id)?;
+
+    Ok(())
+}

@@ -273,7 +273,7 @@ fn server_config_override(
     if configs.len() == 1 {
         ctx.raw_server_config_update(tm_server.config, config)?;
     } else {
-        let config = ctx.raw_server_config_new(config)?;
+        let config = ctx.raw_server_config_new(config, 0)?;
         tm_server.config = config;
 
         tm_server = ctx.db.tab_server().id().update(tm_server);

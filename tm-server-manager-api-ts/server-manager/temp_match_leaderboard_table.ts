@@ -17,4 +17,5 @@ export default __t.row({
   time: __t.i32(),
   points: __t.i32(),
   round: __t.u16(),
+  position: __t.u16(),
 });
