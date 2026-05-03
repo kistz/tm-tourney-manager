@@ -83,6 +83,22 @@ fn input_create(
     Ok(())
 }
 
+#[reducer]
+fn input_template_create(ctx: &ReducerContext, name: String, parent_id: u32) -> Result<(), String> {
+    ctx.auth_builder(parent_id)
+        //.permission(CompetitionPermissionsV1::MATCH_CREATE)
+        .authorize()?;
+
+    ctx.db.tab_input().try_insert(InputV1 {
+        name,
+        id: 0,
+        parent_id,
+        template: true,
+    })?;
+
+    Ok(())
+}
+
 pub(crate) trait InputRead {
     fn inputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = InputV1>;
 }

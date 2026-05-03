@@ -154,7 +154,7 @@ fn competition_connection_data_update(
         return Err("connection could not be found!".into());
     };
 
-    if connection.status != ConnectionStatus::Configuring {
+    if connection.status == ConnectionStatus::Resolved {
         return Err("Wrong status to chnge config".into());
     }
 

@@ -134,6 +134,28 @@ fn leaderboard_create(
     Ok(())
 }
 
+#[reducer]
+fn leaderboard_template_create(
+    ctx: &ReducerContext,
+    name: String,
+    parent_id: u32,
+) -> Result<(), String> {
+    ctx.auth_builder(parent_id)
+        //.permission(CompetitionPermissionsV1::MATCH_CREATE)
+        .authorize()?;
+
+    ctx.db.tab_leaderboard().try_insert(LeaderboardV1 {
+        name,
+        settings: Vec::new(),
+        id: 0,
+        parent_id,
+        template: true,
+        status: LeaderboardStatus::Configuring,
+    })?;
+
+    Ok(())
+}
+
 pub(crate) trait LeadearboardRead {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry>;
     fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry>;

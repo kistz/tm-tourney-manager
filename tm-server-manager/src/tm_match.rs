@@ -84,10 +84,6 @@ pub struct MatchV1 {
     //Whether the match is open for all to join or restricted.
     open: bool,
     template: bool,
-    // Used for force restart. If status changes this should get set to true and false again
-    // to trigger a config refresh on the raw_server.
-    // TODOMaybe just send an event mhm.
-    //dirty: bool,
 }
 
 impl MatchV1 {
@@ -240,7 +236,6 @@ fn match_create(
             auto_provision_server: true,
             template: false,
             open: false,
-            //dirty: false,
         };
 
         let tm_match = ctx.db.tab_match().try_insert(tm_match)?;
