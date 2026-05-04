@@ -227,7 +227,7 @@ impl<Db: DbContext> NodeRead for Db {
             }
             NodeHandle::CompetitionV1(c) => {
                 if let Some(co) = self.db_read_only().tab_competition().id().find(c) {
-                    let id = co.id;
+                    let id = co.parent_id;
                     if id != 0 {
                         Ok(id)
                     } else {
