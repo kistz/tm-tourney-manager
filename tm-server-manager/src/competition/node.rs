@@ -13,6 +13,7 @@ use crate::{
         tab_competition, tab_competition__view,
     },
     input::{InputWrite, tab_input, tab_input__view},
+    leaderboard::{LeaderboardWrite, tab_leaderboard},
     output::{OutputWrite, tab_output, tab_output__view},
     raw_server::player::PermittedPlayer,
     registration::{RegistrationWrite, tab_registration, tab_registration__view},
@@ -108,9 +109,8 @@ impl NodeHandle {
                 node.is_template()
             }
             NodeHandle::LeaderboardV1(n) => {
-                /* let node = ctx.db.tab_leaderboard().id().find(n).unwrap();
-                node.is_template() */
-                todo!()
+                let node = ctx.db.tab_leaderboard().id().find(n).unwrap();
+                node.is_template()
             }
         }
     }
@@ -273,12 +273,11 @@ impl<Db: DbContext> NodeRead for Db {
                 }
             }
             NodeHandle::LeaderboardV1(node) => {
-                /* if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
+                if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
                     Ok(node.get_comp_id())
                 } else {
                     Err("Registration could not be found.".into())
-                } */
-                todo!()
+                }
             }
         }
     }
@@ -338,7 +337,7 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
             NodeHandle::RegistrationV1(id) => self.registration_name_edit(id, name)?,
             NodeHandle::InputV1(id) => self.input_name_edit(id, name)?,
             NodeHandle::OutputV1(id) => self.output_name_edit(id, name)?,
-            NodeHandle::LeaderboardV1(id) => todo!(), //self.leaderboard_name_edit(id, name)?,
+            NodeHandle::LeaderboardV1(id) => self.leaderboard_name_edit(id, name)?,
         }
 
         Ok(())
