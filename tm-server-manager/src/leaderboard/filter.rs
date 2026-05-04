@@ -112,7 +112,9 @@ impl LbFilterSettings {
             };
         }
 
-        map.into_values().flatten().collect()
+        let filter = map.into_values().flatten().collect();
+        log::info!("Filter Result: {:?}", filter);
+        filter
     }
 }
 
