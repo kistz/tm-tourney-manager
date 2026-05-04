@@ -13,7 +13,7 @@ use crate::{
         tab_competition, tab_competition__view,
     },
     input::{InputWrite, tab_input, tab_input__view},
-    leaderboard::{LeaderboardWrite, tab_leaderboard},
+    leaderboard::{LeaderboardWrite, tab_leaderboard, tab_leaderboard__view},
     output::{OutputWrite, tab_output, tab_output__view},
     raw_server::player::PermittedPlayer,
     registration::{RegistrationWrite, tab_registration, tab_registration__view},
@@ -273,7 +273,7 @@ impl<Db: DbContext> NodeRead for Db {
                 }
             }
             NodeHandle::LeaderboardV1(node) => {
-                if let Some(node) = self.db_read_only().tab_registration().id().find(node) {
+                if let Some(node) = self.db_read_only().tab_leaderboard().id().find(node) {
                     Ok(node.get_comp_id())
                 } else {
                     Err("Registration could not be found.".into())
