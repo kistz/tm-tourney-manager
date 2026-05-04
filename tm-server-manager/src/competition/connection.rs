@@ -514,16 +514,51 @@ impl<Db: DbContext> ConnectionRead for Db {
                     .filter(NodeHandle::CompetitionV1(comp).split())
                     .filter(|c| c.is_data());
 
+                let mut standing_proxy = Vec::new();
+
                 for depending_connection in depending_connections {
-                    let permitted_players = self
+                    //TODO
+                    /* let permitted_players = self
                         .connection_filter_permitted_players(depending_connection)
                         .into_iter()
                         .map(|p| (p.account_id, p));
                     // This overrides the existing entrys.
-                    map.extend(permitted_players);
+                    map.extend(permitted_players); */
+
+                    let rules = self
+                        .db_read_only()
+                        .tab_connection_data()
+                        .connection_id()
+                        .find(depending_connection.id)
+                        .unwrap();
+
+                    let leaderboard = self.leaderboard_evaluation(depending_connection.origin_id);
+
+                    //TODO maybe factor this out into a trait and impl it for the respective thing
+                    // maybe we also need to split the data portion out into separate tables for each connection.
+                    standing_proxy = rules.apply_leaderboard(leaderboard);
+                    /* .map(|p| {
+                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                    })
+                    .collect() */
                 }
 
-                map.into_values().collect()
+                let rules = self
+                    .db_read_only()
+                    .tab_connection_data()
+                    .connection_id()
+                    .find(connection.id)
+                    .unwrap();
+
+                rules
+                    .apply_leaderboard(standing_proxy)
+                    .into_iter()
+                    .map(|p| {
+                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                    })
+                    .collect()
+
+                //map.into_values().collect()
             }
             NodeHandle::OutputV1(_) => todo!(),
             NodeHandle::LeaderboardV1(l) => {

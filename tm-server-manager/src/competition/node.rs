@@ -357,3 +357,8 @@ fn node_name_edit(ctx: &ReducerContext, node: NodeHandle, name: String) -> Resul
 fn unstable_dw_test_permit_players(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
     ctx.node_permitted_players_input(NodeHandle::MatchV1(12293))
 }
+
+#[view(accessor=unstable_dw_test_permit_players_2,public)]
+fn unstable_dw_test_permit_players_2(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
+    ctx.node_permitted_players_input(NodeHandle::MatchV1(12294))
+}
