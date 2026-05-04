@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer};
+use spacetimedb::{
+    AnonymousViewContext, DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer, view,
+};
 
 use crate::{
     competition::{
@@ -349,4 +351,9 @@ fn node_name_edit(ctx: &ReducerContext, node: NodeHandle, name: String) -> Resul
     //TODO access control
 
     ctx.node_name_edit(node, name)
+}
+
+#[view(accessor=unstable_dw_test_permit_players,public)]
+fn unstable_dw_test_permit_players(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
+    ctx.node_permitted_players_input(NodeHandle::MatchV1(12293))
 }

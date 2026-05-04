@@ -324,6 +324,7 @@ pub(crate) fn handle_match_event(
                 user_id: u32,
                 round_points: i32,
                 time: i32,
+                match_points: i32,
             }
 
             let mut scores = scores
@@ -334,6 +335,7 @@ pub(crate) fn handle_match_event(
                     ScoresPlayer {
                         user_id,
                         round_points: p.round_points,
+                        match_points: p.match_points,
                         time: if let RoundTime::Time(time) = p.previous_racetime {
                             time as i32
                         } else {
@@ -356,6 +358,10 @@ pub(crate) fn handle_match_event(
 
                 if let Some(found) = found {
                     player_round.set_points(found.round_points);
+                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -1000
+                    {
+                        player_round.set_points(found.round_points + found.match_points);
+                    }
                     //player_round.set_position(found.position);
                     ctx.db.tab_match_round_player().id().update(player_round);
                 } else {

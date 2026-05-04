@@ -307,7 +307,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 for entry in entries {
                     map.entry(entry.user_id)
                         .and_modify(|e| {
-                            if entry.points == -1000 {
+                            if entry.points <= -1000 {
                                 e.round = entry.round;
                             }
                             e.points += entry.points;
@@ -330,16 +330,19 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
 
                 for player in &mut standings {
                     player.points += starting_points;
+
+                    if player.points <= -1000 {
+                        player.position = 1;
+                    } else {
+                        player.round += 1;
+                        player.position = 0;
+                    }
                 }
 
-                //TODO this is wildly incorrect.
                 standings.sort_by_key(|v| -(v.round as i32));
 
                 for (index, stand) in standings.iter_mut().enumerate() {
                     stand.position = (index + 1) as u16;
-                    if stand.points <= -1000 {
-                        stand.position += 1;
-                    }
                 }
 
                 standings
