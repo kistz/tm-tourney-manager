@@ -28,11 +28,11 @@ fn temp_registration_player(
     ctx.registration_player(registration_id)
 }
 
-#[view(accessor=unstable_registration_player,public)]
+/* #[view(accessor=unstable_registration_player,public)]
 fn unstable_registration_player(ctx: &AnonymousViewContext) -> impl Query<RegisterationPlayer> {
     //ctx.from.tab_registeration_player()
     RawQuery::<RegisterationPlayer>::new(String::new())
-}
+} */
 
 #[reducer]
 fn register_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), String> {
