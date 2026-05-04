@@ -280,6 +280,8 @@ impl<Db: DbContext> LeadearboardRead for Db {
             }
         }
 
+        log::info!("Leaderbaord {leaderboard_id}: {:?}", leaderboard);
+
         leaderboard
     }
 

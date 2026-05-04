@@ -819,7 +819,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         }
 
         //TODO when is this possible?
-        if tm_match.status == MatchStatus::Live {
+        if tm_match.status == MatchStatus::Ended {
             return Err("Match has to be in recovery in order to restart it.".into());
         }
 
