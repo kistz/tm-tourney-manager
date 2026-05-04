@@ -557,7 +557,7 @@ fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), Str
         return Err("Match not found!".into());
     };
 
-    if tm_match.status.before_live() {
+    if !tm_match.status.before_live() {
         return Err("Cannot do that after preparation".into());
     }
 
