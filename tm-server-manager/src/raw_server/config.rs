@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, Table, reducer, table};
+use spacetimedb::{DbContext, ReducerContext, Table, reducer, table};
 use tm_server_types::config::ServerConfig;
 
 use crate::{
@@ -8,14 +8,15 @@ use crate::{
 };
 
 #[table(accessor=tab_raw_server_config)]
-struct RawServerConfig {
+pub struct RawServerConfig {
     #[auto_inc]
     #[primary_key]
-    id: u32,
+    pub id: u32,
 
     config: ServerConfig,
 
     // This is a shared config associated with a competition.
+    #[index(hash)]
     #[default(0)]
     competition_id: u32,
 }
@@ -27,6 +28,12 @@ impl RawServerConfig {
             config,
             competition_id,
         }
+    }
+
+    pub(crate) fn instantiate(mut self, parent_id: u32) -> Self {
+        self.competition_id = parent_id;
+        self.id = 0;
+        self
     }
 }
 
@@ -43,6 +50,13 @@ struct EventRawServerState {
 pub(crate) trait RawServerContigRead {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle>;
     fn raw_server_config(&self, config_id: u32) -> Result<ServerConfig, String>;
+
+    fn raw_server_config_exists(&self, config_id: u32) -> bool;
+
+    fn raw_server_config_shared_competition(
+        &self,
+        competition_id: u32,
+    ) -> impl Iterator<Item = RawServerConfig>;
 }
 impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle> {
@@ -83,6 +97,24 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
         };
 
         Ok(config.config)
+    }
+
+    fn raw_server_config_exists(&self, config_id: u32) -> bool {
+        self.db_read_only()
+            .tab_raw_server_config()
+            .id()
+            .find(config_id)
+            .is_some()
+    }
+
+    fn raw_server_config_shared_competition(
+        &self,
+        competition_id: u32,
+    ) -> impl Iterator<Item = RawServerConfig> {
+        self.db_read_only()
+            .tab_raw_server_config()
+            .competition_id()
+            .filter(competition_id)
     }
 }
 
@@ -208,6 +240,30 @@ fn raw_server_config_shared_new(
         .authorize()?;
 
     ctx.raw_server_config_new(config, competition_id)?;
+
+    Ok(())
+}
+
+#[reducer]
+fn raw_server_config_shared_update(
+    ctx: &ReducerContext,
+    config_id: u32,
+    config: ServerConfig,
+) -> Result<(), String> {
+    let Some(raw_config) = ctx
+        .db_read_only()
+        .tab_raw_server_config()
+        .id()
+        .find(config_id)
+    else {
+        return Err("Config not found.".into());
+    };
+
+    ctx.auth_builder(raw_config.competition_id)
+        //.permission(CompetitionPermissionsV1::TODO)
+        .authorize()?;
+
+    ctx.raw_server_config_update(config_id, config)?;
 
     Ok(())
 }

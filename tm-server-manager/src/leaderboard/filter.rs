@@ -51,7 +51,8 @@ impl LbFilterSettings {
                 //LbFilterKind::Match => todo!(),
                 //LbFilterKind::Maps => todo!(),
                 //TODO valiidate that the sort does all edge cases.
-                LbFilterKind::Rounds => rows.sort_by(|a, b| match self.param {
+                LbFilterKind::Rounds =>
+                /* rows.sort_by(|a, b| match self.param {
                     LbParams::Score => a.score.cmp(&b.score),
                     // e.g. -43 seconds is more than -44 seconds.
                     // because otherwise 43 would be less than 44
@@ -59,7 +60,18 @@ impl LbFilterSettings {
                     LbParams::Time => (-a.time).cmp(&(-b.time)),
                     // Same reson as above. A lower position is better.
                     LbParams::Position => b.position.cmp(&a.position),
-                }),
+                }) */
+                {
+                    match self.param {
+                        LbParams::Score => {
+                            rows.sort_by_key(|f| -f.score);
+                        }
+                        LbParams::Time => {
+                            rows.sort_by_key(|f| if f.time <= 0 { i32::MAX } else { f.time })
+                        }
+                        LbParams::Position => rows.sort_by_key(|f| f.position),
+                    }
+                }
             }
 
             match self.filter {
@@ -123,4 +135,4 @@ impl LbFilterSettings {
 // for each map filter rounds best 5/6 merge rounds averge position
 
 // match is match or leadarboard or probably also monitoring in the future.
-// how to incorporate this? map_id: u32, | for match its pf for leadaerboard its harder.
+// how to incorporate this? map_id: u32, | for match its pf for leaderboard its harder.

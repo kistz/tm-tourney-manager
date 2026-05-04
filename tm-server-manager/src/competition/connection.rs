@@ -534,7 +534,7 @@ impl<Db: DbContext> ConnectionRead for Db {
                     .find(connection.id)
                     .unwrap();
 
-                let leaderboard = self.leaderboard_final(l);
+                let leaderboard = self.leaderboard_evaluation(l);
 
                 //TODO maybe factor this out into a trait and impl it for the respective thing
                 // maybe we also need to split the data portion out into separate tables for each connection.

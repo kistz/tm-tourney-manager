@@ -11,10 +11,6 @@ pub enum LeaderboardStatus {
     Configuring,
 
     Configured,
-
-    Ongoing,
-
-    Ended,
 }
 
 impl __sdk::InModule for LeaderboardStatus {

@@ -100,7 +100,7 @@ impl LbMergeSettings {
                         match self.param {
                             LbParams::Score => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
-                                vec.sort_by_key(|f| f.score);
+                                vec.sort_by_key(|f| -f.score);
                                 // readjust the position.
                                 vec.iter_mut()
                                     .enumerate()
@@ -109,7 +109,7 @@ impl LbMergeSettings {
                             }
                             LbParams::Time => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
-                                vec.sort_by_key(|f| f.time);
+                                vec.sort_by_key(|f| if f.time <= 0 { i32::MAX } else { f.time });
 
                                 vec
                             }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use spacetimedb::{ReducerContext, Table, reducer};
+use spacetimedb::{DbContext, ReducerContext, Table, reducer};
 
 use crate::{
     authorization::Authorization,
@@ -13,6 +13,7 @@ use crate::{
     input::{InputRead, InputWrite},
     leaderboard::tab_leaderboard,
     output::{OutputRead, OutputWrite},
+    raw_server::config::{RawServerContigRead, tab_raw_server_config},
     registration::tab_registration,
     schedule::tab_schedule,
     tm_match::tab_match,
@@ -133,10 +134,23 @@ pub(super) fn competition_template_instantiate(
     new_comp.name = name;
     let new_comp = ctx.db.tab_competition().try_insert(new_comp)?;
 
+    let configs = ctx.raw_server_config_shared_competition(target_id);
+
+    let mut config_map = HashMap::new();
+    for old_config in configs {
+        let old_id = old_config.id;
+        let new_match = old_config.instantiate(new_comp.id);
+        let new_match = ctx.db.tab_raw_server_config().try_insert(new_match)?;
+        config_map.insert(old_id, new_match);
+    }
+
     let mut match_map = HashMap::new();
     for old_match in matches {
         let old_id = old_match.id;
-        let new_match = old_match.instantiate(new_comp.id, stay_template);
+        let mut new_match = old_match.instantiate(new_comp.id, stay_template);
+
+        new_match.update_shared_configs(&config_map);
+
         let new_match = ctx.db.tab_match().try_insert(new_match)?;
         ctx.node_create(NodeHandle::MatchV1(new_match.id))?;
         match_map.insert(old_id, new_match);
@@ -258,6 +272,7 @@ pub(super) fn competition_template_instantiate(
                 .tab_connection_data()
                 .try_insert(new_connection_data)?;
         }
+        //TODO also instantiate action connections
     }
 
     Ok(())

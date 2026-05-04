@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
 use spacetimedb::{
     Query, ReducerContext, SpacetimeType, Table, TimeDuration, Timestamp, ViewContext, reducer,
@@ -25,7 +25,7 @@ use crate::{
     },
     tm_match::{
         auto_recovery::RecoveryWrite,
-        leaderboard::{tab_match_round_player, tab_match_round_player_ext},
+        leaderboard::{MatchLeadearboardRead, tab_match_round_player, tab_match_round_player_ext},
         replay::tab_match_round_replay,
         state::{MatchState, tab_match_state},
         template::match_template_instantiate,
@@ -153,6 +153,18 @@ impl MatchV1 {
         self
     }
 
+    pub(crate) fn update_shared_configs(
+        &mut self,
+        new: &HashMap<u32, crate::raw_server::config::RawServerConfig>,
+    ) {
+        if let Some(config) = new.get(&self.config) {
+            self.config = config.id
+        }
+        if let Some(config) = new.get(&self.pre_config) {
+            self.pre_config = config.id
+        }
+    }
+
     pub(crate) fn end_match(&mut self) {
         self.status = MatchStatus::Ended;
     }
@@ -190,6 +202,20 @@ impl MatchStatus {
             MatchStatus::Configuring => true,
             MatchStatus::Configured => true,
             MatchStatus::Preparation => false,
+            MatchStatus::Live => false,
+            MatchStatus::Ended => false,
+            MatchStatus::Locked => false,
+            MatchStatus::Recovery => false,
+            MatchStatus::RecoveryPreparation => false,
+            MatchStatus::LiveComitted => false,
+        }
+    }
+
+    fn before_live(&self) -> bool {
+        match self {
+            MatchStatus::Configuring => true,
+            MatchStatus::Configured => true,
+            MatchStatus::Preparation => true,
             MatchStatus::Live => false,
             MatchStatus::Ended => false,
             MatchStatus::Locked => false,
@@ -363,7 +389,7 @@ fn match_override_pre_config(
     config: ServerConfig,
 ) -> Result<(), String> {
     if let Some(mut tm_match) = ctx.db.tab_match().id().find(id)
-        && tm_match.status == MatchStatus::Configuring
+        && tm_match.status.before_preparation()
     {
         ctx.auth_builder(tm_match.parent_id)
             .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
@@ -413,6 +439,56 @@ fn match_override_config(
         ctx.db.tab_match().id().update(tm_match);
     }
     Ok(())
+}
+
+#[reducer]
+fn match_shared_pre_config(
+    ctx: &ReducerContext,
+    match_id: u32,
+    config_id: u32,
+) -> Result<(), String> {
+    if let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id)
+        && tm_match.status.before_preparation()
+    {
+        ctx.auth_builder(tm_match.parent_id)
+            .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+            .authorize()?;
+
+        if ctx.raw_server_config_exists(config_id) {
+            tm_match.pre_config = config_id;
+            ctx.db.tab_match().id().update(tm_match);
+
+            Ok(())
+        } else {
+            Err("Config does not exist".into())
+        }
+    } else {
+        Err(format!("Match {match_id} not found or in wrong state."))
+    }
+}
+
+#[reducer]
+fn match_shared_config(ctx: &ReducerContext, match_id: u32, config_id: u32) -> Result<(), String> {
+    let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match was mot found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    if !tm_match.status.before_preparation() {
+        return Err("Too late to set configuration".into());
+    }
+
+    if ctx.raw_server_config_exists(config_id) {
+        tm_match.config = config_id;
+        ctx.db.tab_match().id().update(tm_match);
+
+        Ok(())
+    } else {
+        Err("Config does not exist".into())
+    }
 }
 
 /// If the match is fully configured and ready start.
@@ -481,7 +557,7 @@ fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), Str
         return Err("Match not found!".into());
     };
 
-    if !tm_match.status.before_preparation() {
+    if tm_match.status.before_live() {
         return Err("Cannot do that after preparation".into());
     }
 
@@ -490,6 +566,12 @@ fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), Str
         .authorize()?;
 
     tm_match.open = open;
+
+    if tm_match.status == MatchStatus::Preparation {
+        if let Some(server_id) = ctx.occupation_with_occupier(NodeHandle::MatchV1(match_id)) {
+            ctx.emit_raw_server_config(server_id, false)?;
+        }
+    }
 
     ctx.db.tab_match().id().update(tm_match);
 
@@ -794,6 +876,11 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
         self.destination_free(NodeHandle::MatchV1(match_id));
 
         log::info!("The match {} has successfully ended!", match_id);
+
+        log::info!(
+            "Match leaderboard is: {:?}",
+            self.match_leaderboard(match_id, 0)
+        );
 
         Ok(())
     }

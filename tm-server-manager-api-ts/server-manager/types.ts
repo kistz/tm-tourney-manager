@@ -512,15 +512,6 @@ export const LbFilterSettings = __t.object("LbFilterSettings", {
 });
 export type LbFilterSettings = __Infer<typeof LbFilterSettings>;
 
-// The tagged union or sum type for the algebraic type `LbManipulationKind`.
-export const LbManipulationKind = __t.enum("LbManipulationKind", {
-  Subtract: __t.unit(),
-  Add: __t.unit(),
-  Multiply: __t.unit(),
-  Divide: __t.unit(),
-});
-export type LbManipulationKind = __Infer<typeof LbManipulationKind>;
-
 // The tagged union or sum type for the algebraic type `LbMergeAction`.
 export const LbMergeAction = __t.enum("LbMergeAction", {
   Average: __t.unit(),
@@ -554,32 +545,8 @@ export const LbParams = __t.enum("LbParams", {
 });
 export type LbParams = __Infer<typeof LbParams>;
 
-// The tagged union or sum type for the algebraic type `LbRemapKind`.
-export const LbRemapKind = __t.enum("LbRemapKind", {
-  Match: __t.unit(),
-  Rounds: __t.unit(),
-});
-export type LbRemapKind = __Infer<typeof LbRemapKind>;
-
-export const LbRemapSettings = __t.object("LbRemapSettings", {
-  get kind() {
-    return LbRemapKind;
-  },
-  get param() {
-    return LbParams;
-  },
-  get manipulation() {
-    return LbManipulationKind;
-  },
-  manipulationValue: __t.i32(),
-});
-export type LbRemapSettings = __Infer<typeof LbRemapSettings>;
-
 // The tagged union or sum type for the algebraic type `LbSettings`.
 export const LbSettings = __t.enum("LbSettings", {
-  get Remap() {
-    return LbRemapSettings;
-  },
   get Merge() {
     return LbMergeSettings;
   },
@@ -593,8 +560,6 @@ export type LbSettings = __Infer<typeof LbSettings>;
 export const LeaderboardStatus = __t.enum("LeaderboardStatus", {
   Configuring: __t.unit(),
   Configured: __t.unit(),
-  Ongoing: __t.unit(),
-  Ended: __t.unit(),
 });
 export type LeaderboardStatus = __Infer<typeof LeaderboardStatus>;
 

@@ -307,10 +307,13 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 for entry in entries {
                     map.entry(entry.user_id)
                         .and_modify(|e| {
+                            if entry.points == -1000 {
+                                e.round = entry.round;
+                            }
                             e.points += entry.points;
+
                             if entry.round > e.round {
                                 e.round = entry.round;
-                                e.id = entry.id;
                             }
                         })
                         .or_insert(entry);
@@ -330,14 +333,22 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 }
 
                 //TODO this is wildly incorrect.
-                standings.sort_by_key(|v| v.points);
+                standings.sort_by_key(|v| -(v.round as i32));
+
+                for (index, stand) in standings.iter_mut().enumerate() {
+                    stand.position = (index + 1) as u16;
+                    if stand.points <= -1000 {
+                        stand.position += 1;
+                    }
+                }
+
                 standings
             }
             TmMode::Knockout => {
                 for entry in entries {
                     map.entry(entry.user_id)
                         .and_modify(|e| {
-                            if entry.points == -2 {
+                            if entry.points == -1 {
                                 *e = entry;
                             }
                         })
@@ -349,7 +360,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 standings
             }
             TmMode::TimeAttack => {
-                entries.sort_by_key(|v| if v.time == 0 { i32::MAX } else { v.time });
+                entries.sort_by_key(|v| if v.time <= 0 { i32::MAX } else { v.time });
 
                 entries
             }

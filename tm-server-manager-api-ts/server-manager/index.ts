@@ -44,7 +44,11 @@ import ConnectionConfiguredReducer from "./connection_configured_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import InputCreateReducer from "./input_create_reducer";
+import InputTemplateCreateReducer from "./input_template_create_reducer";
+import LeaderboardConfiguredReducer from "./leaderboard_configured_reducer";
 import LeaderboardCreateReducer from "./leaderboard_create_reducer";
+import LeaderboardSettingsUpdateReducer from "./leaderboard_settings_update_reducer";
+import LeaderboardTemplateCreateReducer from "./leaderboard_template_create_reducer";
 import LendRawServerReducer from "./lend_raw_server_reducer";
 import MatchAssignServerReducer from "./match_assign_server_reducer";
 import MatchConfiguredReducer from "./match_configured_reducer";
@@ -57,6 +61,8 @@ import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchRestartReducer from "./match_restart_reducer";
 import MatchServerRevokeReducer from "./match_server_revoke_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
+import MatchSharedConfigReducer from "./match_shared_config_reducer";
+import MatchSharedPreConfigReducer from "./match_shared_pre_config_reducer";
 import MatchTemplateCreateReducer from "./match_template_create_reducer";
 import MatchTryStartReducer from "./match_try_start_reducer";
 import MemberAddReducer from "./member_add_reducer";
@@ -70,6 +76,7 @@ import ProjectEditDescriptionReducer from "./project_edit_description_reducer";
 import ProjectEditNameReducer from "./project_edit_name_reducer";
 import ProjectUpdateStatusReducer from "./project_update_status_reducer";
 import RawServerConfigSharedNewReducer from "./raw_server_config_shared_new_reducer";
+import RawServerConfigSharedUpdateReducer from "./raw_server_config_shared_update_reducer";
 import RawServerPlayerAddReducer from "./raw_server_player_add_reducer";
 import RawServerVerifyReducer from "./raw_server_verify_reducer";
 import RegisterPlayerReducer from "./register_player_reducer";
@@ -387,7 +394,11 @@ const reducersSchema = __reducers(
   __reducerSchema("connection_create", ConnectionCreateReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("input_create", InputCreateReducer),
+  __reducerSchema("input_template_create", InputTemplateCreateReducer),
+  __reducerSchema("leaderboard_configured", LeaderboardConfiguredReducer),
   __reducerSchema("leaderboard_create", LeaderboardCreateReducer),
+  __reducerSchema("leaderboard_settings_update", LeaderboardSettingsUpdateReducer),
+  __reducerSchema("leaderboard_template_create", LeaderboardTemplateCreateReducer),
   __reducerSchema("lend_raw_server", LendRawServerReducer),
   __reducerSchema("match_assign_server", MatchAssignServerReducer),
   __reducerSchema("match_configured", MatchConfiguredReducer),
@@ -400,6 +411,8 @@ const reducersSchema = __reducers(
   __reducerSchema("match_restart", MatchRestartReducer),
   __reducerSchema("match_server_revoke", MatchServerRevokeReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
+  __reducerSchema("match_shared_config", MatchSharedConfigReducer),
+  __reducerSchema("match_shared_pre_config", MatchSharedPreConfigReducer),
   __reducerSchema("match_template_create", MatchTemplateCreateReducer),
   __reducerSchema("match_try_start", MatchTryStartReducer),
   __reducerSchema("member_add", MemberAddReducer),
@@ -413,6 +426,7 @@ const reducersSchema = __reducers(
   __reducerSchema("project_edit_name", ProjectEditNameReducer),
   __reducerSchema("project_update_status", ProjectUpdateStatusReducer),
   __reducerSchema("raw_server_config_shared_new", RawServerConfigSharedNewReducer),
+  __reducerSchema("raw_server_config_shared_update", RawServerConfigSharedUpdateReducer),
   __reducerSchema("raw_server_player_add", RawServerPlayerAddReducer),
   __reducerSchema("raw_server_verify", RawServerVerifyReducer),
   __reducerSchema("register_player", RegisterPlayerReducer),

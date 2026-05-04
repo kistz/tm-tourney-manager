@@ -55,6 +55,7 @@ pub mod event_type;
 pub mod finish_timeout_type;
 pub mod give_up_type;
 pub mod input_create_reducer;
+pub mod input_template_create_reducer;
 pub mod input_v_1_type;
 pub mod kick_args_type;
 pub mod knockout_elimination_type;
@@ -65,16 +66,16 @@ pub mod lb_filter_fallback_type;
 pub mod lb_filter_ident_type;
 pub mod lb_filter_kind_type;
 pub mod lb_filter_settings_type;
-pub mod lb_manipulation_kind_type;
 pub mod lb_merge_action_type;
 pub mod lb_merge_kind_type;
 pub mod lb_merge_settings_type;
 pub mod lb_params_type;
-pub mod lb_remap_kind_type;
-pub mod lb_remap_settings_type;
 pub mod lb_settings_type;
+pub mod leaderboard_configured_reducer;
 pub mod leaderboard_create_reducer;
+pub mod leaderboard_settings_update_reducer;
 pub mod leaderboard_status_type;
+pub mod leaderboard_template_create_reducer;
 pub mod leaderboard_v_1_type;
 pub mod lend_raw_server_reducer;
 pub mod loading_map_end_type;
@@ -103,6 +104,8 @@ pub mod match_round_table;
 pub mod match_round_users_table;
 pub mod match_server_revoke_reducer;
 pub mod match_set_preparation_reducer;
+pub mod match_shared_config_reducer;
+pub mod match_shared_pre_config_reducer;
 pub mod match_state_table;
 pub mod match_state_type;
 pub mod match_status_type;
@@ -155,6 +158,7 @@ pub mod project_status_type;
 pub mod project_update_status_reducer;
 pub mod project_v_1_type;
 pub mod raw_server_config_shared_new_reducer;
+pub mod raw_server_config_shared_update_reducer;
 pub mod raw_server_config_type;
 pub mod raw_server_current_players_table;
 pub mod raw_server_identity_type;
@@ -302,6 +306,7 @@ pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
 pub use give_up_type::GiveUp;
 pub use input_create_reducer::input_create;
+pub use input_template_create_reducer::input_template_create;
 pub use input_v_1_type::InputV1;
 pub use kick_args_type::KickArgs;
 pub use knockout_elimination_type::KnockoutElimination;
@@ -312,16 +317,16 @@ pub use lb_filter_fallback_type::LbFilterFallback;
 pub use lb_filter_ident_type::LbFilterIdent;
 pub use lb_filter_kind_type::LbFilterKind;
 pub use lb_filter_settings_type::LbFilterSettings;
-pub use lb_manipulation_kind_type::LbManipulationKind;
 pub use lb_merge_action_type::LbMergeAction;
 pub use lb_merge_kind_type::LbMergeKind;
 pub use lb_merge_settings_type::LbMergeSettings;
 pub use lb_params_type::LbParams;
-pub use lb_remap_kind_type::LbRemapKind;
-pub use lb_remap_settings_type::LbRemapSettings;
 pub use lb_settings_type::LbSettings;
+pub use leaderboard_configured_reducer::leaderboard_configured;
 pub use leaderboard_create_reducer::leaderboard_create;
+pub use leaderboard_settings_update_reducer::leaderboard_settings_update;
 pub use leaderboard_status_type::LeaderboardStatus;
+pub use leaderboard_template_create_reducer::leaderboard_template_create;
 pub use leaderboard_v_1_type::LeaderboardV1;
 pub use lend_raw_server_reducer::lend_raw_server;
 pub use loading_map_end_type::LoadingMapEnd;
@@ -350,6 +355,8 @@ pub use match_round_table::*;
 pub use match_round_users_table::*;
 pub use match_server_revoke_reducer::match_server_revoke;
 pub use match_set_preparation_reducer::match_set_preparation;
+pub use match_shared_config_reducer::match_shared_config;
+pub use match_shared_pre_config_reducer::match_shared_pre_config;
 pub use match_state_table::*;
 pub use match_state_type::MatchState;
 pub use match_status_type::MatchStatus;
@@ -402,6 +409,7 @@ pub use project_status_type::ProjectStatus;
 pub use project_update_status_reducer::project_update_status;
 pub use project_v_1_type::ProjectV1;
 pub use raw_server_config_shared_new_reducer::raw_server_config_shared_new;
+pub use raw_server_config_shared_update_reducer::raw_server_config_shared_update;
 pub use raw_server_config_type::RawServerConfig;
 pub use raw_server_current_players_table::*;
 pub use raw_server_identity_type::RawServerIdentity;
@@ -553,10 +561,25 @@ pub enum Reducer {
         parent_id: u32,
         with_template: u32,
     },
+    InputTemplateCreate {
+        name: String,
+        parent_id: u32,
+    },
+    LeaderboardConfigured {
+        id: u32,
+    },
     LeaderboardCreate {
         name: String,
         parent_id: u32,
         with_template: u32,
+    },
+    LeaderboardSettingsUpdate {
+        id: u32,
+        settings: Vec<LbSettings>,
+    },
+    LeaderboardTemplateCreate {
+        name: String,
+        parent_id: u32,
     },
     LendRawServer {
         server_id: u32,
@@ -600,6 +623,14 @@ pub enum Reducer {
     },
     MatchSetPreparation {
         match_id: u32,
+    },
+    MatchSharedConfig {
+        match_id: u32,
+        config_id: u32,
+    },
+    MatchSharedPreConfig {
+        match_id: u32,
+        config_id: u32,
     },
     MatchTemplateCreate {
         name: String,
@@ -649,6 +680,10 @@ pub enum Reducer {
     },
     RawServerConfigSharedNew {
         competition_id: u32,
+        config: ServerConfig,
+    },
+    RawServerConfigSharedUpdate {
+        config_id: u32,
         config: ServerConfig,
     },
     RawServerPlayerAdd {
@@ -781,7 +816,11 @@ impl __sdk::Reducer for Reducer {
             Reducer::ConnectionCreate { .. } => "connection_create",
             Reducer::CreateProject { .. } => "create_project",
             Reducer::InputCreate { .. } => "input_create",
+            Reducer::InputTemplateCreate { .. } => "input_template_create",
+            Reducer::LeaderboardConfigured { .. } => "leaderboard_configured",
             Reducer::LeaderboardCreate { .. } => "leaderboard_create",
+            Reducer::LeaderboardSettingsUpdate { .. } => "leaderboard_settings_update",
+            Reducer::LeaderboardTemplateCreate { .. } => "leaderboard_template_create",
             Reducer::LendRawServer { .. } => "lend_raw_server",
             Reducer::MatchAssignServer { .. } => "match_assign_server",
             Reducer::MatchConfigured { .. } => "match_configured",
@@ -794,6 +833,8 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchRestart { .. } => "match_restart",
             Reducer::MatchServerRevoke { .. } => "match_server_revoke",
             Reducer::MatchSetPreparation { .. } => "match_set_preparation",
+            Reducer::MatchSharedConfig { .. } => "match_shared_config",
+            Reducer::MatchSharedPreConfig { .. } => "match_shared_pre_config",
             Reducer::MatchTemplateCreate { .. } => "match_template_create",
             Reducer::MatchTryStart { .. } => "match_try_start",
             Reducer::MemberAdd { .. } => "member_add",
@@ -807,6 +848,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::ProjectEditName { .. } => "project_edit_name",
             Reducer::ProjectUpdateStatus { .. } => "project_update_status",
             Reducer::RawServerConfigSharedNew { .. } => "raw_server_config_shared_new",
+            Reducer::RawServerConfigSharedUpdate { .. } => "raw_server_config_shared_update",
             Reducer::RawServerPlayerAdd { .. } => "raw_server_player_add",
             Reducer::RawServerVerify { .. } => "raw_server_verify",
             Reducer::RegisterPlayer { .. } => "register_player",
@@ -928,6 +970,17 @@ impl __sdk::Reducer for Reducer {
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
             }),
+            Reducer::InputTemplateCreate { name, parent_id } => {
+                __sats::bsatn::to_vec(&input_template_create_reducer::InputTemplateCreateArgs {
+                    name: name.clone(),
+                    parent_id: parent_id.clone(),
+                })
+            }
+            Reducer::LeaderboardConfigured { id } => {
+                __sats::bsatn::to_vec(&leaderboard_configured_reducer::LeaderboardConfiguredArgs {
+                    id: id.clone(),
+                })
+            }
             Reducer::LeaderboardCreate {
                 name,
                 parent_id,
@@ -937,6 +990,18 @@ impl __sdk::Reducer for Reducer {
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
             }),
+            Reducer::LeaderboardSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
+                &leaderboard_settings_update_reducer::LeaderboardSettingsUpdateArgs {
+                    id: id.clone(),
+                    settings: settings.clone(),
+                },
+            ),
+            Reducer::LeaderboardTemplateCreate { name, parent_id } => __sats::bsatn::to_vec(
+                &leaderboard_template_create_reducer::LeaderboardTemplateCreateArgs {
+                    name: name.clone(),
+                    parent_id: parent_id.clone(),
+                },
+            ),
             Reducer::LendRawServer {
                 server_id,
                 competition_id,
@@ -1005,6 +1070,22 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchSetPreparation { match_id } => {
                 __sats::bsatn::to_vec(&match_set_preparation_reducer::MatchSetPreparationArgs {
                     match_id: match_id.clone(),
+                })
+            }
+            Reducer::MatchSharedConfig {
+                match_id,
+                config_id,
+            } => __sats::bsatn::to_vec(&match_shared_config_reducer::MatchSharedConfigArgs {
+                match_id: match_id.clone(),
+                config_id: config_id.clone(),
+            }),
+            Reducer::MatchSharedPreConfig {
+                match_id,
+                config_id,
+            } => {
+                __sats::bsatn::to_vec(&match_shared_pre_config_reducer::MatchSharedPreConfigArgs {
+                    match_id: match_id.clone(),
+                    config_id: config_id.clone(),
                 })
             }
             Reducer::MatchTemplateCreate { name, parent_id } => {
@@ -1094,6 +1175,12 @@ impl __sdk::Reducer for Reducer {
             } => __sats::bsatn::to_vec(
                 &raw_server_config_shared_new_reducer::RawServerConfigSharedNewArgs {
                     competition_id: competition_id.clone(),
+                    config: config.clone(),
+                },
+            ),
+            Reducer::RawServerConfigSharedUpdate { config_id, config } => __sats::bsatn::to_vec(
+                &raw_server_config_shared_update_reducer::RawServerConfigSharedUpdateArgs {
+                    config_id: config_id.clone(),
                     config: config.clone(),
                 },
             ),

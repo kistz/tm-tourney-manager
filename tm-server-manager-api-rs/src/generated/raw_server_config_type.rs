@@ -42,6 +42,7 @@ impl __sdk::__query_builder::HasCols for RawServerConfig {
 ///
 /// Provides typed access to indexed columns for query building.
 pub struct RawServerConfigIxCols {
+    pub competition_id: __sdk::__query_builder::IxCol<RawServerConfig, u32>,
     pub id: __sdk::__query_builder::IxCol<RawServerConfig, u32>,
 }
 
@@ -49,6 +50,7 @@ impl __sdk::__query_builder::HasIxCols for RawServerConfig {
     type IxCols = RawServerConfigIxCols;
     fn ix_cols(table_name: &'static str) -> Self::IxCols {
         RawServerConfigIxCols {
+            competition_id: __sdk::__query_builder::IxCol::new(table_name, "competition_id"),
             id: __sdk::__query_builder::IxCol::new(table_name, "id"),
         }
     }

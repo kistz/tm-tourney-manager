@@ -8,13 +8,13 @@ use crate::{
         node::{NodeHandle, NodeWrite},
         tab_competition,
     },
-    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
+    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings},
     tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
 };
 
 mod filter;
 mod merge;
-mod remap;
+//mod remap;
 
 #[table(accessor= tab_leaderboard)]
 pub struct LeaderboardV1 {
@@ -50,13 +50,13 @@ impl LeaderboardV1 {
 enum LeaderboardStatus {
     Configuring,
     Configured,
-    Ongoing,
-    Ended,
+    //Ongoing,
+    //Ended,
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 enum LbSettings {
-    Remap(LbRemapSettings),
+    //Remap(LbRemapSettings),
     Merge(LbMergeSettings),
     //Split(),
     Filter(LbFilterSettings),
@@ -156,6 +156,50 @@ fn leaderboard_template_create(
     Ok(())
 }
 
+#[reducer]
+fn leaderboard_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+    let Some(mut leaderboard) = ctx.db.tab_leaderboard().id().find(id) else {
+        return Err("Leaderboard was mot found!".into());
+    };
+
+    ctx.auth_builder(leaderboard.parent_id)
+        .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
+        .authorize()?;
+
+    if leaderboard.status != LeaderboardStatus::Configuring {
+        return Err("Leaderboard is not in configuring state".into());
+    }
+    leaderboard.status = LeaderboardStatus::Configured;
+
+    ctx.db.tab_leaderboard().id().update(leaderboard);
+
+    Ok(())
+}
+
+#[reducer]
+fn leaderboard_settings_update(
+    ctx: &ReducerContext,
+    id: u32,
+    settings: Vec<LbSettings>,
+) -> Result<(), String> {
+    let Some(mut leaderboard) = ctx.db.tab_leaderboard().id().find(id) else {
+        return Err("Leaderboard not found.".into());
+    };
+
+    ctx.auth_builder(leaderboard.parent_id)
+        //.permission(CompetitionPermissionsV1::REGISTRATION_CREATE)
+        .authorize()?;
+
+    //TODO maybe add state to reevaluation.
+    //leaderboard.can_change_settings()?;
+
+    leaderboard.settings = settings;
+
+    ctx.db.tab_leaderboard().id().update(leaderboard);
+
+    Ok(())
+}
+
 pub(crate) trait LeadearboardRead {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry>;
     fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry>;
@@ -226,7 +270,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
 
         for (index, setting) in settings.into_iter().enumerate() {
             leaderboard = match setting {
-                LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
+                //LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
                 LbSettings::Merge(lb_merge_settings) => lb_merge_settings.evaluate(leaderboard),
                 LbSettings::Filter(lb_filter_settings) => lb_filter_settings.evaluate(leaderboard),
             }
@@ -260,8 +304,8 @@ impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
         todo!()
     }
 
-    fn leaderboard_name_edit(&self, leadaerboard_id: u32, name: String) -> Result<(), String> {
-        let Some(mut tm_match) = self.db().tab_leaderboard().id().find(leadaerboard_id) else {
+    fn leaderboard_name_edit(&self, leaderboard_id: u32, name: String) -> Result<(), String> {
+        let Some(mut tm_match) = self.db().tab_leaderboard().id().find(leaderboard_id) else {
             return Err("Match not found.".into());
         };
         tm_match.name = name;
