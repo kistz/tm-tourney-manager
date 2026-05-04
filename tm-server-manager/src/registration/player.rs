@@ -1,5 +1,6 @@
 use spacetimedb::{
-    AnonymousViewContext, Query, ReducerContext, Table, Timestamp, Uuid, reducer, table, view,
+    AnonymousViewContext, Query, RawQuery, ReducerContext, Table, Timestamp, Uuid, reducer, table,
+    view,
 };
 
 use crate::{
@@ -29,7 +30,8 @@ fn temp_registration_player(
 
 #[view(accessor=unstable_registration_player,public)]
 fn unstable_registration_player(ctx: &AnonymousViewContext) -> impl Query<RegisterationPlayer> {
-    ctx.from.tab_registeration_player()
+    //ctx.from.tab_registeration_player()
+    RawQuery::<RegisterationPlayer>::new(String::new())
 }
 
 #[reducer]
