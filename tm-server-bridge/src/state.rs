@@ -20,8 +20,6 @@ use crate::{SERVER_METADATA, SPACETIME, TRACKMANIA, TRACKMANIA_FILES};
 pub async fn setup_state_synchronization() {
     let server = TRACKMANIA.get().unwrap();
 
-    sync_players().await;
-
     // Sync all events to spacetimedb.
     server.on_event(|event| {
         let spacetime = SPACETIME.read();

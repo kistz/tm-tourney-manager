@@ -7,7 +7,7 @@ use tm_server_controller::{
     method::{ModeScriptMethodsXmlRpc, XmlRpcMethods},
 };
 
-use crate::connection::MyDbConnection;
+use crate::{chat::setup_chat, connection::MyDbConnection, state::setup_state_synchronization};
 use tm_server_manager_api_rs::EventRawServerState;
 use tokio::{signal, sync::Mutex};
 
@@ -140,6 +140,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         tracing::error!("Could not connect to SpacetimeDB server");
         exit(1);
     };
+
+    setup_state_synchronization().await;
+    setup_chat().await;
 
     match signal::ctrl_c().await {
         Ok(()) => {}

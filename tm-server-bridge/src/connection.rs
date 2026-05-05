@@ -23,13 +23,12 @@ use tokio::time::sleep;
 
 use crate::SPACETIME;
 use crate::TRACKMANIA;
-use crate::chat::setup_chat;
 use crate::config::metadata_update;
 use crate::methods::method_call_received;
 use crate::state::check_allowed_players;
 use crate::state::check_players_have_destination;
 use crate::state::seamless_recovery;
-use crate::state::setup_state_synchronization;
+use crate::state::sync_players;
 
 pub struct MyDbConnection {
     db: OnceLock<RwLock<DbConnection>>,
@@ -144,8 +143,7 @@ impl MyDbConnection {
             .raw_server_player_destination()
             .on_insert(|_, _| check_players_have_destination());
 
-        setup_state_synchronization().await;
-        setup_chat().await;
+        sync_players().await;
 
         true
     }
