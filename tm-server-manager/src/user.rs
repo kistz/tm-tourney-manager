@@ -165,6 +165,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> UserWrite for Db {
         let user = self.db().tab_user().account_id().find(new_user.account_id);
         if let Some(mut user) = user {
             if user.name != new_user.name {
+                log::info!("Username changed: {} -> {}", user.name, new_user.name);
                 user.name = new_user.name;
                 let user = self.db().tab_user().id().update(user);
                 return Ok(user.id);
