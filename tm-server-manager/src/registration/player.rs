@@ -8,9 +8,11 @@ use crate::{
     registration::{RegistrationStatus, tab_registration},
 };
 
+//TODO make this table private again.
 #[table(
     accessor=tab_registeration_player,
-    index(accessor=user_registered, hash(columns=[user_id,registration_id]))
+    index(accessor=user_registered, hash(columns=[user_id,registration_id])),
+    public
 )]
 #[derive(Debug, Clone, Copy)]
 pub struct RegisterationPlayer {
