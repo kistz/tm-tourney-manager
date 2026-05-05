@@ -110,15 +110,14 @@ fn client_connected(ctx: &ReducerContext) -> Result<(), String> {
 
             let account_id = Uuid::parse_str(&claims.provider_id).map_err(|e| e.to_string())?;
 
-            log::info!(
-                "Account {} with id {account_id} has connected.",
-                claims.preferred_username
-            );
+            let name = claims.preferred_username.clone();
 
             let mut user = UserStruct::new(account_id);
             user.set_name(claims.preferred_username);
             let user_id = ctx.user_insert(user)?;
             ctx.user_login(user_id, ctx.sender())?;
+
+            log::info!("Account {name} with id {account_id} has connected.");
 
             return Ok(());
         }
