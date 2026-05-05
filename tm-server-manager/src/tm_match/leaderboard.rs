@@ -30,10 +30,12 @@ pub(super) struct PlayerActionCheckpoint {
     time: u32,
 }
 
+// TODO change back to private
 #[table(accessor= tab_match_round_player,
     index(accessor=match_round, hash(columns=[match_id,round])),
     index(accessor=match_round_range, btree(columns=[match_id,round])),
-    index(accessor=match_round_player, hash(columns=[match_id,round,user_id]))
+    index(accessor=match_round_player, hash(columns=[match_id,round,user_id])),
+    public
 )]
 #[derive(Debug, Clone, Copy)]
 pub struct MatchRoundPlayer {
@@ -97,10 +99,12 @@ impl MatchRoundPlayer {
     }
 }
 
+//TODO change back to private
 #[table(accessor= tab_match_round_player_ext,
     index(accessor=match_round, hash(columns=[match_id,round])),
     index(accessor=match_round_range, btree(columns=[match_id,round])),
-    index(accessor=match_round_player, hash(columns=[match_id,round,user_id]))
+    index(accessor=match_round_player, hash(columns=[match_id,round,user_id])),
+    public
 )]
 pub struct MatchRoundPlayerExt {
     round_actions: Vec<PlayerAction>,
@@ -180,17 +184,17 @@ impl MatchRoundPlayerExt {
     }
 }
 
-#[view(accessor=temp_match_leaderboard,public)]
+/* #[view(accessor=temp_match_leaderboard,public)]
 fn temp_match_leaderboard(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
 ) -> Vec<MatchRoundPlayer> {
     ctx.match_leaderboard(51, 0)
-}
+} */
 
 /// Returns the specified round of the match.
 /// Round 0 is giving you a live view.
 /// If you want a accumulated view please you the match_leaderboard view instead.
-#[view(accessor=match_round,public)]
+/* #[view(accessor=match_round,public)]
 fn match_round(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
 ) -> Vec<MatchRoundPlayer> {
@@ -214,9 +218,9 @@ fn match_round(
     // For calls in the module e.g. depending nodes requesting results. it needs to be sorted correctly.
     standings.sort_by_key(|v| v.points);
     standings
-}
+} */
 
-#[view(accessor=unstable_match_round,public)]
+/* #[view(accessor=unstable_match_round,public)]
 fn unstable_match_round(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
 ) -> impl Query<MatchRoundPlayer> {
@@ -228,10 +232,10 @@ fn unstable_match_round_ext(
     ctx: &AnonymousViewContext, /*, match_id: u32, round: u16 */
 ) -> impl Query<MatchRoundPlayerExt> {
     ctx.from.tab_match_round_player_ext()
-}
+} */
 
 /// If round 0 is supplied we take the current round.
-#[view(accessor=match_round_ext,public)]
+/* #[view(accessor=match_round_ext,public)]
 fn match_round_ext(
     ctx: &AnonymousViewContext, /* match_id: u32, round: u16 */
 ) -> Vec<MatchRoundPlayerExt> {
@@ -251,7 +255,7 @@ fn match_round_ext(
         .filter((match_id, round))
         .collect()
 }
-
+ */
 pub(crate) trait MatchLeadearboardRead {
     fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
     fn match_rounds(&self, match_id: u32) -> Vec<MatchRoundPlayer>;
