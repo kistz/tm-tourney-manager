@@ -349,8 +349,13 @@ pub(crate) fn handle_match_event(
             match state.get_mode() {
                 TmMode::Rounds => scores.sort_by_key(|k| -k.round_points),
                 TmMode::ReverseCup => scores.sort_by_key(|k| k.round_points),
-                TmMode::Knockout => todo!(),
-                TmMode::TimeAttack => scores.sort_by_key(|k| -k.time),
+                TmMode::Knockout => {
+                    scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
+                }
+                TmMode::TimeAttack => {
+                    scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
+                }
+                TmMode::Unknown => unreachable!(), // Since this a match we always have a mode available.
             }
 
             for mut player_round in player_rounds {

@@ -65,7 +65,7 @@ impl ConnectionData {
             .collect()
     }
 
-    pub(super) fn apply_leaderboard(&self, tm_match: Vec<LbEntry>) -> Vec<LbEntry> {
+    pub(super) fn apply_filter(&self, tm_match: Vec<LbEntry>) -> Vec<LbEntry> {
         let players = match &self.options {
             ConnectionDataOption::All => tm_match,
             ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),

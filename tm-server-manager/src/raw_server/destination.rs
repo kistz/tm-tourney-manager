@@ -97,7 +97,7 @@ pub(crate) trait TabRawServerDestinationWrite: TabRawServerDestinationRead {
 }
 impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String> {
-        let players = self.node_permitted_players_input(node);
+        let players = self.node_permitted_players_input(node); //TODO switch that out for the none permitted players method.
         let server_id = self.occupation_with_occupier(node).unwrap();
         let competition_id = self.node_get_parent(node).unwrap();
         for player in players {

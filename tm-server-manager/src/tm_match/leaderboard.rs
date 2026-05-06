@@ -4,6 +4,7 @@ use spacetimedb::{AnonymousViewContext, Query, SpacetimeType, table, view};
 use tm_server_types::config::{ModeSettings, TmMode};
 
 use crate::{
+    leaderboard::LbEntry,
     raw_server::{config::RawServerContigRead, occupation::TabRawServerOccupationRead},
     tm_match::{state::tab_match_state__view, tab_match__view},
 };
@@ -258,7 +259,8 @@ fn match_round_ext(
  */
 pub(crate) trait MatchLeadearboardRead {
     fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
-    fn match_rounds(&self, match_id: u32) -> Vec<MatchRoundPlayer>;
+    fn match_rounds(&self, match_id: u32) -> Vec<LbEntry>;
+    //fn match_leaderboard(&self, match_id: u32) -> Vec<LbEntry>;
 }
 impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
     /// Accumulates points of all previous rounds.
@@ -378,11 +380,26 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
         returned
     }
 
-    fn match_rounds(&self, match_id: u32) -> Vec<MatchRoundPlayer> {
+    fn match_rounds(&self, match_id: u32) -> Vec<LbEntry> {
+        let Some(state) = self
+            .db_read_only()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+        else {
+            return Vec::new();
+        };
         self.db_read_only()
             .tab_match_round_player()
             .match_id()
             .filter(match_id)
+            .map(|f| {
+                LbEntry::new(f.user_id, state.get_mode(), f.position)
+                    .set_score(f.points)
+                    .set_time(f.time)
+                    .set_round(f.round)
+                //.set_map(/* map */) //TODO get the map id in there. this is pretty painful tho so defer until i know approach is good.
+            })
             .collect()
     }
 }

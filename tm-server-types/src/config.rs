@@ -224,6 +224,8 @@ pub enum TmMode {
     ReverseCup,
     Knockout,
     TimeAttack,
+    // This is used upstream in the server-manager module so its not super clean separation of types.
+    Unknown,
 }
 
 fn tm_bool(value: bool) -> &'static str {

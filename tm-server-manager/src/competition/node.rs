@@ -1,26 +1,33 @@
 use std::collections::HashMap;
 
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, ReducerContext, SpacetimeType, Uuid, reducer, view,
+    AnonymousViewContext, DbContext, Local, LocalReadOnly, ReducerContext, SpacetimeType, Uuid,
+    reducer, view,
 };
 
 use crate::{
     competition::{
         CompetitionPermissionsV1, CompetitionRead, CompetitionWrite,
         connection::{
-            ConnectionRead, action::tab_connection_action, data::tab_connection_data,
+            ConnectionRead,
+            action::tab_connection_action,
+            data::{tab_connection_data, tab_connection_data__view},
             tab_connection, tab_connection__view,
         },
         roles::tab_competition_member__view,
         tab_competition, tab_competition__view,
     },
     input::{InputWrite, tab_input, tab_input__view},
-    leaderboard::{LeaderboardWrite, tab_leaderboard, tab_leaderboard__view},
+    leaderboard::{
+        LbEntry, LeadearboardRead, LeaderboardWrite, tab_leaderboard, tab_leaderboard__view,
+    },
     output::{OutputWrite, tab_output, tab_output__view},
     raw_server::player::PermittedPlayer,
-    registration::{RegistrationWrite, tab_registration, tab_registration__view},
+    registration::{
+        RegistrationWrite, player::RegistrationRead, tab_registration, tab_registration__view,
+    },
     schedule::{ScheduleWrite, tab_schedule, tab_schedule__view},
-    tm_match::{MatchWrite, tab_match, tab_match__view},
+    tm_match::{MatchWrite, leaderboard::MatchLeadearboardRead, tab_match, tab_match__view},
     tm_server::{ServerWrite, tab_server, tab_server__view},
     user::UserRead,
 };
@@ -170,6 +177,8 @@ impl NodeType for NodeHandle {
 pub(crate) trait NodeRead {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer>;
     fn node_get_parent(&self, node: NodeHandle) -> Result<u32, String>;
+    fn node_resolve_input_data(&self, node: NodeHandle) -> Vec<LbEntry>;
+    fn node_resolve_output_data(&self, node: NodeHandle) -> Vec<LbEntry>;
 }
 impl<Db: DbContext> NodeRead for Db {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer> {
@@ -198,22 +207,23 @@ impl<Db: DbContext> NodeRead for Db {
                     }),
             )
         }
-
-        let depending_connections = self
+        /* let depending_connections = self
             .db_read_only()
             .tab_connection()
             .origins_of()
             .filter(node.split())
             .filter(|c| c.is_data());
-
         for depending_connection in depending_connections {
             let permitted_players = self
                 .connection_filter_permitted_players(depending_connection)
                 .into_iter()
-                .map(|p| (p.account_id, p));
-            // This overrides the existing entrys.
-            map.extend(permitted_players);
-        }
+                // This overrides the existing entrys.
+            } */
+        let players = self.node_resolve_input_data(node).into_iter().map(|p| {
+            let account_id = self.user_account_from_id(p.get_user());
+            (account_id, PermittedPlayer::new(account_id, false, false))
+        });
+        map.extend(players);
 
         map.into_values().collect()
     }
@@ -283,6 +293,75 @@ impl<Db: DbContext> NodeRead for Db {
             }
         }
     }
+
+    fn node_resolve_input_data(&self, node: NodeHandle) -> Vec<LbEntry> {
+        node_resolve_input_data_inner(self, node, &mut 1)
+    }
+
+    fn node_resolve_output_data(&self, node: NodeHandle) -> Vec<LbEntry> {
+        node_resolve_output_data_inner(self, node, &mut 1)
+    }
+}
+
+fn node_resolve_output_data_inner(
+    ctx: &impl DbContext,
+    node: NodeHandle,
+    origin_offset: &mut u8,
+) -> Vec<LbEntry> {
+    match node {
+        NodeHandle::ScheduleV1(n) => {
+            log::warn!("Attempted to read node data output for a schedule node: {n}");
+            Vec::new()
+        }
+        NodeHandle::ServerV1(n) => {
+            log::warn!("Attempted to read node data output for a server node: {n}");
+            Vec::new()
+        }
+        NodeHandle::MatchV1(n) => ctx.match_rounds(n),
+        NodeHandle::CompetitionV1(_) => todo!(), //TODO this is output material
+        NodeHandle::OutputV1(_) => todo!(),
+        NodeHandle::InputV1(n) => {
+            let Some(input) = ctx.db_read_only().tab_input().id().find(n) else {
+                return Vec::new();
+            };
+            let comp = input.get_comp_id();
+
+            node_resolve_input_data_inner(ctx, NodeHandle::CompetitionV1(comp), origin_offset)
+        }
+        NodeHandle::RegistrationV1(n) => ctx.registration_lb(n),
+        NodeHandle::LeaderboardV1(n) => ctx.leaderboard_evaluation(n),
+    }
+}
+
+fn node_resolve_input_data_inner(
+    ctx: &impl DbContext,
+    node: NodeHandle,
+    origin_offset: &mut u8,
+) -> Vec<LbEntry> {
+    let mut player_entries: HashMap<u32, LbEntry> = HashMap::new();
+
+    let depending_connections = ctx
+        .db_read_only()
+        .tab_connection()
+        .origins_of()
+        .filter(node.split())
+        .filter(|c| c.is_data());
+
+    for depending_connection in depending_connections {
+        let mut lb_entries =
+            node_resolve_output_data_inner(ctx, depending_connection.origin(), origin_offset);
+        for round in &mut lb_entries {
+            //round.origin_idx = (origin_idx + *origin_offset as usize) as u16;
+            // TODO
+        }
+        let filtered = ctx
+            .connection_resolve_leaderboard(depending_connection)
+            .into_iter()
+            .map(|p| (p.get_user(), p));
+        player_entries.extend(filtered);
+    }
+
+    player_entries.into_values().collect()
 }
 
 pub(crate) trait NodeWrite: NodeRead {
@@ -362,3 +441,24 @@ fn unstable_dw_test_permit_players(ctx: &AnonymousViewContext) -> Vec<PermittedP
 fn unstable_dw_test_permit_players_2(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
     ctx.node_permitted_players_input(NodeHandle::MatchV1(12294))
 }
+
+/*
+Mode -> Opinionated sorting
+
+Origin -> Lb | Match | the compe/in/out but only Proxy
+
+Connection Filter -> Only on "pure" lb -> each Player one time occurence
+
+Lb Node -> Can operate on pure and impure lb -> Always get the full data and assemble it yourself… -> how is this possible with Connection filters? -> could cf purify the lb? -> probably Need to get rid of the matchroundplayer struct all together and immediately downcast to lb.
+
+We have two possible Solutions here: have some data duplication and meaningless columns in certain situations.
+Make Dedicated structs for each Scenario :(
+
+
+Maybe there is a further Option where we can use an enum to dispatch between those possible situations -> improves type safety and Client side filtering.
+
+The purify function is VERY tricky
+
+but a unified way to filter EVERYTHNG would make the codebase infinetly better -> mayyybe get rid of the data connection
+
+*/

@@ -17,7 +17,7 @@ use crate::{
         node::{NodeHandle, NodeRead},
     },
     input::tab_input__view,
-    leaderboard::LeadearboardRead,
+    leaderboard::{LbEntry, LeadearboardRead},
     raw_server::player::PermittedPlayer,
     registration::player::RegistrationRead,
     schedule::ScheduleWrite,
@@ -443,145 +443,167 @@ pub(crate) fn internal_graph_resolution_node_finished(
 }
 
 pub(crate) trait ConnectionRead {
-    fn connection_filter_permitted_players(
+    /* fn connection_filter_permitted_players(
         &self,
         connection: TabConnection,
-    ) -> Vec<PermittedPlayer>;
+    ) -> Vec<PermittedPlayer>; */
 
     //fn connection_receive_leaderboard(&self, connection: TabConnection) -> Vec<PermittedPlayer>;
+
+    fn connection_resolve_leaderboard(&self, connection: TabConnection) -> Vec<LbEntry>;
 }
 impl<Db: DbContext> ConnectionRead for Db {
-    fn connection_filter_permitted_players(
-        &self,
-        connection: TabConnection,
-    ) -> Vec<PermittedPlayer> {
-        match connection.origin() {
-            NodeHandle::MatchV1(m) => {
-                let rules = self
-                    .db_read_only()
-                    .tab_connection_data()
-                    .connection_id()
-                    .find(connection.id)
-                    .unwrap();
+    /* fn connection_filter_permitted_players(
+           &self,
+           connection: TabConnection,
+       ) -> Vec<PermittedPlayer> {
+           match connection.origin() {
+               NodeHandle::MatchV1(m) => {
+                   let rules = self
+                       .db_read_only()
+                       .tab_connection_data()
+                       .connection_id()
+                       .find(connection.id)
+                       .unwrap();
 
-                let leaderboard = self.match_leaderboard(m, 0);
+                   let leaderboard = self.match_leaderboard(m, 0);
 
-                //TODO maybe factor this out into a trait and impl it for the respective thing
-                // maybe we also need to split the data portion out into separate tables for each connection.
-                rules
-                    .apply_match(leaderboard)
-                    .into_iter()
-                    .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect()
-            }
-            NodeHandle::CompetitionV1(c) => todo!(), // TODO redirect to the output node.
-            NodeHandle::ServerV1(_) => todo!(),
-            NodeHandle::ScheduleV1(_) => todo!(),
-            NodeHandle::RegistrationV1(r) => {
-                let rules = self
-                    .db_read_only()
-                    .tab_connection_data()
-                    .connection_id()
-                    .find(connection.id)
-                    .unwrap();
+                   //TODO maybe factor this out into a trait and impl it for the respective thing
+                   // maybe we also need to split the data portion out into separate tables for each connection.
+                   rules
+                       .apply_match(leaderboard)
+                       .into_iter()
+                       .map(|p| {
+                           PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                       })
+                       .collect()
+               }
+               NodeHandle::CompetitionV1(c) => todo!(), // TODO redirect to the output node.
+               NodeHandle::ServerV1(_) => todo!(),
+               NodeHandle::ScheduleV1(_) => todo!(),
+               NodeHandle::RegistrationV1(r) => {
+                   let rules = self
+                       .db_read_only()
+                       .tab_connection_data()
+                       .connection_id()
+                       .find(connection.id)
+                       .unwrap();
 
-                let leaderboard = self.registration_player(r);
+                   let leaderboard = self.registration_player(r);
 
-                //TODO maybe factor this out into a trait and impl it for the respective thing
-                // maybe we also need to split the data portion out into separate tables for each connection.
-                rules
-                    .apply_registration(leaderboard)
-                    .into_iter()
-                    .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect()
-            }
-            NodeHandle::InputV1(n) => {
-                let Some(input) = self.db_read_only().tab_input().id().find(n) else {
-                    return Vec::new();
-                };
-                let comp = input.get_comp_id();
+                   //TODO maybe factor this out into a trait and impl it for the respective thing
+                   // maybe we also need to split the data portion out into separate tables for each connection.
+                   rules
+                       .apply_registration(leaderboard)
+                       .into_iter()
+                       .map(|p| {
+                           PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                       })
+                       .collect()
+               }
+               NodeHandle::InputV1(n) => {
+                   let Some(input) = self.db_read_only().tab_input().id().find(n) else {
+                       return Vec::new();
+                   };
+                   let comp = input.get_comp_id();
 
-                let mut map: HashMap<Uuid, PermittedPlayer> = HashMap::new();
+                   let mut map: HashMap<Uuid, PermittedPlayer> = HashMap::new();
 
-                let depending_connections = self
-                    .db_read_only()
-                    .tab_connection()
-                    .origins_of()
-                    .filter(NodeHandle::CompetitionV1(comp).split())
-                    .filter(|c| c.is_data());
+                   let depending_connections = self
+                       .db_read_only()
+                       .tab_connection()
+                       .origins_of()
+                       .filter(NodeHandle::CompetitionV1(comp).split())
+                       .filter(|c| c.is_data());
 
-                let mut standing_proxy = Vec::new();
+                   let mut standing_proxy = Vec::new();
 
-                for depending_connection in depending_connections {
-                    //TODO
-                    /* let permitted_players = self
-                        .connection_filter_permitted_players(depending_connection)
-                        .into_iter()
-                        .map(|p| (p.account_id, p));
-                    // This overrides the existing entrys.
-                    map.extend(permitted_players); */
+                   for depending_connection in depending_connections {
+                       //TODO
+                       /* let permitted_players = self
+                           .connection_filter_permitted_players(depending_connection)
+                           .into_iter()
+                           .map(|p| (p.account_id, p));
+                       // This overrides the existing entrys.
+                       map.extend(permitted_players); */
 
-                    let rules = self
-                        .db_read_only()
-                        .tab_connection_data()
-                        .connection_id()
-                        .find(depending_connection.id)
-                        .unwrap();
+                       let rules = self
+                           .db_read_only()
+                           .tab_connection_data()
+                           .connection_id()
+                           .find(depending_connection.id)
+                           .unwrap();
 
-                    let leaderboard = self.leaderboard_evaluation(depending_connection.origin_id);
+                       let leaderboard = self.leaderboard_evaluation(depending_connection.origin_id);
 
-                    //TODO maybe factor this out into a trait and impl it for the respective thing
-                    // maybe we also need to split the data portion out into separate tables for each connection.
-                    standing_proxy = rules.apply_leaderboard(leaderboard);
-                    /* .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect() */
-                }
+                       //TODO maybe factor this out into a trait and impl it for the respective thing
+                       // maybe we also need to split the data portion out into separate tables for each connection.
+                       standing_proxy = rules.apply_leaderboard(leaderboard);
+                       /* .map(|p| {
+                           PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                       })
+                       .collect() */
+                   }
 
-                let rules = self
-                    .db_read_only()
-                    .tab_connection_data()
-                    .connection_id()
-                    .find(connection.id)
-                    .unwrap();
+                   let rules = self
+                       .db_read_only()
+                       .tab_connection_data()
+                       .connection_id()
+                       .find(connection.id)
+                       .unwrap();
 
-                rules
-                    .apply_leaderboard(standing_proxy)
-                    .into_iter()
-                    .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect()
+                   rules
+                       .apply_leaderboard(standing_proxy)
+                       .into_iter()
+                       .map(|p| {
+                           PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                       })
+                       .collect()
 
-                //map.into_values().collect()
-            }
-            NodeHandle::OutputV1(_) => todo!(),
-            NodeHandle::LeaderboardV1(l) => {
-                let rules = self
-                    .db_read_only()
-                    .tab_connection_data()
-                    .connection_id()
-                    .find(connection.id)
-                    .unwrap();
+                   //map.into_values().collect()
+               }
+               NodeHandle::OutputV1(_) => todo!(),
+               NodeHandle::LeaderboardV1(l) => {
+                   let rules = self
+                       .db_read_only()
+                       .tab_connection_data()
+                       .connection_id()
+                       .find(connection.id)
+                       .unwrap();
 
-                let leaderboard = self.leaderboard_evaluation(l);
+                   let leaderboard = self.leaderboard_evaluation(l);
 
-                //TODO maybe factor this out into a trait and impl it for the respective thing
-                // maybe we also need to split the data portion out into separate tables for each connection.
-                rules
-                    .apply_leaderboard(leaderboard)
-                    .into_iter()
-                    .map(|p| {
-                        PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
-                    })
-                    .collect()
-            }
+                   //TODO maybe factor this out into a trait and impl it for the respective thing
+                   // maybe we also need to split the data portion out into separate tables for each connection.
+                   rules
+                       .apply_leaderboard(leaderboard)
+                       .into_iter()
+                       .map(|p| {
+                           PermittedPlayer::new(self.user_account_from_id(p.user_id), false, false)
+                       })
+                       .collect()
+               }
+           }
+       }
+    */
+    fn connection_resolve_leaderboard(&self, connection: TabConnection) -> Vec<LbEntry> {
+        // Prevent the method from misuse because it is impossible to form a lb from a non data connection.
+        if !connection.is_data() {
+            log::error!("Wanted to filter a connection but it was not a data connection.");
+            return Vec::new();
         }
+
+        let rules = self
+            .db_read_only()
+            .tab_connection_data()
+            .connection_id()
+            .find(connection.id)
+            .unwrap();
+
+        let players = self.node_resolve_input_data(connection.origin());
+
+        let players = rules.apply_filter(players);
+        players
     }
 
     /* fn connection_receive_leaderboard(&self, connection: TabConnection) -> Vec<MatchRoundPlayer> {

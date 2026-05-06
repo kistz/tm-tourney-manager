@@ -2,9 +2,11 @@ use spacetimedb::{
     AnonymousViewContext, Query, RawQuery, ReducerContext, Table, Timestamp, Uuid, reducer, table,
     view,
 };
+use tm_server_types::config::TmMode;
 
 use crate::{
     authorization::Authorization,
+    leaderboard::LbEntry,
     registration::{RegistrationStatus, tab_registration},
 };
 
@@ -22,13 +24,13 @@ pub struct RegisterationPlayer {
     pub user_id: u32,
 }
 
-#[view(accessor=temp_registration_player,public)]
+/* #[view(accessor=temp_registration_player,public)]
 fn temp_registration_player(
     ctx: &AnonymousViewContext, /* ,registration_id: u32 */
 ) -> Vec<RegisterationPlayer> {
     let registration_id = 2u32;
     ctx.registration_player(registration_id)
-}
+} */
 
 /* #[view(accessor=unstable_registration_player,public)]
 fn unstable_registration_player(ctx: &AnonymousViewContext) -> impl Query<RegisterationPlayer> {
@@ -101,10 +103,11 @@ fn unregister_player(ctx: &ReducerContext, registration_id: u32) -> Result<(), S
 }
 
 pub(crate) trait RegistrationRead {
-    fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer>;
+    //fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer>;
+    fn registration_lb(&self, registration_id: u32) -> Vec<LbEntry>;
 }
 impl<Db: spacetimedb::DbContext> RegistrationRead for Db {
-    fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer> {
+    /* fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer> {
         let mut registered = self
             .db_read_only()
             .tab_registeration_player()
@@ -115,5 +118,21 @@ impl<Db: spacetimedb::DbContext> RegistrationRead for Db {
         registered.sort_by_key(|f| f.registered_at);
 
         registered
+    } */
+    fn registration_lb(&self, registration_id: u32) -> Vec<LbEntry> {
+        let mut registered = self
+            .db_read_only()
+            .tab_registeration_player()
+            .registration_id()
+            .filter(registration_id)
+            .collect::<Vec<_>>();
+
+        registered.sort_by_key(|f| f.registered_at);
+
+        registered
+            .into_iter()
+            .enumerate()
+            .map(|(index, e)| LbEntry::new(e.user_id, TmMode::Unknown, (index + 1) as u16))
+            .collect()
     }
 }

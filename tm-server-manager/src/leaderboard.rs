@@ -1,4 +1,5 @@
 use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
+use tm_server_types::config::TmMode;
 
 use crate::{
     authorization::Authorization,
@@ -62,7 +63,7 @@ enum LeaderboardStatus {
 enum LbSettings {
     //Remap(LbRemapSettings),
     Merge(LbMergeSettings),
-    //Split(),
+    //Separate(),
     Filter(LbFilterSettings),
 }
 
@@ -75,22 +76,57 @@ enum LbParams {
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub struct LbEntry {
-    pub user_id: u32,
-    pub round: u16,
-    pub position: u16,
-    pub score: i32,
-    pub time: i32,
+    user_id: u32,    // non null -> always there
+    position: u16, //non null -> always there -> user and position could always provide the pure lb :thinking:
+    round: u16,    //nullable
+    map_id: u32,   //nullable
+    score: i32,    // 0 can have meaning -> yek -> i32::MIN ???
+    time: i32, // 0 can have meaning? -> yes dnf or -1 is dnf -> maybe -2 is "neutral" (or i32::MIN)
+    origin_idx: u16, // -> either nullable because we start with 0 or we start with 0 either way -> probably start with 1 then you can handle better
+    mode: TmMode, // is there a case where we have no info about any mode? -> Yes registration -> uses uknown
+    step_idx: u8, // This could serve as a deterministic replay state if you want to reason about where the score is coming from.
 }
 
 impl LbEntry {
-    pub(crate) fn new(user_id: u32) -> Self {
+    pub(crate) fn new(
+        user_id: u32,
+        mode: TmMode,
+        position: u16, /* , origin_idx: u16 */
+    ) -> Self {
         LbEntry {
             user_id,
+            position,
+            mode,
+            map_id: 0,
             round: 0,
-            position: 0,
-            score: 0,
-            time: 0,
+            score: i32::MIN,
+            time: i32::MIN,
+            origin_idx: 0, //TODO
+            step_idx: 0,   //TODO
         }
+    }
+
+    pub(crate) fn set_score(mut self, score: i32) -> Self {
+        self.score = score;
+        self
+    }
+
+    pub(crate) fn set_time(mut self, time: i32) -> Self {
+        self.time = time;
+        self
+    }
+
+    pub(crate) fn set_round(mut self, round: u16) -> Self {
+        self.round = round;
+        self
+    }
+    pub(crate) fn set_map(mut self, map: u32) -> Self {
+        self.map_id = map;
+        self
+    }
+
+    pub(crate) fn get_user(&self) -> u32 {
+        self.user_id
     }
 }
 
@@ -251,16 +287,9 @@ impl<Db: DbContext> LeadearboardRead for Db {
                 return Vec::new();
             }
 
+            //TODO this should probably not be handled by this function :thinking:
             match depending_connection.origin() {
-                NodeHandle::MatchV1(m) => {
-                    leaderboard.extend(self.match_rounds(m).into_iter().map(|r| LbEntry {
-                        user_id: r.user_id,
-                        round: r.get_round(),
-                        position: r.get_position(),
-                        score: r.get_score(),
-                        time: r.get_time(),
-                    }))
-                }
+                NodeHandle::MatchV1(m) => leaderboard.extend(self.match_rounds(m)),
                 NodeHandle::LeaderboardV1(l) => leaderboard.extend(self.leaderboard_evaluation(l)),
                 //TODO handle rest of the cases: Input/Output/Competition should be possible since they can passthrough other stuff.
                 _ => {
@@ -350,3 +379,25 @@ impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
 //
 
 // all of the above also means that upon multiple input connections you HAVE to merge them together in the first setting.
+
+/* struct LbWrapper {
+    inner: LbEntryV2,
+} */
+
+/* enum LbEntryV2 {
+    Matches(Vec<Vec<{}>>),
+    Pure(Vec<{user,position, score,time}) //-> would be possible stale aswell....
+
+} */
+
+// we have the 0 to mark stale things :thinking:
+
+/* pub(crate) trait LeadearboardOperations {
+
+}
+
+impl LeadearboardOperations for Vec<LbEntry> {
+    fn purify(&mut self) {
+        self.
+    }
+} */
