@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 
-use spacetimedb::{AnonymousViewContext, Query, SpacetimeType, table, view};
+use spacetimedb::{
+    AnonymousViewContext, Query, ReducerContext, SpacetimeType, reducer, table, view,
+};
 use tm_server_types::config::{ModeSettings, TmMode};
 
 use crate::{
+    authorization::Authorization,
+    competition::CompetitionPermissionsV1,
     leaderboard::LbEntry,
     raw_server::{config::RawServerContigRead, occupation::TabRawServerOccupationRead},
-    tm_match::{state::tab_match_state__view, tab_match__view},
+    tm_match::{state::tab_match_state__view, tab_match, tab_match__view},
 };
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
@@ -373,6 +377,9 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
 
                 entries
             }
+            TmMode::Unknown => {
+                unreachable!()
+            }
         };
 
         log::info!("{returned:?}");
@@ -402,4 +409,37 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
             })
             .collect()
     }
+}
+
+#[reducer]
+fn match_round_player_set_score_manual(
+    ctx: &ReducerContext,
+    match_id: u32,
+    user_id: u32,
+    round: u16,
+    score: i32,
+) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match not found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::OWNER)
+        .authorize()?;
+
+    let Some(mut entry) = ctx
+        .db
+        .tab_match_round_player()
+        .match_round_player()
+        .filter((match_id, round, user_id))
+        .next()
+    else {
+        return Err("No entry was found.".into());
+    };
+
+    entry.points = score;
+
+    ctx.db.tab_match_round_player().id().update(entry);
+
+    Ok(())
 }

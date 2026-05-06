@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use spacetimedb::SpacetimeType;
+use tm_server_types::config::TmMode;
 
 use crate::{
     leaderboard::{LbEntry, LbParams},
@@ -83,26 +84,21 @@ impl LbFilterSettings {
                             LbFilterFallback::Worst => match self.param {
                                 LbParams::Score => {
                                     for _ in 0..missing {
-                                        rows.push(LbEntry {
-                                            user_id: *user_id,
-                                            round: 0,
-                                            position: map_len as u16,
-                                            //TODO is worst score as 0 sufficient?
-                                            score: 0,
-                                            time: 0,
-                                        });
+                                        //TODO consider mode
+                                        rows.push(
+                                            LbEntry::new(*user_id, TmMode::Unknown, map_len as u16)
+                                                .set_score(0),
+                                        );
                                     }
                                 }
                                 LbParams::Time => (), //TODO
                                 LbParams::Position => {
                                     for _ in 0..missing {
-                                        rows.push(LbEntry {
-                                            user_id: *user_id,
-                                            round: 0,
-                                            position: map_len as u16,
-                                            score: 0,
-                                            time: 0,
-                                        });
+                                        rows.push(LbEntry::new(
+                                            *user_id,
+                                            TmMode::Unknown,
+                                            map_len as u16,
+                                        ));
                                     }
                                 }
                             },

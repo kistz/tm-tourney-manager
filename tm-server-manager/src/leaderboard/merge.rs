@@ -2,6 +2,7 @@ use core::num;
 use std::collections::HashMap;
 
 use spacetimedb::SpacetimeType;
+use tm_server_types::config::TmMode;
 
 use crate::{
     leaderboard::{LbEntry, LbParams},
@@ -53,7 +54,8 @@ impl LbMergeSettings {
                         let mut map: HashMap<u32, LbEntry> = HashMap::new();
                         for (player, rounds) in player_rounds {
                             let num_rounds = rounds.len();
-                            let thing = LbEntry::new(player);
+                            //TODO set right position for this whole thing.
+                            let thing = LbEntry::new(player, TmMode::Unknown, 0);
                             match self.param {
                                 LbParams::Score => {
                                     let mut accumulated =
