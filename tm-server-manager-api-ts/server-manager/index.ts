@@ -59,6 +59,7 @@ import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchRestartReducer from "./match_restart_reducer";
+import MatchRoundPlayerSetScoreManualReducer from "./match_round_player_set_score_manual_reducer";
 import MatchServerRevokeReducer from "./match_server_revoke_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
 import MatchSharedConfigReducer from "./match_shared_config_reducer";
@@ -119,7 +120,6 @@ import CompetitionAvailableServerPoolRow from "./competition_available_server_po
 import ConnectionDataRow from "./connection_data_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
 import EventRawServerStateRow from "./event_raw_server_state_table";
-import MatchRoundUsersRow from "./match_round_users_table";
 import MatchStateRow from "./match_state_table";
 import MyComeptitionSchedulesRow from "./my_comeptition_schedules_table";
 import MyMatchTemplateRow from "./my_match_template_table";
@@ -135,7 +135,7 @@ import RawServerPlayerDestinationRow from "./raw_server_player_destination_table
 import TabMatchRoundPlayerRow from "./tab_match_round_player_table";
 import TabMatchRoundPlayerExtRow from "./tab_match_round_player_ext_table";
 import TabRegisterationPlayerRow from "./tab_registeration_player_table";
-import TempRegistrationPlayerRow from "./temp_registration_player_table";
+import TabUserRow from "./tab_user_table";
 import UnstableCompetitionConnectionRow from "./unstable_competition_connection_table";
 import UnstableCompetitionMembersRow from "./unstable_competition_members_table";
 import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
@@ -143,7 +143,6 @@ import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member
 import UnstableDwTestPermitPlayersRow from "./unstable_dw_test_permit_players_table";
 import UnstableDwTestPermitPlayers2Row from "./unstable_dw_test_permit_players_2_table";
 import UnstableRegistrationRow from "./unstable_registration_table";
-import UsersRow from "./users_table";
 
 /** Type-only namespace exports for generated type groups. */
 
@@ -247,6 +246,21 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, TabRegisterationPlayerRow),
+  tab_user: __table({
+    name: 'tab_user',
+    indexes: [
+      { accessor: 'account_id', name: 'tab_user_account_id_idx_btree', algorithm: 'btree', columns: [
+        'accountId',
+      ] },
+      { accessor: 'id', name: 'tab_user_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_user_account_id_key', constraint: 'unique', columns: ['accountId'] },
+      { name: 'tab_user_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TabUserRow),
   competition: __table({
     name: 'competition',
     indexes: [
@@ -268,13 +282,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, ConnectionDataRow),
-  match_round_users: __table({
-    name: 'match_round_users',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, MatchRoundUsersRow),
   match_state: __table({
     name: 'match_state',
     indexes: [
@@ -359,13 +366,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, RawServerPlayerDestinationRow),
-  temp_registration_player: __table({
-    name: 'temp_registration_player',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, TempRegistrationPlayerRow),
   unstable_competition_connection: __table({
     name: 'unstable_competition_connection',
     indexes: [
@@ -415,13 +415,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, UnstableRegistrationRow),
-  users: __table({
-    name: 'users',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UsersRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
@@ -451,6 +444,7 @@ const reducersSchema = __reducers(
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
   __reducerSchema("match_restart", MatchRestartReducer),
+  __reducerSchema("match_round_player_set_score_manual", MatchRoundPlayerSetScoreManualReducer),
   __reducerSchema("match_server_revoke", MatchServerRevokeReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
   __reducerSchema("match_shared_config", MatchSharedConfigReducer),

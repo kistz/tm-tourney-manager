@@ -1411,6 +1411,7 @@ export const TmMode = __t.enum("TmMode", {
   ReverseCup: __t.unit(),
   Knockout: __t.unit(),
   TimeAttack: __t.unit(),
+  Unknown: __t.unit(),
 });
 export type TmMode = __Infer<typeof TmMode>;
 
