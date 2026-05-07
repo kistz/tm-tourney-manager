@@ -6,6 +6,7 @@ use tm_server_types::config::TmMode;
 
 use crate::{
     authorization::Authorization,
+    competition::node::NodeHandle,
     leaderboard::LbEntry,
     registration::{RegistrationStatus, tab_registration},
 };
@@ -132,7 +133,14 @@ impl<Db: spacetimedb::DbContext> RegistrationRead for Db {
         registered
             .into_iter()
             .enumerate()
-            .map(|(index, e)| LbEntry::new(e.user_id, TmMode::Unknown, (index + 1) as u16))
+            .map(|(index, e)| {
+                LbEntry::new(
+                    e.user_id,
+                    TmMode::Unknown,
+                    (index + 1) as u16,
+                    NodeHandle::RegistrationV1(registration_id),
+                )
+            })
             .collect()
     }
 }

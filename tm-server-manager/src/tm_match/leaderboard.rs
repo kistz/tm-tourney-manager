@@ -7,7 +7,7 @@ use tm_server_types::config::{ModeSettings, TmMode};
 
 use crate::{
     authorization::Authorization,
-    competition::CompetitionPermissionsV1,
+    competition::{CompetitionPermissionsV1, node::NodeHandle},
     leaderboard::LbEntry,
     raw_server::{config::RawServerContigRead, occupation::TabRawServerOccupationRead},
     tm_match::{state::tab_match_state__view, tab_match, tab_match__view},
@@ -262,7 +262,7 @@ fn match_round_ext(
 }
  */
 pub(crate) trait MatchLeadearboardRead {
-    fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
+    //fn match_leaderboard(&self, match_id: u32, round: u16) -> Vec<MatchRoundPlayer>;
     fn match_rounds(&self, match_id: u32) -> Vec<LbEntry>;
     //fn match_leaderboard(&self, match_id: u32) -> Vec<LbEntry>;
 }
@@ -273,7 +273,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
     /// # Important.
     /// Returns a SORTED VECTOR of the standings of the mode.
     /// This is part of the contract and MUST not be changed.
-    fn match_leaderboard(&self, match_id: u32, mut round: u16) -> Vec<MatchRoundPlayer> {
+    /* fn match_leaderboard(&self, match_id: u32, mut round: u16) -> Vec<MatchRoundPlayer> {
         let Some(state) = self
             .db_read_only()
             .tab_match_state()
@@ -385,7 +385,7 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
         log::info!("{returned:?}");
 
         returned
-    }
+    } */
 
     fn match_rounds(&self, match_id: u32) -> Vec<LbEntry> {
         let Some(state) = self
@@ -401,10 +401,15 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
             .match_id()
             .filter(match_id)
             .map(|f| {
-                LbEntry::new(f.user_id, state.get_mode(), f.position)
-                    .set_score(f.points)
-                    .set_time(f.time)
-                    .set_round(f.round)
+                LbEntry::new(
+                    f.user_id,
+                    state.get_mode(),
+                    f.position,
+                    NodeHandle::MatchV1(match_id),
+                )
+                .set_score(f.points)
+                .set_time(f.time)
+                .set_round(f.round)
                 //.set_map(/* map */) //TODO get the map id in there. this is pretty painful tho so defer until i know approach is good.
             })
             .collect()

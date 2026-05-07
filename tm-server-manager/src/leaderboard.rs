@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::config::TmMode;
 
@@ -76,15 +78,30 @@ enum LbParams {
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub struct LbEntry {
-    user_id: u32,    // non null -> always there
-    position: u16, //non null -> always there -> user and position could always provide the pure lb :thinking:
-    round: u16,    //nullable
-    map_id: u32,   //nullable
-    score: i32,    // 0 can have meaning -> yek -> i32::MIN ???
-    time: i32, // 0 can have meaning? -> yes dnf or -1 is dnf -> maybe -2 is "neutral" (or i32::MIN)
-    origin_idx: u16, // -> either nullable because we start with 0 or we start with 0 either way -> probably start with 1 then you can handle better
-    mode: TmMode, // is there a case where we have no info about any mode? -> Yes registration -> uses uknown
-    step_idx: u8, // This could serve as a deterministic replay state if you want to reason about where the score is coming from.
+    // Required
+    user_id: u32,
+    // Required
+    position: u16,
+    // Default: 0
+    round: u16,
+    // Default: 0
+    map_id: u32,
+    // Default: i32::MIN
+    score: i32,
+    // Default: i32::MIN
+    time: i32,
+    // Required
+    node_id: u32,
+    // Required
+    node_variant: u8,
+    // Required
+    mode: TmMode,
+
+    //TODO maybe
+    // mode_fallback: enum {ScoreAsc,ScoreDsc,TimeAsc,...}
+
+    // TODO could be used for fallback
+    step_idx: u8,
 }
 
 impl LbEntry {
@@ -92,7 +109,9 @@ impl LbEntry {
         user_id: u32,
         mode: TmMode,
         position: u16, /* , origin_idx: u16 */
+        origin: NodeHandle,
     ) -> Self {
+        let (node_variant, node_id) = origin.split();
         LbEntry {
             user_id,
             position,
@@ -101,8 +120,9 @@ impl LbEntry {
             round: 0,
             score: i32::MIN,
             time: i32::MIN,
-            origin_idx: 0, //TODO
-            step_idx: 0,   //TODO
+            node_id,
+            node_variant,
+            step_idx: 0, //TODO
         }
     }
 
@@ -242,7 +262,7 @@ fn leaderboard_settings_update(
 
 pub(crate) trait LeadearboardRead {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry>;
-    fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry>;
+    //fn leaderboard_finalize(&self, lb: Vec<LbEntry>) -> Vec<LbEntry>;
 }
 impl<Db: DbContext> LeadearboardRead for Db {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry> {
@@ -314,16 +334,10 @@ impl<Db: DbContext> LeadearboardRead for Db {
         leaderboard
     }
 
-    fn leaderboard_final(&self, leaderboard_id: u32) -> Vec<LbEntry> {
-        let leaderboard = self.leaderboard_evaluation(leaderboard_id);
-        if leaderboard.is_empty() {
-            log::error!("leaderboard returned empty vec.");
-            return Vec::new();
-        }
-        //TODO
-
-        leaderboard
-    }
+    /* fn leaderboard_finalize(&self, lb: Vec<LbEntry>) -> Vec<LbEntry> {
+        log::info!("{returned:?}");
+        Vec
+    } */
 }
 pub(crate) trait LeaderboardWrite: LeadearboardRead {
     fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String>;

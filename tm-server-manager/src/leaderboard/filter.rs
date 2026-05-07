@@ -31,6 +31,7 @@ enum LbFilterKind {
     //Maps,
     Rounds,
     // Actions // TODO we should be able to inspect the actions of the player.
+    Matches,
 }
 
 impl LbFilterSettings {
@@ -46,6 +47,10 @@ impl LbFilterSettings {
         }
 
         let map_len = map.len();
+
+        if map_len == 0 {
+            return Vec::new();
+        }
 
         for (user_id, rows) in &mut map {
             match self.kind {
@@ -74,12 +79,22 @@ impl LbFilterSettings {
                     }
                 }
             }
+        }
 
+        let Some(max_rounds) = map.values().max_by_key(|v| v.len()) else {
+            // This case is only hit when nobody is even there so it is safe to just return nothing.
+            return Vec::new();
+        };
+        let max_rounds = max_rounds.len() as u16;
+
+        for (user_id, rows) in &mut map {
             match self.filter {
                 LbFilterIdent::Best(n) => {
                     rows.truncate(n as usize);
                     if rows.len() < (n as usize) {
-                        let missing = n - rows.len() as u16;
+                        // if we have played less rounds than the best n we take the current row count.
+                        let needed = if n > max_rounds { max_rounds } else { n };
+                        let missing = needed - rows.len() as u16;
                         match self.fallback {
                             LbFilterFallback::Worst => match self.param {
                                 LbParams::Score => {

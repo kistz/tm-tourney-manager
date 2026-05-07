@@ -37,7 +37,7 @@ impl ConnectionData {
         self
     }
 
-    pub(super) fn apply_match(&self, tm_match: Vec<MatchRoundPlayer>) -> Vec<MatchRoundPlayer> {
+    /* pub(super) fn apply_match(&self, tm_match: Vec<MatchRoundPlayer>) -> Vec<MatchRoundPlayer> {
         let players = match &self.options {
             ConnectionDataOption::All => tm_match,
             ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),
@@ -63,7 +63,7 @@ impl ConnectionData {
             .into_iter()
             //.map(|p| PermittedPlayer::new(p.account_id, false, false))
             .collect()
-    }
+    } */
 
     pub(super) fn apply_filter(&self, tm_match: Vec<LbEntry>) -> Vec<LbEntry> {
         let players = match &self.options {
@@ -93,7 +93,7 @@ impl ConnectionData {
             .collect()
     }
 
-    pub(super) fn apply_registration(
+    /* pub(super) fn apply_registration(
         &self,
         registration: Vec<RegisterationPlayer>,
     ) -> Vec<RegisterationPlayer> {
@@ -122,7 +122,7 @@ impl ConnectionData {
             .into_iter()
             //.map(|p| PermittedPlayer::new(p.user_id, false, false))
             .collect()
-    }
+    } */
 }
 
 #[derive(Debug, SpacetimeType)]
