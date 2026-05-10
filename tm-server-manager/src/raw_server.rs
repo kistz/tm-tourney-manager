@@ -26,8 +26,9 @@ pub mod occupation;
 pub mod player;
 pub mod replay;
 
+//TODO make private again
 #[derive(Debug)]
-#[spacetimedb::table(accessor=tab_raw_server)]
+#[spacetimedb::table(accessor=tab_raw_server,public)]
 pub struct RawServerV1 {
     #[unique]
     server_login: String,

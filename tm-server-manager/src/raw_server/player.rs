@@ -9,8 +9,9 @@ use crate::{
     raw_server::occupation::TabRawServerOccupationRead,
 };
 
+//TODO make private again.
 #[derive(Debug)]
-#[table(accessor= tab_raw_server_player)]
+#[table(accessor= tab_raw_server_player,public)]
 pub struct RawServerPlayer {
     #[primary_key]
     pub(crate) account_id: Uuid,
@@ -87,7 +88,7 @@ pub(super) fn raw_server_player_remove(
     Ok(())
 }
 
-#[view(accessor= raw_server_current_players, public)]
+/* #[view(accessor= raw_server_current_players, public)]
 fn raw_server_current_players(
     ctx: &AnonymousViewContext, /* TODO server_id */
 ) -> impl Query<RawServerPlayer> {
@@ -95,7 +96,7 @@ fn raw_server_current_players(
     ctx.from
         .tab_raw_server_player()
         .r#where(|p| p.server_id.eq(server_id))
-}
+} */
 
 #[derive(Debug, SpacetimeType)]
 pub struct PermittedPlayer {

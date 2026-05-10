@@ -311,6 +311,11 @@ impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
                 let mut standings = map.into_values().collect::<Vec<_>>();
 
                 standings.sort_by_key(|v| -v.points);
+
+                for (index, stand) in standings.iter_mut().enumerate() {
+                    standings.position = (index + 1) as u16;
+                }
+
                 standings
             }
             TmMode::ReverseCup => {

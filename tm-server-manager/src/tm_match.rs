@@ -448,7 +448,7 @@ fn match_shared_pre_config(
     config_id: u32,
 ) -> Result<(), String> {
     if let Some(mut tm_match) = ctx.db.tab_match().id().find(match_id)
-        && tm_match.status.before_preparation()
+        && tm_match.status.before_live()
     {
         ctx.auth_builder(tm_match.parent_id)
             .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
@@ -477,7 +477,7 @@ fn match_shared_config(ctx: &ReducerContext, match_id: u32, config_id: u32) -> R
         .permission(CompetitionPermissionsV1::MATCH_CONFIGURE)
         .authorize()?;
 
-    if !tm_match.status.before_preparation() {
+    if !tm_match.status.before_live() {
         return Err("Too late to set configuration".into());
     }
 

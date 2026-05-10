@@ -134,7 +134,7 @@ pub(super) fn competition_template_instantiate(
     new_comp.name = name;
     let new_comp = ctx.db.tab_competition().try_insert(new_comp)?;
 
-    let configs = ctx.raw_server_config_shared_competition(target_id);
+    let configs = ctx.raw_server_config_shared_competition(template_id);
 
     let mut config_map = HashMap::new();
     for old_config in configs {
