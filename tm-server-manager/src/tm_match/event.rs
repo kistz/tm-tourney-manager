@@ -325,6 +325,7 @@ pub(crate) fn handle_match_event(
                 round_points: i32,
                 time: i32,
                 match_points: i32,
+                position: u16,
             }
 
             let mut scores = scores
@@ -334,6 +335,7 @@ pub(crate) fn handle_match_event(
                     let user_id = ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
                     ScoresPlayer {
                         user_id,
+                        position: 0,
                         round_points: p.round_points,
                         match_points: p.match_points,
                         time: if let RoundTime::Time(time) = p.previous_racetime {
@@ -358,11 +360,16 @@ pub(crate) fn handle_match_event(
                 TmMode::Unknown => unreachable!(), // Since this a match we always have a mode available.
             }
 
+            for (index, stand) in scores.iter_mut().enumerate() {
+                stand.position = (index + 1) as u16;
+            }
+
             for mut player_round in player_rounds {
                 let found = scores.iter().find(|p| p.user_id == player_round.user_id);
 
                 if let Some(found) = found {
                     player_round.set_points(found.round_points);
+                    player_round.set_position(found.position);
                     if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -1000
                     {
                         player_round.set_points(found.round_points + found.match_points);
