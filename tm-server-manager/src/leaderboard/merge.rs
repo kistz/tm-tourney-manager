@@ -56,16 +56,18 @@ impl LbMergeSettings {
                         for (player, rounds) in player_rounds {
                             let num_rounds = rounds.len();
                             //TODO set right position for this whole thing.
-                            let thing = LbEntry::new(
+                            let init = LbEntry::new(
                                 player,
                                 TmMode::Unknown,
                                 0,
                                 NodeHandle::LeaderboardV1(lb_id),
-                            );
+                            )
+                            .set_score(0)
+                            .set_time(0);
                             match self.param {
                                 LbParams::Score => {
                                     let mut accumulated =
-                                        rounds.into_iter().fold(thing, |mut acc, x| {
+                                        rounds.into_iter().fold(init, |mut acc, x| {
                                             acc.score += x.score;
                                             acc
                                         });
@@ -78,7 +80,7 @@ impl LbMergeSettings {
                                 }
                                 LbParams::Time => {
                                     let mut accumulated =
-                                        rounds.into_iter().fold(thing, |mut acc, x| {
+                                        rounds.into_iter().fold(init, |mut acc, x| {
                                             acc.time += x.time;
                                             acc
                                         });
@@ -91,7 +93,7 @@ impl LbMergeSettings {
                                 }
                                 LbParams::Position => {
                                     let mut accumulated =
-                                        rounds.into_iter().fold(thing, |mut acc, x| {
+                                        rounds.into_iter().fold(init, |mut acc, x| {
                                             acc.position += x.position;
                                             acc
                                         });
@@ -105,6 +107,9 @@ impl LbMergeSettings {
                                 }
                             }
                         }
+
+                        log::info!("Merge Map Result: {:?}", map);
+
                         match self.param {
                             LbParams::Score => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
