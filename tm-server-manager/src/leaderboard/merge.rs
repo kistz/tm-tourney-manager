@@ -108,25 +108,25 @@ impl LbMergeSettings {
                         match self.param {
                             LbParams::Score => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
-                                log::info!("Merge Result: {:?}", vec);
                                 vec.sort_by_key(|f| -f.score);
                                 // readjust the position.
                                 vec.iter_mut()
                                     .enumerate()
                                     .for_each(|(i, e)| e.position = (i + 1) as u16);
+                                log::info!("Merge Result: {:?}", vec);
                                 vec
                             }
                             LbParams::Time => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
-                                log::info!("Merge Result: {:?}", vec);
                                 vec.sort_by_key(|f| if f.time <= 0 { i32::MAX } else { f.time });
+                                log::info!("Merge Result: {:?}", vec);
 
                                 vec
                             }
                             LbParams::Position => {
                                 let mut vec = map.into_values().collect::<Vec<_>>();
-                                log::info!("Merge Result: {:?}", vec);
                                 vec.sort_by_key(|f| f.position);
+                                log::info!("Merge Result: {:?}", vec);
 
                                 vec
                             }
