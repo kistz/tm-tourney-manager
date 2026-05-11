@@ -339,7 +339,7 @@ fn node_resolve_input_data_inner(
     node: NodeHandle,
     origin_offset: &mut u8,
 ) -> Vec<LbEntry> {
-    let mut player_entries: HashMap<u32, LbEntry> = HashMap::new();
+    let mut player_entries = Vec::new();
 
     let depending_connections = ctx
         .db_read_only()
@@ -352,14 +352,12 @@ fn node_resolve_input_data_inner(
         let lb_entries =
             node_resolve_output_data_inner(ctx, depending_connection.origin(), origin_offset);
 
-        let filtered = ctx
-            .connection_resolve_leaderboard(depending_connection, lb_entries)
-            .into_iter()
-            .map(|p| (p.get_user(), p));
+        let filtered = ctx.connection_resolve_leaderboard(depending_connection, lb_entries);
+
         player_entries.extend(filtered);
     }
 
-    player_entries.into_values().collect()
+    player_entries
 }
 
 pub(crate) trait NodeWrite: NodeRead {
