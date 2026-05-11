@@ -32,7 +32,8 @@ pub struct RegistrationSettingsTeam {
     team_size_max: u8,
 } */
 
-#[table(accessor=tab_registration)]
+//TODO make private again
+#[table(accessor=tab_registration,public)]
 pub struct Registration {
     name: String,
 

@@ -4,7 +4,7 @@ use crate::{
     authorization::Authorization,
     competition::{
         CompetitionRead,
-        node::{NodeHandle, NodeRead},
+        node::{NodeHandle, NodeLeaderboard, NodeRead},
     },
     raw_server::{occupation::TabRawServerOccupationRead, tab_raw_server__view},
     user::UserRead,
@@ -97,13 +97,13 @@ pub(crate) trait TabRawServerDestinationWrite: TabRawServerDestinationRead {
 }
 impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String> {
-        let players = self.node_permitted_players_input(node); //TODO switch that out for the none permitted players method.
+        let players = self.node_resolve_input_data(node).finalize(self);
         let server_id = self.occupation_with_occupier(node).unwrap();
         let competition_id = self.node_get_parent(node).unwrap();
         for player in players {
-            if player.only_spectator {
+            /* if player.only_spectator {
                 continue;
-            }
+            } */
             self.db()
                 .tab_player_destination()
                 .try_insert(TabPlayerDestination {
@@ -111,9 +111,7 @@ impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
                     node_id: node.id(),
                     competition_id,
                     destination_server_id: server_id,
-                    //PERF: This is a back and forth with other views i think and could be done cleaner.
-                    //no time for now tho. This would require an overhaul in many places includinig leaderboards and stuff.
-                    user_id: self.user_id_from_account(player.account_id),
+                    user_id: player.user_id,
                 })?;
         }
 

@@ -220,10 +220,14 @@ impl<Db: DbContext> NodeRead for Db {
                 .into_iter()
                 // This overrides the existing entrys.
             } */
-        let players = self.node_resolve_input_data(node).into_iter().map(|p| {
-            let account_id = self.user_account_from_id(p.get_user());
-            (account_id, PermittedPlayer::new(account_id, false, false))
-        });
+        let players = self
+            .node_resolve_input_data(node)
+            .finalize(self)
+            .into_iter()
+            .map(|p| {
+                let account_id = self.user_account_from_id(p.get_user());
+                (account_id, PermittedPlayer::new(account_id, false, false))
+            });
         map.extend(players);
 
         map.into_values().collect()
@@ -460,6 +464,24 @@ fn node_leaderboard_input(
     node: NodeHandle,
 ) -> Result<Vec<LbEntry>, String> {
     ctx.try_with_tx(|ctx| Ok(ctx.node_resolve_input_data(node)))
+}
+
+// To test the destination
+#[procedure]
+fn node_leaderboard_input_finalize(
+    ctx: &mut ProcedureContext,
+    node: NodeHandle,
+) -> Result<Vec<LbEntry>, String> {
+    ctx.try_with_tx(|ctx| Ok(ctx.node_resolve_input_data(node).finalize(ctx)))
+}
+
+// To test the destination
+#[procedure]
+fn test_node_permitted_players_input(
+    ctx: &mut ProcedureContext,
+    node: NodeHandle,
+) -> Result<Vec<PermittedPlayer>, String> {
+    ctx.try_with_tx(|ctx| Ok(ctx.node_permitted_players_input(node)))
 }
 
 pub trait NodeLeaderboard {
