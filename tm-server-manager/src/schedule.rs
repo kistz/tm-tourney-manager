@@ -248,7 +248,7 @@ fn schedule_manual_run(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     Ok(())
 }
 
-#[view(accessor=my_comeptition_schedules,public)]
+/* #[view(accessor=my_comeptition_schedules,public)]
 pub fn my_comeptition_schedules(
     ctx: &ViewContext, /* , competition_id: u32 */
 ) -> impl Query<ScheduleV1> {
@@ -256,7 +256,7 @@ pub fn my_comeptition_schedules(
     ctx.from
         .tab_schedule()
         .r#where(|f| f.parent_id.eq(competition_id))
-}
+} */
 
 pub(crate) trait ScheduleWrite {
     fn schedule_start_relative(&self, schedule_id: u32, now: Timestamp) -> Result<(), String>;

@@ -4,21 +4,23 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::tm_mode_type::TmMode;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-#[derive(Copy, Eq, Hash)]
-pub enum TmMode {
-    Rounds,
-
-    ReverseCup,
-
-    Knockout,
-
-    TimeAttack,
-
-    Unknown,
+pub struct LbEntry {
+    pub user_id: u32,
+    pub position: u16,
+    pub round: u16,
+    pub map_id: u32,
+    pub score: i32,
+    pub time: i32,
+    pub node_id: u32,
+    pub node_variant: u8,
+    pub mode: TmMode,
+    pub step_idx: u8,
 }
 
-impl __sdk::InModule for TmMode {
+impl __sdk::InModule for LbEntry {
     type Module = super::RemoteModule;
 }

@@ -311,7 +311,7 @@ impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
     }
 }
 
-#[view(accessor=unstable_registration,public)]
+/* #[view(accessor=unstable_registration,public)]
 fn unstable_registration(ctx: &AnonymousViewContext) -> impl Query<Registration> {
     ctx.from.tab_registration()
-}
+} */

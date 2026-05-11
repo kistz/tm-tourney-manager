@@ -59,6 +59,7 @@ import MatchOpenReducer from "./match_open_reducer";
 import MatchOverrideConfigReducer from "./match_override_config_reducer";
 import MatchOverridePreConfigReducer from "./match_override_pre_config_reducer";
 import MatchRestartReducer from "./match_restart_reducer";
+import MatchRoundPlayerSetPositionManualReducer from "./match_round_player_set_position_manual_reducer";
 import MatchRoundPlayerSetScoreManualReducer from "./match_round_player_set_score_manual_reducer";
 import MatchServerRevokeReducer from "./match_server_revoke_reducer";
 import MatchSetPreparationReducer from "./match_set_preparation_reducer";
@@ -112,37 +113,28 @@ import UnregisterPlayerReducer from "./unregister_player_reducer";
 // Import all procedure arg schemas
 import * as LoginAsServerProcedure from "./login_as_server_procedure";
 import * as MatchRoundReplayProcedure from "./match_round_replay_procedure";
+import * as NodeLeaderboardInputProcedure from "./node_leaderboard_input_procedure";
+import * as NodeLeaderboardOutputProcedure from "./node_leaderboard_output_procedure";
 import * as PostRoundReplayProcedure from "./post_round_replay_procedure";
 
 // Import all table schema definitions
-import CompetitionRow from "./competition_table";
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
-import ConnectionDataRow from "./connection_data_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
 import EventRawServerStateRow from "./event_raw_server_state_table";
 import MatchStateRow from "./match_state_table";
-import MyComeptitionSchedulesRow from "./my_comeptition_schedules_table";
-import MyMatchTemplateRow from "./my_match_template_table";
-import MyMatchesRow from "./my_matches_table";
 import MyNodePositionsRow from "./my_node_positions_table";
 import MyProjectsRow from "./my_projects_table";
-import MyRawServerPoolRow from "./my_raw_server_pool_table";
 import MyUserRow from "./my_user_table";
 import ProjectCompetitionDescendantsRow from "./project_competition_descendants_table";
-import RawServerCurrentPlayersRow from "./raw_server_current_players_table";
 import RawServerPermittedPlayersRow from "./raw_server_permitted_players_table";
 import RawServerPlayerDestinationRow from "./raw_server_player_destination_table";
 import TabMatchRoundPlayerRow from "./tab_match_round_player_table";
 import TabMatchRoundPlayerExtRow from "./tab_match_round_player_ext_table";
+import TabRawServerRow from "./tab_raw_server_table";
+import TabRawServerPlayerRow from "./tab_raw_server_player_table";
 import TabRegisterationPlayerRow from "./tab_registeration_player_table";
 import TabUserRow from "./tab_user_table";
 import UnstableCompetitionConnectionRow from "./unstable_competition_connection_table";
-import UnstableCompetitionMembersRow from "./unstable_competition_members_table";
-import UnstableCompetitionRoleRow from "./unstable_competition_role_table";
-import UnstableCompetitionRoleMemberRow from "./unstable_competition_role_member_table";
-import UnstableDwTestPermitPlayersRow from "./unstable_dw_test_permit_players_table";
-import UnstableDwTestPermitPlayers2Row from "./unstable_dw_test_permit_players_2_table";
-import UnstableRegistrationRow from "./unstable_registration_table";
 
 /** Type-only namespace exports for generated type groups. */
 
@@ -232,6 +224,38 @@ const tablesSchema = __schema({
       { name: 'tab_match_round_player_ext_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, TabMatchRoundPlayerExtRow),
+  tab_raw_server: __table({
+    name: 'tab_raw_server',
+    indexes: [
+      { accessor: 'id', name: 'tab_raw_server_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'server_login', name: 'tab_raw_server_server_login_idx_btree', algorithm: 'btree', columns: [
+        'serverLogin',
+      ] },
+      { accessor: 'user_id', name: 'tab_raw_server_user_id_idx_hash', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_raw_server_id_key', constraint: 'unique', columns: ['id'] },
+      { name: 'tab_raw_server_server_login_key', constraint: 'unique', columns: ['serverLogin'] },
+    ],
+  }, TabRawServerRow),
+  tab_raw_server_player: __table({
+    name: 'tab_raw_server_player',
+    indexes: [
+      { accessor: 'account_id', name: 'tab_raw_server_player_account_id_idx_btree', algorithm: 'btree', columns: [
+        'accountId',
+      ] },
+      { accessor: 'server_id', name: 'tab_raw_server_player_server_id_idx_hash', algorithm: 'btree', columns: [
+        'serverId',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_raw_server_player_account_id_key', constraint: 'unique', columns: ['accountId'] },
+    ],
+  }, TabRawServerPlayerRow),
   tab_registeration_player: __table({
     name: 'tab_registeration_player',
     indexes: [
@@ -261,13 +285,6 @@ const tablesSchema = __schema({
       { name: 'tab_user_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, TabUserRow),
-  competition: __table({
-    name: 'competition',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, CompetitionRow),
   competition_available_server_pool: __table({
     name: 'competition_available_server_pool',
     indexes: [
@@ -275,13 +292,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, CompetitionAvailableServerPoolRow),
-  connection_data: __table({
-    name: 'connection_data',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, ConnectionDataRow),
   match_state: __table({
     name: 'match_state',
     indexes: [
@@ -289,27 +299,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MatchStateRow),
-  my_comeptition_schedules: __table({
-    name: 'my_comeptition_schedules',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, MyComeptitionSchedulesRow),
-  my_match_template: __table({
-    name: 'my_match_template',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, MyMatchTemplateRow),
-  my_matches: __table({
-    name: 'my_matches',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, MyMatchesRow),
   my_node_positions: __table({
     name: 'my_node_positions',
     indexes: [
@@ -324,13 +313,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyProjectsRow),
-  my_raw_server_pool: __table({
-    name: 'my_raw_server_pool',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, MyRawServerPoolRow),
   my_user: __table({
     name: 'my_user',
     indexes: [
@@ -345,13 +327,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, ProjectCompetitionDescendantsRow),
-  raw_server_current_players: __table({
-    name: 'raw_server_current_players',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, RawServerCurrentPlayersRow),
   raw_server_permitted_players: __table({
     name: 'raw_server_permitted_players',
     indexes: [
@@ -373,48 +348,6 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, UnstableCompetitionConnectionRow),
-  unstable_competition_members: __table({
-    name: 'unstable_competition_members',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableCompetitionMembersRow),
-  unstable_competition_role: __table({
-    name: 'unstable_competition_role',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableCompetitionRoleRow),
-  unstable_competition_role_member: __table({
-    name: 'unstable_competition_role_member',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableCompetitionRoleMemberRow),
-  unstable_dw_test_permit_players: __table({
-    name: 'unstable_dw_test_permit_players',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableDwTestPermitPlayersRow),
-  unstable_dw_test_permit_players_2: __table({
-    name: 'unstable_dw_test_permit_players_2',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableDwTestPermitPlayers2Row),
-  unstable_registration: __table({
-    name: 'unstable_registration',
-    indexes: [
-    ],
-    constraints: [
-    ],
-  }, UnstableRegistrationRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
@@ -444,6 +377,7 @@ const reducersSchema = __reducers(
   __reducerSchema("match_override_config", MatchOverrideConfigReducer),
   __reducerSchema("match_override_pre_config", MatchOverridePreConfigReducer),
   __reducerSchema("match_restart", MatchRestartReducer),
+  __reducerSchema("match_round_player_set_position_manual", MatchRoundPlayerSetPositionManualReducer),
   __reducerSchema("match_round_player_set_score_manual", MatchRoundPlayerSetScoreManualReducer),
   __reducerSchema("match_server_revoke", MatchServerRevokeReducer),
   __reducerSchema("match_set_preparation", MatchSetPreparationReducer),
@@ -499,6 +433,8 @@ const reducersSchema = __reducers(
 const proceduresSchema = __procedures(
   __procedureSchema("login_as_server", LoginAsServerProcedure.params, LoginAsServerProcedure.returnType),
   __procedureSchema("match_round_replay", MatchRoundReplayProcedure.params, MatchRoundReplayProcedure.returnType),
+  __procedureSchema("node_leaderboard_input", NodeLeaderboardInputProcedure.params, NodeLeaderboardInputProcedure.returnType),
+  __procedureSchema("node_leaderboard_output", NodeLeaderboardOutputProcedure.params, NodeLeaderboardOutputProcedure.returnType),
   __procedureSchema("post_round_replay", PostRoundReplayProcedure.params, PostRoundReplayProcedure.returnType),
 );
 

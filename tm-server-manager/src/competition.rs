@@ -192,14 +192,14 @@ fn competition_edit_name(
     Ok(())
 } */
 
-#[view(accessor=competition,public)]
+/* #[view(accessor=competition,public)]
 fn competition(ctx: &AnonymousViewContext) -> impl Query<CompetitionV1> {
     ctx.from
         .tab_competition()
         //TODO this equality doesnt work atm because of enum
         //.r#where(|t| t.status.ne(projectStatus::Planning))
         .build()
-}
+} */
 
 pub(crate) trait CompetitionRead {
     fn competition_ancestors(&self, competition_id: u32) -> Vec<u32>;

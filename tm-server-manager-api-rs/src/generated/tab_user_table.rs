@@ -5,42 +5,42 @@
 use super::user_v_1_type::UserV1;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `users`.
+/// Table handle for the table `tab_user`.
 ///
-/// Obtain a handle from the [`UsersTableAccess::users`] method on [`super::RemoteTables`],
-/// like `ctx.db.users()`.
+/// Obtain a handle from the [`TabUserTableAccess::tab_user`] method on [`super::RemoteTables`],
+/// like `ctx.db.tab_user()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.users().on_insert(...)`.
-pub struct UsersTableHandle<'ctx> {
+/// like `ctx.db.tab_user().on_insert(...)`.
+pub struct TabUserTableHandle<'ctx> {
     imp: __sdk::TableHandle<UserV1>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `users`.
+/// Extension trait for access to the table `tab_user`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait UsersTableAccess {
+pub trait TabUserTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`UsersTableHandle`], which mediates access to the table `users`.
-    fn users(&self) -> UsersTableHandle<'_>;
+    /// Obtain a [`TabUserTableHandle`], which mediates access to the table `tab_user`.
+    fn tab_user(&self) -> TabUserTableHandle<'_>;
 }
 
-impl UsersTableAccess for super::RemoteTables {
-    fn users(&self) -> UsersTableHandle<'_> {
-        UsersTableHandle {
-            imp: self.imp.get_table::<UserV1>("users"),
+impl TabUserTableAccess for super::RemoteTables {
+    fn tab_user(&self) -> TabUserTableHandle<'_> {
+        TabUserTableHandle {
+            imp: self.imp.get_table::<UserV1>("tab_user"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct UsersInsertCallbackId(__sdk::CallbackId);
-pub struct UsersDeleteCallbackId(__sdk::CallbackId);
+pub struct TabUserInsertCallbackId(__sdk::CallbackId);
+pub struct TabUserDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for UsersTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for TabUserTableHandle<'ctx> {
     type Row = UserV1;
     type EventContext = super::EventContext;
 
@@ -51,73 +51,73 @@ impl<'ctx> __sdk::Table for UsersTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = UsersInsertCallbackId;
+    type InsertCallbackId = TabUserInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> UsersInsertCallbackId {
-        UsersInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> TabUserInsertCallbackId {
+        TabUserInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: UsersInsertCallbackId) {
+    fn remove_on_insert(&self, callback: TabUserInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = UsersDeleteCallbackId;
+    type DeleteCallbackId = TabUserDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> UsersDeleteCallbackId {
-        UsersDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> TabUserDeleteCallbackId {
+        TabUserDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: UsersDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: TabUserDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
-pub struct UsersUpdateCallbackId(__sdk::CallbackId);
+pub struct TabUserUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for UsersTableHandle<'ctx> {
-    type UpdateCallbackId = UsersUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for TabUserTableHandle<'ctx> {
+    type UpdateCallbackId = TabUserUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> UsersUpdateCallbackId {
-        UsersUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> TabUserUpdateCallbackId {
+        TabUserUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: UsersUpdateCallbackId) {
+    fn remove_on_update(&self, callback: TabUserUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
 
-/// Access to the `id` unique index on the table `users`,
+/// Access to the `id` unique index on the table `tab_user`,
 /// which allows point queries on the field of the same name
-/// via the [`UsersIdUnique::find`] method.
+/// via the [`TabUserIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.users().id().find(...)`.
-pub struct UsersIdUnique<'ctx> {
+/// like `ctx.db.tab_user().id().find(...)`.
+pub struct TabUserIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<UserV1, u32>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> UsersTableHandle<'ctx> {
-    /// Get a handle on the `id` unique index on the table `users`.
-    pub fn id(&self) -> UsersIdUnique<'ctx> {
-        UsersIdUnique {
+impl<'ctx> TabUserTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `tab_user`.
+    pub fn id(&self) -> TabUserIdUnique<'ctx> {
+        TabUserIdUnique {
             imp: self.imp.get_unique_constraint::<u32>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> UsersIdUnique<'ctx> {
+impl<'ctx> TabUserIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u32) -> Option<UserV1> {
@@ -127,7 +127,7 @@ impl<'ctx> UsersIdUnique<'ctx> {
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<UserV1>("users");
+    let _table = client_cache.get_or_make_table::<UserV1>("tab_user");
     _table.add_unique_constraint::<u32>("id", |row| &row.id);
 }
 
@@ -146,14 +146,14 @@ pub(super) fn parse_table_update(
 /// Extension trait for query builder access to the table `UserV1`.
 ///
 /// Implemented for [`__sdk::QueryTableAccessor`].
-pub trait usersQueryTableAccess {
+pub trait tab_userQueryTableAccess {
     #[allow(non_snake_case)]
     /// Get a query builder for the table `UserV1`.
-    fn users(&self) -> __sdk::__query_builder::Table<UserV1>;
+    fn tab_user(&self) -> __sdk::__query_builder::Table<UserV1>;
 }
 
-impl usersQueryTableAccess for __sdk::QueryTableAccessor {
-    fn users(&self) -> __sdk::__query_builder::Table<UserV1> {
-        __sdk::__query_builder::Table::new("users")
+impl tab_userQueryTableAccess for __sdk::QueryTableAccessor {
+    fn tab_user(&self) -> __sdk::__query_builder::Table<UserV1> {
+        __sdk::__query_builder::Table::new("tab_user")
     }
 }

@@ -9,15 +9,15 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
+
 import {
-  ConnectionDataOption,
+  NodeHandle,
+  LbEntry,
 } from "./types";
 
-
-export default __t.row({
-  competitionId: __t.u32().name("competition_id"),
-  connectionId: __t.u32().primaryKey().name("connection_id"),
-  get options() {
-    return ConnectionDataOption;
+export const params = {
+  get node() {
+    return NodeHandle;
   },
-});
+};
+export const returnType = __t.result(__t.array(LbEntry), __t.string())

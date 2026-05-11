@@ -8,12 +8,18 @@ import { type Infer as __Infer } from "spacetimedb";
 // Import all procedure arg schemas
 import * as LoginAsServerProcedure from "../login_as_server_procedure";
 import * as MatchRoundReplayProcedure from "../match_round_replay_procedure";
+import * as NodeLeaderboardInputProcedure from "../node_leaderboard_input_procedure";
+import * as NodeLeaderboardOutputProcedure from "../node_leaderboard_output_procedure";
 import * as PostRoundReplayProcedure from "../post_round_replay_procedure";
 
 export type LoginAsServerArgs = __Infer<typeof LoginAsServerProcedure.params>;
 export type LoginAsServerResult = __Infer<typeof LoginAsServerProcedure.returnType>;
 export type MatchRoundReplayArgs = __Infer<typeof MatchRoundReplayProcedure.params>;
 export type MatchRoundReplayResult = __Infer<typeof MatchRoundReplayProcedure.returnType>;
+export type NodeLeaderboardInputArgs = __Infer<typeof NodeLeaderboardInputProcedure.params>;
+export type NodeLeaderboardInputResult = __Infer<typeof NodeLeaderboardInputProcedure.returnType>;
+export type NodeLeaderboardOutputArgs = __Infer<typeof NodeLeaderboardOutputProcedure.params>;
+export type NodeLeaderboardOutputResult = __Infer<typeof NodeLeaderboardOutputProcedure.returnType>;
 export type PostRoundReplayArgs = __Infer<typeof PostRoundReplayProcedure.params>;
 export type PostRoundReplayResult = __Infer<typeof PostRoundReplayProcedure.returnType>;
 

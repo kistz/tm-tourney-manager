@@ -35,9 +35,9 @@ pub(super) fn match_template_instantiate(
     todo!()
 }
 
-#[view(accessor=my_match_template,public)]
+/* #[view(accessor=my_match_template,public)]
 fn my_match_template(ctx: &ViewContext /* , competition_id: u32 */) -> impl Query<MatchV1> {
     let competition_id = 1u32;
     // TODO: return only users own templates
     ctx.from.tab_match().build()
-}
+} */

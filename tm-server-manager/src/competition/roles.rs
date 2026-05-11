@@ -236,12 +236,12 @@ fn member_assign_permission(
     Ok(())
 }
 
-#[view(accessor=unstable_competition_members,public)]
+/* #[view(accessor=unstable_competition_members,public)]
 fn unstable_competition_members(ctx: &AnonymousViewContext) -> impl Query<CompetitionMember> {
     ctx.from.tab_competition_member()
-}
+} */
 
-#[view(accessor=unstable_competition_role,public)]
+/* #[view(accessor=unstable_competition_role,public)]
 fn unstable_competition_role(ctx: &AnonymousViewContext) -> impl Query<CompetitionRole> {
     ctx.from.tab_competition_role()
 }
@@ -251,7 +251,7 @@ fn unstable_competition_role_member(
     ctx: &AnonymousViewContext,
 ) -> impl Query<CompetitionRoleMember> {
     ctx.from.tab_competition_role_member()
-}
+} */
 
 /* #[view(accessor=my_competition_members,public)]
 fn my_competition_members(ctx: &AnonymousViewContext) -> impl Query<CompetitionMember> {

@@ -147,7 +147,7 @@ enum ConnectionDataOption {
     FirstOffsetN(ConnectionDataOptionFirstOffsetN),
 }
 
-#[view(accessor=connection_data,public)]
+/* #[view(accessor=connection_data,public)]
 pub fn connection_data(
     ctx: &ViewContext, /* ,competition_id: u32 */
 ) -> impl Query<ConnectionData> {
@@ -155,7 +155,7 @@ pub fn connection_data(
     ctx.from
         .tab_connection_data()
         .r#where(|c| c.competition_id.eq(competition_id))
-}
+} */
 
 #[reducer]
 fn competition_connection_data_update(

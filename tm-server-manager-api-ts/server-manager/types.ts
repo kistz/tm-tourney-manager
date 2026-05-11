@@ -478,6 +478,22 @@ export const LastChanceDnfMode = __t.enum("LastChanceDnfMode", {
 });
 export type LastChanceDnfMode = __Infer<typeof LastChanceDnfMode>;
 
+export const LbEntry = __t.object("LbEntry", {
+  userId: __t.u32(),
+  position: __t.u16(),
+  round: __t.u16(),
+  mapId: __t.u32(),
+  score: __t.i32(),
+  time: __t.i32(),
+  nodeId: __t.u32(),
+  nodeVariant: __t.u8(),
+  get mode() {
+    return TmMode;
+  },
+  stepIdx: __t.u8(),
+});
+export type LbEntry = __Infer<typeof LbEntry>;
+
 // The tagged union or sum type for the algebraic type `LbFilterFallback`.
 export const LbFilterFallback = __t.enum("LbFilterFallback", {
   Worst: __t.unit(),

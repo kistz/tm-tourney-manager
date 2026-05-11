@@ -216,13 +216,13 @@ fn this_raw_server(ctx: &ViewContext) -> Option<RawServerV1> {
         .find(ctx.sender())
 } */
 
-#[view(accessor= my_raw_server_pool, public)]
+/* #[view(accessor= my_raw_server_pool, public)]
 fn my_raw_server_pool(ctx: &ViewContext) -> impl Query<RawServerV1> {
     let Ok(user_id) = ctx.user_id() else {
         return RawQuery::new(String::new());
     };
     ctx.from.tab_raw_server().r#where(|r| r.user_id.eq(user_id))
-}
+} */
 
 #[reducer]
 fn raw_server_verify(ctx: &ReducerContext, server_id: u32) -> Result<(), String> {

@@ -10,8 +10,14 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-export default __t.row({
-  accountId: __t.uuid().name("account_id"),
-  mandatory: __t.bool(),
-  onlySpectator: __t.bool().name("only_spectator"),
-});
+import {
+  NodeHandle,
+  LbEntry,
+} from "./types";
+
+export const params = {
+  get node() {
+    return NodeHandle;
+  },
+};
+export const returnType = __t.result(__t.array(LbEntry), __t.string())

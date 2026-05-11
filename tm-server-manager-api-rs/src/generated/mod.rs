@@ -21,7 +21,6 @@ pub mod competition_node_positions_update_reducer;
 pub mod competition_role_member_type;
 pub mod competition_role_type;
 pub mod competition_server_type;
-pub mod competition_table;
 pub mod competition_template_create_reducer;
 pub mod competition_v_1_type;
 pub mod connection_action_match_type;
@@ -32,7 +31,6 @@ pub mod connection_configured_reducer;
 pub mod connection_create_reducer;
 pub mod connection_data_option_first_offset_n_type;
 pub mod connection_data_option_type;
-pub mod connection_data_table;
 pub mod connection_data_type;
 pub mod connection_kind_type;
 pub mod connection_status_type;
@@ -62,6 +60,7 @@ pub mod knockout_elimination_type;
 pub mod knockout_type;
 pub mod laps_number_type;
 pub mod last_chance_dnf_mode_type;
+pub mod lb_entry_type;
 pub mod lb_filter_fallback_type;
 pub mod lb_filter_ident_type;
 pub mod lb_filter_kind_type;
@@ -94,14 +93,13 @@ pub mod match_open_reducer;
 pub mod match_override_config_reducer;
 pub mod match_override_pre_config_reducer;
 pub mod match_restart_reducer;
-pub mod match_round_ext_table;
 pub mod match_round_player_ext_type;
+pub mod match_round_player_set_position_manual_reducer;
+pub mod match_round_player_set_score_manual_reducer;
 pub mod match_round_player_type;
 pub mod match_round_replay_procedure;
 pub mod match_round_replay_time_type;
 pub mod match_round_replay_type;
-pub mod match_round_table;
-pub mod match_round_users_table;
 pub mod match_server_revoke_reducer;
 pub mod match_set_preparation_reducer;
 pub mod match_shared_config_reducer;
@@ -119,15 +117,13 @@ pub mod method_call_type;
 pub mod method_error_type;
 pub mod method_response_type;
 pub mod mode_settings_type;
-pub mod my_comeptition_schedules_table;
-pub mod my_match_template_table;
-pub mod my_matches_table;
 pub mod my_node_positions_table;
 pub mod my_project_v_1_type;
 pub mod my_projects_table;
-pub mod my_raw_server_pool_table;
 pub mod my_user_table;
 pub mod node_handle_type;
+pub mod node_leaderboard_input_procedure;
+pub mod node_leaderboard_output_procedure;
 pub mod node_name_edit_reducer;
 pub mod node_position_update_type;
 pub mod output_create_reducer;
@@ -160,7 +156,6 @@ pub mod project_v_1_type;
 pub mod raw_server_config_shared_new_reducer;
 pub mod raw_server_config_shared_update_reducer;
 pub mod raw_server_config_type;
-pub mod raw_server_current_players_table;
 pub mod raw_server_identity_type;
 pub mod raw_server_method_type;
 pub mod raw_server_occupation_type;
@@ -229,28 +224,24 @@ pub mod tab_competition_node_position_type;
 pub mod tab_connection_action_type;
 pub mod tab_connection_type;
 pub mod tab_match_auto_recovery_type;
+pub mod tab_match_round_player_ext_table;
+pub mod tab_match_round_player_table;
 pub mod tab_player_destination_type;
+pub mod tab_raw_server_player_table;
+pub mod tab_raw_server_table;
+pub mod tab_registeration_player_table;
 pub mod tab_tm_map_type;
+pub mod tab_user_table;
 pub mod team_type;
-pub mod temp_match_leaderboard_table;
-pub mod temp_registration_player_table;
 pub mod time_attack_type;
 pub mod tm_mode_type;
 pub mod unloading_map_end_type;
 pub mod unloading_map_start_type;
 pub mod unregister_player_reducer;
 pub mod unstable_competition_connection_table;
-pub mod unstable_competition_members_table;
-pub mod unstable_competition_role_member_table;
-pub mod unstable_competition_role_table;
-pub mod unstable_match_round_ext_table;
-pub mod unstable_match_round_table;
-pub mod unstable_registration_player_table;
-pub mod unstable_registration_table;
 pub mod user_identity_type;
 pub mod user_ids_map_type;
 pub mod user_v_1_type;
-pub mod users_table;
 pub mod vec_2_type;
 pub mod warmup_duration_type;
 pub mod warmup_round_type;
@@ -272,7 +263,6 @@ pub use competition_node_positions_update_reducer::competition_node_positions_up
 pub use competition_role_member_type::CompetitionRoleMember;
 pub use competition_role_type::CompetitionRole;
 pub use competition_server_type::CompetitionServer;
-pub use competition_table::*;
 pub use competition_template_create_reducer::competition_template_create;
 pub use competition_v_1_type::CompetitionV1;
 pub use connection_action_match_type::ConnectionActionMatch;
@@ -283,7 +273,6 @@ pub use connection_configured_reducer::connection_configured;
 pub use connection_create_reducer::connection_create;
 pub use connection_data_option_first_offset_n_type::ConnectionDataOptionFirstOffsetN;
 pub use connection_data_option_type::ConnectionDataOption;
-pub use connection_data_table::*;
 pub use connection_data_type::ConnectionData;
 pub use connection_kind_type::ConnectionKind;
 pub use connection_status_type::ConnectionStatus;
@@ -313,6 +302,7 @@ pub use knockout_elimination_type::KnockoutElimination;
 pub use knockout_type::Knockout;
 pub use laps_number_type::LapsNumber;
 pub use last_chance_dnf_mode_type::LastChanceDnfMode;
+pub use lb_entry_type::LbEntry;
 pub use lb_filter_fallback_type::LbFilterFallback;
 pub use lb_filter_ident_type::LbFilterIdent;
 pub use lb_filter_kind_type::LbFilterKind;
@@ -345,14 +335,13 @@ pub use match_open_reducer::match_open;
 pub use match_override_config_reducer::match_override_config;
 pub use match_override_pre_config_reducer::match_override_pre_config;
 pub use match_restart_reducer::match_restart;
-pub use match_round_ext_table::*;
 pub use match_round_player_ext_type::MatchRoundPlayerExt;
+pub use match_round_player_set_position_manual_reducer::match_round_player_set_position_manual;
+pub use match_round_player_set_score_manual_reducer::match_round_player_set_score_manual;
 pub use match_round_player_type::MatchRoundPlayer;
 pub use match_round_replay_procedure::match_round_replay;
 pub use match_round_replay_time_type::MatchRoundReplayTime;
 pub use match_round_replay_type::MatchRoundReplay;
-pub use match_round_table::*;
-pub use match_round_users_table::*;
 pub use match_server_revoke_reducer::match_server_revoke;
 pub use match_set_preparation_reducer::match_set_preparation;
 pub use match_shared_config_reducer::match_shared_config;
@@ -370,15 +359,13 @@ pub use method_call_type::MethodCall;
 pub use method_error_type::MethodError;
 pub use method_response_type::MethodResponse;
 pub use mode_settings_type::ModeSettings;
-pub use my_comeptition_schedules_table::*;
-pub use my_match_template_table::*;
-pub use my_matches_table::*;
 pub use my_node_positions_table::*;
 pub use my_project_v_1_type::MyProjectV1;
 pub use my_projects_table::*;
-pub use my_raw_server_pool_table::*;
 pub use my_user_table::*;
 pub use node_handle_type::NodeHandle;
+pub use node_leaderboard_input_procedure::node_leaderboard_input;
+pub use node_leaderboard_output_procedure::node_leaderboard_output;
 pub use node_name_edit_reducer::node_name_edit;
 pub use node_position_update_type::NodePositionUpdate;
 pub use output_create_reducer::output_create;
@@ -411,7 +398,6 @@ pub use project_v_1_type::ProjectV1;
 pub use raw_server_config_shared_new_reducer::raw_server_config_shared_new;
 pub use raw_server_config_shared_update_reducer::raw_server_config_shared_update;
 pub use raw_server_config_type::RawServerConfig;
-pub use raw_server_current_players_table::*;
 pub use raw_server_identity_type::RawServerIdentity;
 pub use raw_server_method_type::RawServerMethod;
 pub use raw_server_occupation_type::RawServerOccupation;
@@ -480,28 +466,24 @@ pub use tab_competition_node_position_type::TabCompetitionNodePosition;
 pub use tab_connection_action_type::TabConnectionAction;
 pub use tab_connection_type::TabConnection;
 pub use tab_match_auto_recovery_type::TabMatchAutoRecovery;
+pub use tab_match_round_player_ext_table::*;
+pub use tab_match_round_player_table::*;
 pub use tab_player_destination_type::TabPlayerDestination;
+pub use tab_raw_server_player_table::*;
+pub use tab_raw_server_table::*;
+pub use tab_registeration_player_table::*;
 pub use tab_tm_map_type::TabTmMap;
+pub use tab_user_table::*;
 pub use team_type::Team;
-pub use temp_match_leaderboard_table::*;
-pub use temp_registration_player_table::*;
 pub use time_attack_type::TimeAttack;
 pub use tm_mode_type::TmMode;
 pub use unloading_map_end_type::UnloadingMapEnd;
 pub use unloading_map_start_type::UnloadingMapStart;
 pub use unregister_player_reducer::unregister_player;
 pub use unstable_competition_connection_table::*;
-pub use unstable_competition_members_table::*;
-pub use unstable_competition_role_member_table::*;
-pub use unstable_competition_role_table::*;
-pub use unstable_match_round_ext_table::*;
-pub use unstable_match_round_table::*;
-pub use unstable_registration_player_table::*;
-pub use unstable_registration_table::*;
 pub use user_identity_type::UserIdentity;
 pub use user_ids_map_type::UserIdsMap;
 pub use user_v_1_type::UserV1;
-pub use users_table::*;
 pub use vec_2_type::Vec2;
 pub use warmup_duration_type::WarmupDuration;
 pub use warmup_round_type::WarmupRound;
@@ -617,6 +599,18 @@ pub enum Reducer {
     },
     MatchRestart {
         match_id: u32,
+    },
+    MatchRoundPlayerSetPositionManual {
+        match_id: u32,
+        user_id: u32,
+        round: u16,
+        position: u16,
+    },
+    MatchRoundPlayerSetScoreManual {
+        match_id: u32,
+        user_id: u32,
+        round: u16,
+        score: i32,
     },
     MatchServerRevoke {
         match_id: u32,
@@ -831,6 +825,10 @@ impl __sdk::Reducer for Reducer {
             Reducer::MatchOverrideConfig { .. } => "match_override_config",
             Reducer::MatchOverridePreConfig { .. } => "match_override_pre_config",
             Reducer::MatchRestart { .. } => "match_restart",
+            Reducer::MatchRoundPlayerSetPositionManual { .. } => {
+                "match_round_player_set_position_manual"
+            }
+            Reducer::MatchRoundPlayerSetScoreManual { .. } => "match_round_player_set_score_manual",
             Reducer::MatchServerRevoke { .. } => "match_server_revoke",
             Reducer::MatchSetPreparation { .. } => "match_set_preparation",
             Reducer::MatchSharedConfig { .. } => "match_shared_config",
@@ -885,491 +883,519 @@ impl __sdk::Reducer for Reducer {
     #[allow(clippy::clone_on_copy)]
     fn args_bsatn(&self) -> Result<Vec<u8>, __sats::bsatn::EncodeError> {
         match self {
-            Reducer::CompetitionConnectionDataUpdate {
+                        Reducer::CompetitionConnectionDataUpdate{
                 connection_id,
                 option,
-            } => __sats::bsatn::to_vec(
-                &competition_connection_data_update_reducer::CompetitionConnectionDataUpdateArgs {
-                    connection_id: connection_id.clone(),
-                    option: option.clone(),
-                },
-            ),
-            Reducer::CompetitionCreate {
+}             => __sats::bsatn::to_vec(&competition_connection_data_update_reducer::CompetitionConnectionDataUpdateArgs {
+                connection_id: connection_id.clone(),
+                option: option.clone(),
+}),
+            Reducer::CompetitionCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&competition_create_reducer::CompetitionCreateArgs {
+}             => __sats::bsatn::to_vec(&competition_create_reducer::CompetitionCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::CompetitionNodePositionUpdate { node, position } => __sats::bsatn::to_vec(
-                &competition_node_position_update_reducer::CompetitionNodePositionUpdateArgs {
-                    node: node.clone(),
-                    position: position.clone(),
-                },
-            ),
-            Reducer::CompetitionNodePositionsUpdate { positions } => __sats::bsatn::to_vec(
-                &competition_node_positions_update_reducer::CompetitionNodePositionsUpdateArgs {
-                    positions: positions.clone(),
-                },
-            ),
-            Reducer::CompetitionTemplateCreate {
+}),
+            Reducer::CompetitionNodePositionUpdate{
+                node,
+                position,
+}             => __sats::bsatn::to_vec(&competition_node_position_update_reducer::CompetitionNodePositionUpdateArgs {
+                node: node.clone(),
+                position: position.clone(),
+}),
+            Reducer::CompetitionNodePositionsUpdate{
+                positions,
+}             => __sats::bsatn::to_vec(&competition_node_positions_update_reducer::CompetitionNodePositionsUpdateArgs {
+                positions: positions.clone(),
+}),
+            Reducer::CompetitionTemplateCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(
-                &competition_template_create_reducer::CompetitionTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                    with_template: with_template.clone(),
-                },
-            ),
-            Reducer::ConnectionActionUpdate {
+}             => __sats::bsatn::to_vec(&competition_template_create_reducer::CompetitionTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+                with_template: with_template.clone(),
+}),
+            Reducer::ConnectionActionUpdate{
                 connection_id,
                 action,
-            } => __sats::bsatn::to_vec(
-                &connection_action_update_reducer::ConnectionActionUpdateArgs {
-                    connection_id: connection_id.clone(),
-                    action: action.clone(),
-                },
-            ),
-            Reducer::ConnectionConfigured { connection_id } => {
-                __sats::bsatn::to_vec(&connection_configured_reducer::ConnectionConfiguredArgs {
-                    connection_id: connection_id.clone(),
-                })
-            }
-            Reducer::ConnectionCreate {
+}             => __sats::bsatn::to_vec(&connection_action_update_reducer::ConnectionActionUpdateArgs {
+                connection_id: connection_id.clone(),
+                action: action.clone(),
+}),
+            Reducer::ConnectionConfigured{
+                connection_id,
+}             => __sats::bsatn::to_vec(&connection_configured_reducer::ConnectionConfiguredArgs {
+                connection_id: connection_id.clone(),
+}),
+            Reducer::ConnectionCreate{
                 origin,
                 target,
                 kind,
-            } => __sats::bsatn::to_vec(&connection_create_reducer::ConnectionCreateArgs {
+}             => __sats::bsatn::to_vec(&connection_create_reducer::ConnectionCreateArgs {
                 origin: origin.clone(),
                 target: target.clone(),
                 kind: kind.clone(),
-            }),
-            Reducer::CreateProject {
+}),
+            Reducer::CreateProject{
                 name,
                 description,
                 kind,
                 starting_at,
                 ending_at,
-            } => __sats::bsatn::to_vec(&create_project_reducer::CreateProjectArgs {
+}             => __sats::bsatn::to_vec(&create_project_reducer::CreateProjectArgs {
                 name: name.clone(),
                 description: description.clone(),
                 kind: kind.clone(),
                 starting_at: starting_at.clone(),
                 ending_at: ending_at.clone(),
-            }),
-            Reducer::InputCreate {
+}),
+            Reducer::InputCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&input_create_reducer::InputCreateArgs {
+}             => __sats::bsatn::to_vec(&input_create_reducer::InputCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::InputTemplateCreate { name, parent_id } => {
-                __sats::bsatn::to_vec(&input_template_create_reducer::InputTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                })
-            }
-            Reducer::LeaderboardConfigured { id } => {
-                __sats::bsatn::to_vec(&leaderboard_configured_reducer::LeaderboardConfiguredArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::LeaderboardCreate {
+}),
+            Reducer::InputTemplateCreate{
+                name,
+                parent_id,
+}             => __sats::bsatn::to_vec(&input_template_create_reducer::InputTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+}),
+            Reducer::LeaderboardConfigured{
+                id,
+}             => __sats::bsatn::to_vec(&leaderboard_configured_reducer::LeaderboardConfiguredArgs {
+                id: id.clone(),
+}),
+            Reducer::LeaderboardCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&leaderboard_create_reducer::LeaderboardCreateArgs {
+}             => __sats::bsatn::to_vec(&leaderboard_create_reducer::LeaderboardCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::LeaderboardSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
-                &leaderboard_settings_update_reducer::LeaderboardSettingsUpdateArgs {
-                    id: id.clone(),
-                    settings: settings.clone(),
-                },
-            ),
-            Reducer::LeaderboardTemplateCreate { name, parent_id } => __sats::bsatn::to_vec(
-                &leaderboard_template_create_reducer::LeaderboardTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                },
-            ),
-            Reducer::LendRawServer {
+}),
+            Reducer::LeaderboardSettingsUpdate{
+                id,
+                settings,
+}             => __sats::bsatn::to_vec(&leaderboard_settings_update_reducer::LeaderboardSettingsUpdateArgs {
+                id: id.clone(),
+                settings: settings.clone(),
+}),
+            Reducer::LeaderboardTemplateCreate{
+                name,
+                parent_id,
+}             => __sats::bsatn::to_vec(&leaderboard_template_create_reducer::LeaderboardTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+}),
+            Reducer::LendRawServer{
                 server_id,
                 competition_id,
-            } => __sats::bsatn::to_vec(&lend_raw_server_reducer::LendRawServerArgs {
+}             => __sats::bsatn::to_vec(&lend_raw_server_reducer::LendRawServerArgs {
                 server_id: server_id.clone(),
                 competition_id: competition_id.clone(),
-            }),
-            Reducer::MatchAssignServer { to, server_id } => {
-                __sats::bsatn::to_vec(&match_assign_server_reducer::MatchAssignServerArgs {
-                    to: to.clone(),
-                    server_id: server_id.clone(),
-                })
-            }
-            Reducer::MatchConfigured { id } => {
-                __sats::bsatn::to_vec(&match_configured_reducer::MatchConfiguredArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::MatchCreate {
+}),
+            Reducer::MatchAssignServer{
+                to,
+                server_id,
+}             => __sats::bsatn::to_vec(&match_assign_server_reducer::MatchAssignServerArgs {
+                to: to.clone(),
+                server_id: server_id.clone(),
+}),
+            Reducer::MatchConfigured{
+                id,
+}             => __sats::bsatn::to_vec(&match_configured_reducer::MatchConfiguredArgs {
+                id: id.clone(),
+}),
+            Reducer::MatchCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&match_create_reducer::MatchCreateArgs {
+}             => __sats::bsatn::to_vec(&match_create_reducer::MatchCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::MatchEnd { match_id } => {
-                __sats::bsatn::to_vec(&match_end_reducer::MatchEndArgs {
-                    match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchManualRecovery { id } => {
-                __sats::bsatn::to_vec(&match_manual_recovery_reducer::MatchManualRecoveryArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::MatchOpen { match_id, open } => {
-                __sats::bsatn::to_vec(&match_open_reducer::MatchOpenArgs {
-                    match_id: match_id.clone(),
-                    open: open.clone(),
-                })
-            }
-            Reducer::MatchOverrideConfig { id, config } => {
-                __sats::bsatn::to_vec(&match_override_config_reducer::MatchOverrideConfigArgs {
-                    id: id.clone(),
-                    config: config.clone(),
-                })
-            }
-            Reducer::MatchOverridePreConfig { id, config } => __sats::bsatn::to_vec(
-                &match_override_pre_config_reducer::MatchOverridePreConfigArgs {
-                    id: id.clone(),
-                    config: config.clone(),
-                },
-            ),
-            Reducer::MatchRestart { match_id } => {
-                __sats::bsatn::to_vec(&match_restart_reducer::MatchRestartArgs {
-                    match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchServerRevoke { match_id } => {
-                __sats::bsatn::to_vec(&match_server_revoke_reducer::MatchServerRevokeArgs {
-                    match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchSetPreparation { match_id } => {
-                __sats::bsatn::to_vec(&match_set_preparation_reducer::MatchSetPreparationArgs {
-                    match_id: match_id.clone(),
-                })
-            }
-            Reducer::MatchSharedConfig {
+}),
+            Reducer::MatchEnd{
+                match_id,
+}             => __sats::bsatn::to_vec(&match_end_reducer::MatchEndArgs {
+                match_id: match_id.clone(),
+}),
+            Reducer::MatchManualRecovery{
+                id,
+}             => __sats::bsatn::to_vec(&match_manual_recovery_reducer::MatchManualRecoveryArgs {
+                id: id.clone(),
+}),
+            Reducer::MatchOpen{
+                match_id,
+                open,
+}             => __sats::bsatn::to_vec(&match_open_reducer::MatchOpenArgs {
+                match_id: match_id.clone(),
+                open: open.clone(),
+}),
+            Reducer::MatchOverrideConfig{
+                id,
+                config,
+}             => __sats::bsatn::to_vec(&match_override_config_reducer::MatchOverrideConfigArgs {
+                id: id.clone(),
+                config: config.clone(),
+}),
+            Reducer::MatchOverridePreConfig{
+                id,
+                config,
+}             => __sats::bsatn::to_vec(&match_override_pre_config_reducer::MatchOverridePreConfigArgs {
+                id: id.clone(),
+                config: config.clone(),
+}),
+            Reducer::MatchRestart{
+                match_id,
+}             => __sats::bsatn::to_vec(&match_restart_reducer::MatchRestartArgs {
+                match_id: match_id.clone(),
+}),
+            Reducer::MatchRoundPlayerSetPositionManual{
+                match_id,
+                user_id,
+                round,
+                position,
+}             => __sats::bsatn::to_vec(&match_round_player_set_position_manual_reducer::MatchRoundPlayerSetPositionManualArgs {
+                match_id: match_id.clone(),
+                user_id: user_id.clone(),
+                round: round.clone(),
+                position: position.clone(),
+}),
+            Reducer::MatchRoundPlayerSetScoreManual{
+                match_id,
+                user_id,
+                round,
+                score,
+}             => __sats::bsatn::to_vec(&match_round_player_set_score_manual_reducer::MatchRoundPlayerSetScoreManualArgs {
+                match_id: match_id.clone(),
+                user_id: user_id.clone(),
+                round: round.clone(),
+                score: score.clone(),
+}),
+            Reducer::MatchServerRevoke{
+                match_id,
+}             => __sats::bsatn::to_vec(&match_server_revoke_reducer::MatchServerRevokeArgs {
+                match_id: match_id.clone(),
+}),
+            Reducer::MatchSetPreparation{
+                match_id,
+}             => __sats::bsatn::to_vec(&match_set_preparation_reducer::MatchSetPreparationArgs {
+                match_id: match_id.clone(),
+}),
+            Reducer::MatchSharedConfig{
                 match_id,
                 config_id,
-            } => __sats::bsatn::to_vec(&match_shared_config_reducer::MatchSharedConfigArgs {
+}             => __sats::bsatn::to_vec(&match_shared_config_reducer::MatchSharedConfigArgs {
                 match_id: match_id.clone(),
                 config_id: config_id.clone(),
-            }),
-            Reducer::MatchSharedPreConfig {
+}),
+            Reducer::MatchSharedPreConfig{
                 match_id,
                 config_id,
-            } => {
-                __sats::bsatn::to_vec(&match_shared_pre_config_reducer::MatchSharedPreConfigArgs {
-                    match_id: match_id.clone(),
-                    config_id: config_id.clone(),
-                })
-            }
-            Reducer::MatchTemplateCreate { name, parent_id } => {
-                __sats::bsatn::to_vec(&match_template_create_reducer::MatchTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                })
-            }
-            Reducer::MatchTryStart { match_id } => {
-                __sats::bsatn::to_vec(&match_try_start_reducer::MatchTryStartArgs {
-                    match_id: match_id.clone(),
-                })
-            }
-            Reducer::MemberAdd {
+}             => __sats::bsatn::to_vec(&match_shared_pre_config_reducer::MatchSharedPreConfigArgs {
+                match_id: match_id.clone(),
+                config_id: config_id.clone(),
+}),
+            Reducer::MatchTemplateCreate{
+                name,
+                parent_id,
+}             => __sats::bsatn::to_vec(&match_template_create_reducer::MatchTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+}),
+            Reducer::MatchTryStart{
+                match_id,
+}             => __sats::bsatn::to_vec(&match_try_start_reducer::MatchTryStartArgs {
+                match_id: match_id.clone(),
+}),
+            Reducer::MemberAdd{
                 competition_id,
                 account_id,
-            } => __sats::bsatn::to_vec(&member_add_reducer::MemberAddArgs {
+}             => __sats::bsatn::to_vec(&member_add_reducer::MemberAddArgs {
                 competition_id: competition_id.clone(),
                 account_id: account_id.clone(),
-            }),
-            Reducer::MemberAssignPermission {
+}),
+            Reducer::MemberAssignPermission{
                 member_id,
                 new_permissions,
-            } => __sats::bsatn::to_vec(
-                &member_assign_permission_reducer::MemberAssignPermissionArgs {
-                    member_id: member_id.clone(),
-                    new_permissions: new_permissions.clone(),
-                },
-            ),
-            Reducer::MemberRemove { member_id } => {
-                __sats::bsatn::to_vec(&member_remove_reducer::MemberRemoveArgs {
-                    member_id: member_id.clone(),
-                })
-            }
-            Reducer::NodeNameEdit { node, name } => {
-                __sats::bsatn::to_vec(&node_name_edit_reducer::NodeNameEditArgs {
-                    node: node.clone(),
-                    name: name.clone(),
-                })
-            }
-            Reducer::OutputCreate {
+}             => __sats::bsatn::to_vec(&member_assign_permission_reducer::MemberAssignPermissionArgs {
+                member_id: member_id.clone(),
+                new_permissions: new_permissions.clone(),
+}),
+            Reducer::MemberRemove{
+                member_id,
+}             => __sats::bsatn::to_vec(&member_remove_reducer::MemberRemoveArgs {
+                member_id: member_id.clone(),
+}),
+            Reducer::NodeNameEdit{
+                node,
+                name,
+}             => __sats::bsatn::to_vec(&node_name_edit_reducer::NodeNameEditArgs {
+                node: node.clone(),
+                name: name.clone(),
+}),
+            Reducer::OutputCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&output_create_reducer::OutputCreateArgs {
+}             => __sats::bsatn::to_vec(&output_create_reducer::OutputCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::PostEvent { event } => {
-                __sats::bsatn::to_vec(&post_event_reducer::PostEventArgs {
-                    event: event.clone(),
-                })
-            }
-            Reducer::ProjectEditDates {
+}),
+            Reducer::PostEvent{
+                event,
+}             => __sats::bsatn::to_vec(&post_event_reducer::PostEventArgs {
+                event: event.clone(),
+}),
+            Reducer::ProjectEditDates{
                 project_id,
                 starting_at,
                 ending_at,
-            } => __sats::bsatn::to_vec(&project_edit_dates_reducer::ProjectEditDatesArgs {
+}             => __sats::bsatn::to_vec(&project_edit_dates_reducer::ProjectEditDatesArgs {
                 project_id: project_id.clone(),
                 starting_at: starting_at.clone(),
                 ending_at: ending_at.clone(),
-            }),
-            Reducer::ProjectEditDescription {
+}),
+            Reducer::ProjectEditDescription{
                 project_id,
                 description,
-            } => __sats::bsatn::to_vec(
-                &project_edit_description_reducer::ProjectEditDescriptionArgs {
-                    project_id: project_id.clone(),
-                    description: description.clone(),
-                },
-            ),
-            Reducer::ProjectEditName { project_id, name } => {
-                __sats::bsatn::to_vec(&project_edit_name_reducer::ProjectEditNameArgs {
-                    project_id: project_id.clone(),
-                    name: name.clone(),
-                })
-            }
-            Reducer::ProjectUpdateStatus { project_id } => {
-                __sats::bsatn::to_vec(&project_update_status_reducer::ProjectUpdateStatusArgs {
-                    project_id: project_id.clone(),
-                })
-            }
-            Reducer::RawServerConfigSharedNew {
+}             => __sats::bsatn::to_vec(&project_edit_description_reducer::ProjectEditDescriptionArgs {
+                project_id: project_id.clone(),
+                description: description.clone(),
+}),
+            Reducer::ProjectEditName{
+                project_id,
+                name,
+}             => __sats::bsatn::to_vec(&project_edit_name_reducer::ProjectEditNameArgs {
+                project_id: project_id.clone(),
+                name: name.clone(),
+}),
+            Reducer::ProjectUpdateStatus{
+                project_id,
+}             => __sats::bsatn::to_vec(&project_update_status_reducer::ProjectUpdateStatusArgs {
+                project_id: project_id.clone(),
+}),
+            Reducer::RawServerConfigSharedNew{
                 competition_id,
                 config,
-            } => __sats::bsatn::to_vec(
-                &raw_server_config_shared_new_reducer::RawServerConfigSharedNewArgs {
-                    competition_id: competition_id.clone(),
-                    config: config.clone(),
-                },
-            ),
-            Reducer::RawServerConfigSharedUpdate { config_id, config } => __sats::bsatn::to_vec(
-                &raw_server_config_shared_update_reducer::RawServerConfigSharedUpdateArgs {
-                    config_id: config_id.clone(),
-                    config: config.clone(),
-                },
-            ),
-            Reducer::RawServerPlayerAdd {
+}             => __sats::bsatn::to_vec(&raw_server_config_shared_new_reducer::RawServerConfigSharedNewArgs {
+                competition_id: competition_id.clone(),
+                config: config.clone(),
+}),
+            Reducer::RawServerConfigSharedUpdate{
+                config_id,
+                config,
+}             => __sats::bsatn::to_vec(&raw_server_config_shared_update_reducer::RawServerConfigSharedUpdateArgs {
+                config_id: config_id.clone(),
+                config: config.clone(),
+}),
+            Reducer::RawServerPlayerAdd{
                 account_id,
                 spectator,
-            } => __sats::bsatn::to_vec(&raw_server_player_add_reducer::RawServerPlayerAddArgs {
+}             => __sats::bsatn::to_vec(&raw_server_player_add_reducer::RawServerPlayerAddArgs {
                 account_id: account_id.clone(),
                 spectator: spectator.clone(),
-            }),
-            Reducer::RawServerVerify { server_id } => {
-                __sats::bsatn::to_vec(&raw_server_verify_reducer::RawServerVerifyArgs {
-                    server_id: server_id.clone(),
-                })
-            }
-            Reducer::RegisterPlayer { registration_id } => {
-                __sats::bsatn::to_vec(&register_player_reducer::RegisterPlayerArgs {
-                    registration_id: registration_id.clone(),
-                })
-            }
-            Reducer::RegistrationConfigured { id } => __sats::bsatn::to_vec(
-                &registration_configured_reducer::RegistrationConfiguredArgs { id: id.clone() },
-            ),
-            Reducer::RegistrationCreate {
+}),
+            Reducer::RawServerVerify{
+                server_id,
+}             => __sats::bsatn::to_vec(&raw_server_verify_reducer::RawServerVerifyArgs {
+                server_id: server_id.clone(),
+}),
+            Reducer::RegisterPlayer{
+                registration_id,
+}             => __sats::bsatn::to_vec(&register_player_reducer::RegisterPlayerArgs {
+                registration_id: registration_id.clone(),
+}),
+            Reducer::RegistrationConfigured{
+                id,
+}             => __sats::bsatn::to_vec(&registration_configured_reducer::RegistrationConfiguredArgs {
+                id: id.clone(),
+}),
+            Reducer::RegistrationCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&registration_create_reducer::RegistrationCreateArgs {
+}             => __sats::bsatn::to_vec(&registration_create_reducer::RegistrationCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::RegistrationEnd { id } => {
-                __sats::bsatn::to_vec(&registration_end_reducer::RegistrationEndArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::RegistrationSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
-                &registration_settings_update_reducer::RegistrationSettingsUpdateArgs {
-                    id: id.clone(),
-                    settings: settings.clone(),
-                },
-            ),
-            Reducer::RegistrationStart { id } => {
-                __sats::bsatn::to_vec(&registration_start_reducer::RegistrationStartArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::RegistrationTemplateCreate { name, parent_id } => __sats::bsatn::to_vec(
-                &registration_template_create_reducer::RegistrationTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                },
-            ),
-            Reducer::RevokeRawServer {
+}),
+            Reducer::RegistrationEnd{
+                id,
+}             => __sats::bsatn::to_vec(&registration_end_reducer::RegistrationEndArgs {
+                id: id.clone(),
+}),
+            Reducer::RegistrationSettingsUpdate{
+                id,
+                settings,
+}             => __sats::bsatn::to_vec(&registration_settings_update_reducer::RegistrationSettingsUpdateArgs {
+                id: id.clone(),
+                settings: settings.clone(),
+}),
+            Reducer::RegistrationStart{
+                id,
+}             => __sats::bsatn::to_vec(&registration_start_reducer::RegistrationStartArgs {
+                id: id.clone(),
+}),
+            Reducer::RegistrationTemplateCreate{
+                name,
+                parent_id,
+}             => __sats::bsatn::to_vec(&registration_template_create_reducer::RegistrationTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+}),
+            Reducer::RevokeRawServer{
                 server_id,
                 competition_id,
-            } => __sats::bsatn::to_vec(&revoke_raw_server_reducer::RevokeRawServerArgs {
+}             => __sats::bsatn::to_vec(&revoke_raw_server_reducer::RevokeRawServerArgs {
                 server_id: server_id.clone(),
                 competition_id: competition_id.clone(),
-            }),
-            Reducer::RoleAssignPermission {
+}),
+            Reducer::RoleAssignPermission{
                 role_id,
                 new_permissions,
-            } => __sats::bsatn::to_vec(&role_assign_permission_reducer::RoleAssignPermissionArgs {
+}             => __sats::bsatn::to_vec(&role_assign_permission_reducer::RoleAssignPermissionArgs {
                 role_id: role_id.clone(),
                 new_permissions: new_permissions.clone(),
-            }),
-            Reducer::RoleCreate {
+}),
+            Reducer::RoleCreate{
                 competition_id,
                 name,
-            } => __sats::bsatn::to_vec(&role_create_reducer::RoleCreateArgs {
+}             => __sats::bsatn::to_vec(&role_create_reducer::RoleCreateArgs {
                 competition_id: competition_id.clone(),
                 name: name.clone(),
-            }),
-            Reducer::RoleMemberAssign {
+}),
+            Reducer::RoleMemberAssign{
                 role_id,
                 account_id,
-            } => __sats::bsatn::to_vec(&role_member_assign_reducer::RoleMemberAssignArgs {
+}             => __sats::bsatn::to_vec(&role_member_assign_reducer::RoleMemberAssignArgs {
                 role_id: role_id.clone(),
                 account_id: account_id.clone(),
-            }),
-            Reducer::RoleMemberRemove {
+}),
+            Reducer::RoleMemberRemove{
                 role_id,
                 account_id,
-            } => __sats::bsatn::to_vec(&role_member_remove_reducer::RoleMemberRemoveArgs {
+}             => __sats::bsatn::to_vec(&role_member_remove_reducer::RoleMemberRemoveArgs {
                 role_id: role_id.clone(),
                 account_id: account_id.clone(),
-            }),
-            Reducer::RoleRemove { role_id } => {
-                __sats::bsatn::to_vec(&role_remove_reducer::RoleRemoveArgs {
-                    role_id: role_id.clone(),
-                })
-            }
-            Reducer::ScheduleConfigured { id } => {
-                __sats::bsatn::to_vec(&schedule_configured_reducer::ScheduleConfiguredArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::ScheduleCreate {
+}),
+            Reducer::RoleRemove{
+                role_id,
+}             => __sats::bsatn::to_vec(&role_remove_reducer::RoleRemoveArgs {
+                role_id: role_id.clone(),
+}),
+            Reducer::ScheduleConfigured{
+                id,
+}             => __sats::bsatn::to_vec(&schedule_configured_reducer::ScheduleConfiguredArgs {
+                id: id.clone(),
+}),
+            Reducer::ScheduleCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&schedule_create_reducer::ScheduleCreateArgs {
+}             => __sats::bsatn::to_vec(&schedule_create_reducer::ScheduleCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::ScheduleManualRun { id } => {
-                __sats::bsatn::to_vec(&schedule_manual_run_reducer::ScheduleManualRunArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::ScheduleSettingsUpdate { id, settings } => __sats::bsatn::to_vec(
-                &schedule_settings_update_reducer::ScheduleSettingsUpdateArgs {
-                    id: id.clone(),
-                    settings: settings.clone(),
-                },
-            ),
-            Reducer::ServerAssignRawServer {
+}),
+            Reducer::ScheduleManualRun{
+                id,
+}             => __sats::bsatn::to_vec(&schedule_manual_run_reducer::ScheduleManualRunArgs {
+                id: id.clone(),
+}),
+            Reducer::ScheduleSettingsUpdate{
+                id,
+                settings,
+}             => __sats::bsatn::to_vec(&schedule_settings_update_reducer::ScheduleSettingsUpdateArgs {
+                id: id.clone(),
+                settings: settings.clone(),
+}),
+            Reducer::ServerAssignRawServer{
                 server_id,
                 raw_server_id,
-            } => __sats::bsatn::to_vec(
-                &server_assign_raw_server_reducer::ServerAssignRawServerArgs {
-                    server_id: server_id.clone(),
-                    raw_server_id: raw_server_id.clone(),
-                },
-            ),
-            Reducer::ServerConfigOverride { to, config } => {
-                __sats::bsatn::to_vec(&server_config_override_reducer::ServerConfigOverrideArgs {
-                    to: to.clone(),
-                    config: config.clone(),
-                })
-            }
-            Reducer::ServerConfigured { id } => {
-                __sats::bsatn::to_vec(&server_configured_reducer::ServerConfiguredArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::ServerConfiguring { id } => {
-                __sats::bsatn::to_vec(&server_configuring_reducer::ServerConfiguringArgs {
-                    id: id.clone(),
-                })
-            }
-            Reducer::ServerCreate {
+}             => __sats::bsatn::to_vec(&server_assign_raw_server_reducer::ServerAssignRawServerArgs {
+                server_id: server_id.clone(),
+                raw_server_id: raw_server_id.clone(),
+}),
+            Reducer::ServerConfigOverride{
+                to,
+                config,
+}             => __sats::bsatn::to_vec(&server_config_override_reducer::ServerConfigOverrideArgs {
+                to: to.clone(),
+                config: config.clone(),
+}),
+            Reducer::ServerConfigured{
+                id,
+}             => __sats::bsatn::to_vec(&server_configured_reducer::ServerConfiguredArgs {
+                id: id.clone(),
+}),
+            Reducer::ServerConfiguring{
+                id,
+}             => __sats::bsatn::to_vec(&server_configuring_reducer::ServerConfiguringArgs {
+                id: id.clone(),
+}),
+            Reducer::ServerCreate{
                 name,
                 parent_id,
                 with_template,
-            } => __sats::bsatn::to_vec(&server_create_reducer::ServerCreateArgs {
+}             => __sats::bsatn::to_vec(&server_create_reducer::ServerCreateArgs {
                 name: name.clone(),
                 parent_id: parent_id.clone(),
                 with_template: with_template.clone(),
-            }),
-            Reducer::ServerMethodCall { server_login, call } => {
-                __sats::bsatn::to_vec(&server_method_call_reducer::ServerMethodCallArgs {
-                    server_login: server_login.clone(),
-                    call: call.clone(),
-                })
-            }
-            Reducer::ServerMethodResponse { call_id, response } => {
-                __sats::bsatn::to_vec(&server_method_response_reducer::ServerMethodResponseArgs {
-                    call_id: call_id.clone(),
-                    response: response.clone(),
-                })
-            }
-            Reducer::ServerRemoveRawServer { server_id } => __sats::bsatn::to_vec(
-                &server_remove_raw_server_reducer::ServerRemoveRawServerArgs {
-                    server_id: server_id.clone(),
-                },
-            ),
-            Reducer::ServerTemplateCreate { name, parent_id } => {
-                __sats::bsatn::to_vec(&server_template_create_reducer::ServerTemplateCreateArgs {
-                    name: name.clone(),
-                    parent_id: parent_id.clone(),
-                })
-            }
-            Reducer::SetEnvVar { key, value } => {
-                __sats::bsatn::to_vec(&set_env_var_reducer::SetEnvVarArgs {
-                    key: key.clone(),
-                    value: value.clone(),
-                })
-            }
-            Reducer::UnregisterPlayer { registration_id } => {
-                __sats::bsatn::to_vec(&unregister_player_reducer::UnregisterPlayerArgs {
-                    registration_id: registration_id.clone(),
-                })
-            }
+}),
+            Reducer::ServerMethodCall{
+                server_login,
+                call,
+}             => __sats::bsatn::to_vec(&server_method_call_reducer::ServerMethodCallArgs {
+                server_login: server_login.clone(),
+                call: call.clone(),
+}),
+            Reducer::ServerMethodResponse{
+                call_id,
+                response,
+}             => __sats::bsatn::to_vec(&server_method_response_reducer::ServerMethodResponseArgs {
+                call_id: call_id.clone(),
+                response: response.clone(),
+}),
+            Reducer::ServerRemoveRawServer{
+                server_id,
+}             => __sats::bsatn::to_vec(&server_remove_raw_server_reducer::ServerRemoveRawServerArgs {
+                server_id: server_id.clone(),
+}),
+            Reducer::ServerTemplateCreate{
+                name,
+                parent_id,
+}             => __sats::bsatn::to_vec(&server_template_create_reducer::ServerTemplateCreateArgs {
+                name: name.clone(),
+                parent_id: parent_id.clone(),
+}),
+            Reducer::SetEnvVar{
+                key,
+                value,
+}             => __sats::bsatn::to_vec(&set_env_var_reducer::SetEnvVarArgs {
+                key: key.clone(),
+                value: value.clone(),
+}),
+            Reducer::UnregisterPlayer{
+                registration_id,
+}             => __sats::bsatn::to_vec(&unregister_player_reducer::UnregisterPlayerArgs {
+                registration_id: registration_id.clone(),
+}),
             _ => unreachable!(),
-        }
+}
     }
 }
 
@@ -1377,37 +1403,23 @@ impl __sdk::Reducer for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
-    competition: __sdk::TableUpdate<CompetitionV1>,
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
-    connection_data: __sdk::TableUpdate<ConnectionData>,
     event_raw_server_method: __sdk::TableUpdate<EventRawServerMethod>,
     event_raw_server_state: __sdk::TableUpdate<EventRawServerState>,
-    match_round: __sdk::TableUpdate<MatchRoundPlayer>,
-    match_round_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
-    match_round_users: __sdk::TableUpdate<UserV1>,
     match_state: __sdk::TableUpdate<MatchState>,
-    my_comeptition_schedules: __sdk::TableUpdate<ScheduleV1>,
-    my_match_template: __sdk::TableUpdate<MatchV1>,
-    my_matches: __sdk::TableUpdate<MatchV1>,
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
     my_projects: __sdk::TableUpdate<MyProjectV1>,
-    my_raw_server_pool: __sdk::TableUpdate<RawServerV1>,
     my_user: __sdk::TableUpdate<UserV1>,
     project_competition_descendants: __sdk::TableUpdate<CompetitionV1>,
-    raw_server_current_players: __sdk::TableUpdate<RawServerPlayer>,
     raw_server_permitted_players: __sdk::TableUpdate<PermittedPlayer>,
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
-    temp_match_leaderboard: __sdk::TableUpdate<MatchRoundPlayer>,
-    temp_registration_player: __sdk::TableUpdate<RegisterationPlayer>,
+    tab_match_round_player: __sdk::TableUpdate<MatchRoundPlayer>,
+    tab_match_round_player_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
+    tab_raw_server: __sdk::TableUpdate<RawServerV1>,
+    tab_raw_server_player: __sdk::TableUpdate<RawServerPlayer>,
+    tab_registeration_player: __sdk::TableUpdate<RegisterationPlayer>,
+    tab_user: __sdk::TableUpdate<UserV1>,
     unstable_competition_connection: __sdk::TableUpdate<CompetitionConnection>,
-    unstable_competition_members: __sdk::TableUpdate<CompetitionMember>,
-    unstable_competition_role: __sdk::TableUpdate<CompetitionRole>,
-    unstable_competition_role_member: __sdk::TableUpdate<CompetitionRoleMember>,
-    unstable_match_round: __sdk::TableUpdate<MatchRoundPlayer>,
-    unstable_match_round_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
-    unstable_registration: __sdk::TableUpdate<Registration>,
-    unstable_registration_player: __sdk::TableUpdate<RegisterationPlayer>,
-    users: __sdk::TableUpdate<UserV1>,
 }
 
 impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
@@ -1416,53 +1428,26 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in __sdk::transaction_update_iter_table_updates(raw) {
             match &table_update.table_name[..] {
-                "competition" => db_update
-                    .competition
-                    .append(competition_table::parse_table_update(table_update)?),
                 "competition_available_server_pool" => {
                     db_update.competition_available_server_pool.append(
                         competition_available_server_pool_table::parse_table_update(table_update)?,
                     )
                 }
-                "connection_data" => db_update
-                    .connection_data
-                    .append(connection_data_table::parse_table_update(table_update)?),
                 "event_raw_server_method" => db_update.event_raw_server_method.append(
                     event_raw_server_method_table::parse_table_update(table_update)?,
                 ),
                 "event_raw_server_state" => db_update.event_raw_server_state.append(
                     event_raw_server_state_table::parse_table_update(table_update)?,
                 ),
-                "match_round" => db_update
-                    .match_round
-                    .append(match_round_table::parse_table_update(table_update)?),
-                "match_round_ext" => db_update
-                    .match_round_ext
-                    .append(match_round_ext_table::parse_table_update(table_update)?),
-                "match_round_users" => db_update
-                    .match_round_users
-                    .append(match_round_users_table::parse_table_update(table_update)?),
                 "match_state" => db_update
                     .match_state
                     .append(match_state_table::parse_table_update(table_update)?),
-                "my_comeptition_schedules" => db_update.my_comeptition_schedules.append(
-                    my_comeptition_schedules_table::parse_table_update(table_update)?,
-                ),
-                "my_match_template" => db_update
-                    .my_match_template
-                    .append(my_match_template_table::parse_table_update(table_update)?),
-                "my_matches" => db_update
-                    .my_matches
-                    .append(my_matches_table::parse_table_update(table_update)?),
                 "my_node_positions" => db_update
                     .my_node_positions
                     .append(my_node_positions_table::parse_table_update(table_update)?),
                 "my_projects" => db_update
                     .my_projects
                     .append(my_projects_table::parse_table_update(table_update)?),
-                "my_raw_server_pool" => db_update
-                    .my_raw_server_pool
-                    .append(my_raw_server_pool_table::parse_table_update(table_update)?),
                 "my_user" => db_update
                     .my_user
                     .append(my_user_table::parse_table_update(table_update)?),
@@ -1471,52 +1456,35 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                         project_competition_descendants_table::parse_table_update(table_update)?,
                     )
                 }
-                "raw_server_current_players" => db_update.raw_server_current_players.append(
-                    raw_server_current_players_table::parse_table_update(table_update)?,
-                ),
                 "raw_server_permitted_players" => db_update.raw_server_permitted_players.append(
                     raw_server_permitted_players_table::parse_table_update(table_update)?,
                 ),
                 "raw_server_player_destination" => db_update.raw_server_player_destination.append(
                     raw_server_player_destination_table::parse_table_update(table_update)?,
                 ),
-                "temp_match_leaderboard" => db_update.temp_match_leaderboard.append(
-                    temp_match_leaderboard_table::parse_table_update(table_update)?,
+                "tab_match_round_player" => db_update.tab_match_round_player.append(
+                    tab_match_round_player_table::parse_table_update(table_update)?,
                 ),
-                "temp_registration_player" => db_update.temp_registration_player.append(
-                    temp_registration_player_table::parse_table_update(table_update)?,
+                "tab_match_round_player_ext" => db_update.tab_match_round_player_ext.append(
+                    tab_match_round_player_ext_table::parse_table_update(table_update)?,
                 ),
+                "tab_raw_server" => db_update
+                    .tab_raw_server
+                    .append(tab_raw_server_table::parse_table_update(table_update)?),
+                "tab_raw_server_player" => db_update.tab_raw_server_player.append(
+                    tab_raw_server_player_table::parse_table_update(table_update)?,
+                ),
+                "tab_registeration_player" => db_update.tab_registeration_player.append(
+                    tab_registeration_player_table::parse_table_update(table_update)?,
+                ),
+                "tab_user" => db_update
+                    .tab_user
+                    .append(tab_user_table::parse_table_update(table_update)?),
                 "unstable_competition_connection" => {
                     db_update.unstable_competition_connection.append(
                         unstable_competition_connection_table::parse_table_update(table_update)?,
                     )
                 }
-                "unstable_competition_members" => db_update.unstable_competition_members.append(
-                    unstable_competition_members_table::parse_table_update(table_update)?,
-                ),
-                "unstable_competition_role" => db_update.unstable_competition_role.append(
-                    unstable_competition_role_table::parse_table_update(table_update)?,
-                ),
-                "unstable_competition_role_member" => {
-                    db_update.unstable_competition_role_member.append(
-                        unstable_competition_role_member_table::parse_table_update(table_update)?,
-                    )
-                }
-                "unstable_match_round" => db_update.unstable_match_round.append(
-                    unstable_match_round_table::parse_table_update(table_update)?,
-                ),
-                "unstable_match_round_ext" => db_update.unstable_match_round_ext.append(
-                    unstable_match_round_ext_table::parse_table_update(table_update)?,
-                ),
-                "unstable_registration" => db_update.unstable_registration.append(
-                    unstable_registration_table::parse_table_update(table_update)?,
-                ),
-                "unstable_registration_player" => db_update.unstable_registration_player.append(
-                    unstable_registration_player_table::parse_table_update(table_update)?,
-                ),
-                "users" => db_update
-                    .users
-                    .append(users_table::parse_table_update(table_update)?),
 
                 unknown => {
                     return Err(__sdk::InternalError::unknown_name(
@@ -1545,57 +1513,51 @@ impl __sdk::DbUpdate for DbUpdate {
 
         diff.event_raw_server_method = self.event_raw_server_method.into_event_diff();
         diff.event_raw_server_state = self.event_raw_server_state.into_event_diff();
-        diff.competition = cache
-            .apply_diff_to_table::<CompetitionV1>("competition", &self.competition)
+        diff.tab_match_round_player = cache
+            .apply_diff_to_table::<MatchRoundPlayer>(
+                "tab_match_round_player",
+                &self.tab_match_round_player,
+            )
+            .with_updates_by_pk(|row| &row.id);
+        diff.tab_match_round_player_ext = cache
+            .apply_diff_to_table::<MatchRoundPlayerExt>(
+                "tab_match_round_player_ext",
+                &self.tab_match_round_player_ext,
+            )
+            .with_updates_by_pk(|row| &row.id);
+        diff.tab_raw_server = cache
+            .apply_diff_to_table::<RawServerV1>("tab_raw_server", &self.tab_raw_server)
+            .with_updates_by_pk(|row| &row.id);
+        diff.tab_raw_server_player = cache
+            .apply_diff_to_table::<RawServerPlayer>(
+                "tab_raw_server_player",
+                &self.tab_raw_server_player,
+            )
+            .with_updates_by_pk(|row| &row.account_id);
+        diff.tab_registeration_player = cache.apply_diff_to_table::<RegisterationPlayer>(
+            "tab_registeration_player",
+            &self.tab_registeration_player,
+        );
+        diff.tab_user = cache
+            .apply_diff_to_table::<UserV1>("tab_user", &self.tab_user)
             .with_updates_by_pk(|row| &row.id);
         diff.competition_available_server_pool = cache.apply_diff_to_table::<RawServerV1>(
             "competition_available_server_pool",
             &self.competition_available_server_pool,
         );
-        diff.connection_data = cache
-            .apply_diff_to_table::<ConnectionData>("connection_data", &self.connection_data)
-            .with_updates_by_pk(|row| &row.connection_id);
-        diff.match_round =
-            cache.apply_diff_to_table::<MatchRoundPlayer>("match_round", &self.match_round);
-        diff.match_round_ext = cache
-            .apply_diff_to_table::<MatchRoundPlayerExt>("match_round_ext", &self.match_round_ext);
-        diff.match_round_users = cache
-            .apply_diff_to_table::<UserV1>("match_round_users", &self.match_round_users)
-            .with_updates_by_pk(|row| &row.id);
         diff.match_state =
             cache.apply_diff_to_table::<MatchState>("match_state", &self.match_state);
-        diff.my_comeptition_schedules = cache
-            .apply_diff_to_table::<ScheduleV1>(
-                "my_comeptition_schedules",
-                &self.my_comeptition_schedules,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.my_match_template = cache
-            .apply_diff_to_table::<MatchV1>("my_match_template", &self.my_match_template)
-            .with_updates_by_pk(|row| &row.id);
-        diff.my_matches = cache
-            .apply_diff_to_table::<MatchV1>("my_matches", &self.my_matches)
-            .with_updates_by_pk(|row| &row.id);
         diff.my_node_positions = cache.apply_diff_to_table::<CompetitionNodePosition>(
             "my_node_positions",
             &self.my_node_positions,
         );
         diff.my_projects =
             cache.apply_diff_to_table::<MyProjectV1>("my_projects", &self.my_projects);
-        diff.my_raw_server_pool = cache
-            .apply_diff_to_table::<RawServerV1>("my_raw_server_pool", &self.my_raw_server_pool)
-            .with_updates_by_pk(|row| &row.id);
         diff.my_user = cache.apply_diff_to_table::<UserV1>("my_user", &self.my_user);
         diff.project_competition_descendants = cache.apply_diff_to_table::<CompetitionV1>(
             "project_competition_descendants",
             &self.project_competition_descendants,
         );
-        diff.raw_server_current_players = cache
-            .apply_diff_to_table::<RawServerPlayer>(
-                "raw_server_current_players",
-                &self.raw_server_current_players,
-            )
-            .with_updates_by_pk(|row| &row.account_id);
         diff.raw_server_permitted_players = cache.apply_diff_to_table::<PermittedPlayer>(
             "raw_server_permitted_players",
             &self.raw_server_permitted_players,
@@ -1604,59 +1566,10 @@ impl __sdk::DbUpdate for DbUpdate {
             "raw_server_player_destination",
             &self.raw_server_player_destination,
         );
-        diff.temp_match_leaderboard = cache.apply_diff_to_table::<MatchRoundPlayer>(
-            "temp_match_leaderboard",
-            &self.temp_match_leaderboard,
-        );
-        diff.temp_registration_player = cache.apply_diff_to_table::<RegisterationPlayer>(
-            "temp_registration_player",
-            &self.temp_registration_player,
-        );
         diff.unstable_competition_connection = cache.apply_diff_to_table::<CompetitionConnection>(
             "unstable_competition_connection",
             &self.unstable_competition_connection,
         );
-        diff.unstable_competition_members = cache
-            .apply_diff_to_table::<CompetitionMember>(
-                "unstable_competition_members",
-                &self.unstable_competition_members,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.unstable_competition_role = cache
-            .apply_diff_to_table::<CompetitionRole>(
-                "unstable_competition_role",
-                &self.unstable_competition_role,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.unstable_competition_role_member = cache.apply_diff_to_table::<CompetitionRoleMember>(
-            "unstable_competition_role_member",
-            &self.unstable_competition_role_member,
-        );
-        diff.unstable_match_round = cache
-            .apply_diff_to_table::<MatchRoundPlayer>(
-                "unstable_match_round",
-                &self.unstable_match_round,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.unstable_match_round_ext = cache
-            .apply_diff_to_table::<MatchRoundPlayerExt>(
-                "unstable_match_round_ext",
-                &self.unstable_match_round_ext,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.unstable_registration = cache
-            .apply_diff_to_table::<Registration>(
-                "unstable_registration",
-                &self.unstable_registration,
-            )
-            .with_updates_by_pk(|row| &row.id);
-        diff.unstable_registration_player = cache.apply_diff_to_table::<RegisterationPlayer>(
-            "unstable_registration_player",
-            &self.unstable_registration_player,
-        );
-        diff.users = cache
-            .apply_diff_to_table::<UserV1>("users", &self.users)
-            .with_updates_by_pk(|row| &row.id);
 
         diff
     }
@@ -1664,14 +1577,8 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_rows in raw.tables {
             match &table_rows.table[..] {
-                "competition" => db_update
-                    .competition
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "competition_available_server_pool" => db_update
                     .competition_available_server_pool
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "connection_data" => db_update
-                    .connection_data
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
@@ -1679,26 +1586,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_state" => db_update
                     .event_raw_server_state
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "match_round" => db_update
-                    .match_round
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "match_round_ext" => db_update
-                    .match_round_ext
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "match_round_users" => db_update
-                    .match_round_users
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "my_comeptition_schedules" => db_update
-                    .my_comeptition_schedules
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "my_match_template" => db_update
-                    .my_match_template
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "my_matches" => db_update
-                    .my_matches
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "my_node_positions" => db_update
                     .my_node_positions
@@ -1706,17 +1595,11 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_projects" => db_update
                     .my_projects
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "my_raw_server_pool" => db_update
-                    .my_raw_server_pool
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "project_competition_descendants" => db_update
                     .project_competition_descendants
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "raw_server_current_players" => db_update
-                    .raw_server_current_players
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "raw_server_permitted_players" => db_update
                     .raw_server_permitted_players
@@ -1724,38 +1607,26 @@ impl __sdk::DbUpdate for DbUpdate {
                 "raw_server_player_destination" => db_update
                     .raw_server_player_destination
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "temp_match_leaderboard" => db_update
-                    .temp_match_leaderboard
+                "tab_match_round_player" => db_update
+                    .tab_match_round_player
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "temp_registration_player" => db_update
-                    .temp_registration_player
+                "tab_match_round_player_ext" => db_update
+                    .tab_match_round_player_ext
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_raw_server" => db_update
+                    .tab_raw_server
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_raw_server_player" => db_update
+                    .tab_raw_server_player
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_registeration_player" => db_update
+                    .tab_registeration_player
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_user" => db_update
+                    .tab_user
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "unstable_competition_connection" => db_update
                     .unstable_competition_connection
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_competition_members" => db_update
-                    .unstable_competition_members
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_competition_role" => db_update
-                    .unstable_competition_role
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_competition_role_member" => db_update
-                    .unstable_competition_role_member
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_match_round" => db_update
-                    .unstable_match_round
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_match_round_ext" => db_update
-                    .unstable_match_round_ext
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_registration" => db_update
-                    .unstable_registration
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "unstable_registration_player" => db_update
-                    .unstable_registration_player
-                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "users" => db_update
-                    .users
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 unknown => {
                     return Err(
@@ -1770,14 +1641,8 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_rows in raw.tables {
             match &table_rows.table[..] {
-                "competition" => db_update
-                    .competition
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "competition_available_server_pool" => db_update
                     .competition_available_server_pool
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "connection_data" => db_update
-                    .connection_data
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
@@ -1785,26 +1650,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_state" => db_update
                     .event_raw_server_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "match_round" => db_update
-                    .match_round
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "match_round_ext" => db_update
-                    .match_round_ext
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "match_round_users" => db_update
-                    .match_round_users
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "my_comeptition_schedules" => db_update
-                    .my_comeptition_schedules
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "my_match_template" => db_update
-                    .my_match_template
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "my_matches" => db_update
-                    .my_matches
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "my_node_positions" => db_update
                     .my_node_positions
@@ -1812,17 +1659,11 @@ impl __sdk::DbUpdate for DbUpdate {
                 "my_projects" => db_update
                     .my_projects
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "my_raw_server_pool" => db_update
-                    .my_raw_server_pool
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "my_user" => db_update
                     .my_user
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "project_competition_descendants" => db_update
                     .project_competition_descendants
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "raw_server_current_players" => db_update
-                    .raw_server_current_players
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "raw_server_permitted_players" => db_update
                     .raw_server_permitted_players
@@ -1830,38 +1671,26 @@ impl __sdk::DbUpdate for DbUpdate {
                 "raw_server_player_destination" => db_update
                     .raw_server_player_destination
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "temp_match_leaderboard" => db_update
-                    .temp_match_leaderboard
+                "tab_match_round_player" => db_update
+                    .tab_match_round_player
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "temp_registration_player" => db_update
-                    .temp_registration_player
+                "tab_match_round_player_ext" => db_update
+                    .tab_match_round_player_ext
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_raw_server" => db_update
+                    .tab_raw_server
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_raw_server_player" => db_update
+                    .tab_raw_server_player
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_registeration_player" => db_update
+                    .tab_registeration_player
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_user" => db_update
+                    .tab_user
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "unstable_competition_connection" => db_update
                     .unstable_competition_connection
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_competition_members" => db_update
-                    .unstable_competition_members
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_competition_role" => db_update
-                    .unstable_competition_role
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_competition_role_member" => db_update
-                    .unstable_competition_role_member
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_match_round" => db_update
-                    .unstable_match_round
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_match_round_ext" => db_update
-                    .unstable_match_round_ext
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_registration" => db_update
-                    .unstable_registration
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "unstable_registration_player" => db_update
-                    .unstable_registration_player
-                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "users" => db_update
-                    .users
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 unknown => {
                     return Err(
@@ -1878,37 +1707,23 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
-    competition: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
-    connection_data: __sdk::TableAppliedDiff<'r, ConnectionData>,
     event_raw_server_method: __sdk::TableAppliedDiff<'r, EventRawServerMethod>,
     event_raw_server_state: __sdk::TableAppliedDiff<'r, EventRawServerState>,
-    match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
-    match_round_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
-    match_round_users: __sdk::TableAppliedDiff<'r, UserV1>,
     match_state: __sdk::TableAppliedDiff<'r, MatchState>,
-    my_comeptition_schedules: __sdk::TableAppliedDiff<'r, ScheduleV1>,
-    my_match_template: __sdk::TableAppliedDiff<'r, MatchV1>,
-    my_matches: __sdk::TableAppliedDiff<'r, MatchV1>,
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
     my_projects: __sdk::TableAppliedDiff<'r, MyProjectV1>,
-    my_raw_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
     my_user: __sdk::TableAppliedDiff<'r, UserV1>,
     project_competition_descendants: __sdk::TableAppliedDiff<'r, CompetitionV1>,
-    raw_server_current_players: __sdk::TableAppliedDiff<'r, RawServerPlayer>,
     raw_server_permitted_players: __sdk::TableAppliedDiff<'r, PermittedPlayer>,
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
-    temp_match_leaderboard: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
-    temp_registration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
+    tab_match_round_player: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
+    tab_match_round_player_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
+    tab_raw_server: __sdk::TableAppliedDiff<'r, RawServerV1>,
+    tab_raw_server_player: __sdk::TableAppliedDiff<'r, RawServerPlayer>,
+    tab_registeration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
+    tab_user: __sdk::TableAppliedDiff<'r, UserV1>,
     unstable_competition_connection: __sdk::TableAppliedDiff<'r, CompetitionConnection>,
-    unstable_competition_members: __sdk::TableAppliedDiff<'r, CompetitionMember>,
-    unstable_competition_role: __sdk::TableAppliedDiff<'r, CompetitionRole>,
-    unstable_competition_role_member: __sdk::TableAppliedDiff<'r, CompetitionRoleMember>,
-    unstable_match_round: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
-    unstable_match_round_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
-    unstable_registration: __sdk::TableAppliedDiff<'r, Registration>,
-    unstable_registration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
-    users: __sdk::TableAppliedDiff<'r, UserV1>,
     __unused: std::marker::PhantomData<&'r ()>,
 }
 
@@ -1922,19 +1737,9 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
-        callbacks.invoke_table_row_callbacks::<CompetitionV1>(
-            "competition",
-            &self.competition,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<RawServerV1>(
             "competition_available_server_pool",
             &self.competition_available_server_pool,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<ConnectionData>(
-            "connection_data",
-            &self.connection_data,
             event,
         );
         callbacks.invoke_table_row_callbacks::<EventRawServerMethod>(
@@ -1947,33 +1752,7 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.event_raw_server_state,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
-            "match_round",
-            &self.match_round,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<MatchRoundPlayerExt>(
-            "match_round_ext",
-            &self.match_round_ext,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<UserV1>(
-            "match_round_users",
-            &self.match_round_users,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<MatchState>("match_state", &self.match_state, event);
-        callbacks.invoke_table_row_callbacks::<ScheduleV1>(
-            "my_comeptition_schedules",
-            &self.my_comeptition_schedules,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<MatchV1>(
-            "my_match_template",
-            &self.my_match_template,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<MatchV1>("my_matches", &self.my_matches, event);
         callbacks.invoke_table_row_callbacks::<CompetitionNodePosition>(
             "my_node_positions",
             &self.my_node_positions,
@@ -1984,20 +1763,10 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.my_projects,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<RawServerV1>(
-            "my_raw_server_pool",
-            &self.my_raw_server_pool,
-            event,
-        );
         callbacks.invoke_table_row_callbacks::<UserV1>("my_user", &self.my_user, event);
         callbacks.invoke_table_row_callbacks::<CompetitionV1>(
             "project_competition_descendants",
             &self.project_competition_descendants,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<RawServerPlayer>(
-            "raw_server_current_players",
-            &self.raw_server_current_players,
             event,
         );
         callbacks.invoke_table_row_callbacks::<PermittedPlayer>(
@@ -2011,56 +1780,36 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             event,
         );
         callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
-            "temp_match_leaderboard",
-            &self.temp_match_leaderboard,
+            "tab_match_round_player",
+            &self.tab_match_round_player,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<MatchRoundPlayerExt>(
+            "tab_match_round_player_ext",
+            &self.tab_match_round_player_ext,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<RawServerV1>(
+            "tab_raw_server",
+            &self.tab_raw_server,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<RawServerPlayer>(
+            "tab_raw_server_player",
+            &self.tab_raw_server_player,
             event,
         );
         callbacks.invoke_table_row_callbacks::<RegisterationPlayer>(
-            "temp_registration_player",
-            &self.temp_registration_player,
+            "tab_registeration_player",
+            &self.tab_registeration_player,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<UserV1>("tab_user", &self.tab_user, event);
         callbacks.invoke_table_row_callbacks::<CompetitionConnection>(
             "unstable_competition_connection",
             &self.unstable_competition_connection,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<CompetitionMember>(
-            "unstable_competition_members",
-            &self.unstable_competition_members,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<CompetitionRole>(
-            "unstable_competition_role",
-            &self.unstable_competition_role,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<CompetitionRoleMember>(
-            "unstable_competition_role_member",
-            &self.unstable_competition_role_member,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
-            "unstable_match_round",
-            &self.unstable_match_round,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<MatchRoundPlayerExt>(
-            "unstable_match_round_ext",
-            &self.unstable_match_round_ext,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<Registration>(
-            "unstable_registration",
-            &self.unstable_registration,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<RegisterationPlayer>(
-            "unstable_registration_player",
-            &self.unstable_registration_player,
-            event,
-        );
-        callbacks.invoke_table_row_callbacks::<UserV1>("users", &self.users, event);
     }
 }
 
@@ -2706,69 +2455,41 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type QueryBuilder = __sdk::QueryBuilder;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
-        competition_table::register_table(client_cache);
         competition_available_server_pool_table::register_table(client_cache);
-        connection_data_table::register_table(client_cache);
         event_raw_server_method_table::register_table(client_cache);
         event_raw_server_state_table::register_table(client_cache);
-        match_round_table::register_table(client_cache);
-        match_round_ext_table::register_table(client_cache);
-        match_round_users_table::register_table(client_cache);
         match_state_table::register_table(client_cache);
-        my_comeptition_schedules_table::register_table(client_cache);
-        my_match_template_table::register_table(client_cache);
-        my_matches_table::register_table(client_cache);
         my_node_positions_table::register_table(client_cache);
         my_projects_table::register_table(client_cache);
-        my_raw_server_pool_table::register_table(client_cache);
         my_user_table::register_table(client_cache);
         project_competition_descendants_table::register_table(client_cache);
-        raw_server_current_players_table::register_table(client_cache);
         raw_server_permitted_players_table::register_table(client_cache);
         raw_server_player_destination_table::register_table(client_cache);
-        temp_match_leaderboard_table::register_table(client_cache);
-        temp_registration_player_table::register_table(client_cache);
+        tab_match_round_player_table::register_table(client_cache);
+        tab_match_round_player_ext_table::register_table(client_cache);
+        tab_raw_server_table::register_table(client_cache);
+        tab_raw_server_player_table::register_table(client_cache);
+        tab_registeration_player_table::register_table(client_cache);
+        tab_user_table::register_table(client_cache);
         unstable_competition_connection_table::register_table(client_cache);
-        unstable_competition_members_table::register_table(client_cache);
-        unstable_competition_role_table::register_table(client_cache);
-        unstable_competition_role_member_table::register_table(client_cache);
-        unstable_match_round_table::register_table(client_cache);
-        unstable_match_round_ext_table::register_table(client_cache);
-        unstable_registration_table::register_table(client_cache);
-        unstable_registration_player_table::register_table(client_cache);
-        users_table::register_table(client_cache);
     }
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
-        "competition",
         "competition_available_server_pool",
-        "connection_data",
         "event_raw_server_method",
         "event_raw_server_state",
-        "match_round",
-        "match_round_ext",
-        "match_round_users",
         "match_state",
-        "my_comeptition_schedules",
-        "my_match_template",
-        "my_matches",
         "my_node_positions",
         "my_projects",
-        "my_raw_server_pool",
         "my_user",
         "project_competition_descendants",
-        "raw_server_current_players",
         "raw_server_permitted_players",
         "raw_server_player_destination",
-        "temp_match_leaderboard",
-        "temp_registration_player",
+        "tab_match_round_player",
+        "tab_match_round_player_ext",
+        "tab_raw_server",
+        "tab_raw_server_player",
+        "tab_registeration_player",
+        "tab_user",
         "unstable_competition_connection",
-        "unstable_competition_members",
-        "unstable_competition_role",
-        "unstable_competition_role_member",
-        "unstable_match_round",
-        "unstable_match_round_ext",
-        "unstable_registration",
-        "unstable_registration_player",
-        "users",
     ];
 }
