@@ -79,7 +79,7 @@ impl ConnectionData {
 
         let tm_match = tm_match.finalize(ctx);
 
-        let players = match &self.options {
+        match &self.options {
             ConnectionDataOption::All => tm_match,
             ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),
             ConnectionDataOption::LastN(l) => {
@@ -99,11 +99,11 @@ impl ConnectionData {
                 .skip(opt.offset as usize)
                 .take(opt.take as usize)
                 .collect(),
-        };
-        players
-            .into_iter()
-            //.map(|p| PermittedPlayer::new(p.account_id, false, false))
-            .collect()
+        }
+
+        /* .into_iter()
+        //.map(|p| PermittedPlayer::new(p.account_id, false, false))
+        .collect() */
     }
 
     /* pub(super) fn apply_registration(

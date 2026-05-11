@@ -449,6 +449,14 @@ fn node_leaderboard_output(
 }
 
 #[procedure]
+fn node_leaderboard_output_raw(
+    ctx: &mut ProcedureContext,
+    node: NodeHandle,
+) -> Result<Vec<LbEntry>, String> {
+    ctx.try_with_tx(|ctx| Ok(ctx.node_resolve_output_data(node)))
+}
+
+#[procedure]
 fn node_leaderboard_input(
     ctx: &mut ProcedureContext,
     node: NodeHandle,
