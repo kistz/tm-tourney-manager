@@ -7,6 +7,7 @@ use spacetimedb::{
 use tm_server_types::config::{ModeSettings, TmMode};
 
 use crate::{
+    authorization::Authorization,
     competition::{
         CompetitionPermissionsV1, CompetitionRead, CompetitionWrite,
         connection::{
@@ -174,6 +175,16 @@ impl NodeType for NodeHandle {
         }
     }
 } */
+
+#[reducer]
+fn node_delete(ctx: &ReducerContext, node: NodeHandle) -> Result<(), String> {
+    let parent = ctx.node_get_parent(node)?;
+    ctx.auth_builder(parent)
+        .permission(CompetitionPermissionsV1::OWNER)
+        .authorize()?;
+
+    ctx.node_delete(node)
+}
 
 pub(crate) trait NodeRead {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer>;
@@ -377,6 +388,18 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
     }
 
     fn node_delete(&self, node: NodeHandle) -> Result<(), String> {
+        //TODO also delete the node itself with all component tables and checks for allowed
+        /* match node {
+            NodeHandle::MatchV1(n) => todo!(),
+            NodeHandle::CompetitionV1(n) => todo!(),
+            NodeHandle::ScheduleV1(_) => todo!(),
+            NodeHandle::ServerV1(_) => todo!(),
+            NodeHandle::InputV1(_) => todo!(),
+            NodeHandle::OutputV1(_) => todo!(),
+            NodeHandle::RegistrationV1(_) => todo!(),
+            NodeHandle::LeaderboardV1(_) => todo!(),
+        } */
+
         // Delete postition table entry.
         self.node_position_delete(node);
 
