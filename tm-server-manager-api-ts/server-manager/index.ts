@@ -114,8 +114,11 @@ import UnregisterPlayerReducer from "./unregister_player_reducer";
 import * as LoginAsServerProcedure from "./login_as_server_procedure";
 import * as MatchRoundReplayProcedure from "./match_round_replay_procedure";
 import * as NodeLeaderboardInputProcedure from "./node_leaderboard_input_procedure";
+import * as NodeLeaderboardInputFinalizeProcedure from "./node_leaderboard_input_finalize_procedure";
 import * as NodeLeaderboardOutputProcedure from "./node_leaderboard_output_procedure";
+import * as NodeLeaderboardOutputRawProcedure from "./node_leaderboard_output_raw_procedure";
 import * as PostRoundReplayProcedure from "./post_round_replay_procedure";
+import * as TestNodePermittedPlayersInputProcedure from "./test_node_permitted_players_input_procedure";
 
 // Import all table schema definitions
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
@@ -128,11 +131,13 @@ import MyUserRow from "./my_user_table";
 import ProjectCompetitionDescendantsRow from "./project_competition_descendants_table";
 import RawServerPermittedPlayersRow from "./raw_server_permitted_players_table";
 import RawServerPlayerDestinationRow from "./raw_server_player_destination_table";
+import TabMatchRow from "./tab_match_table";
 import TabMatchRoundPlayerRow from "./tab_match_round_player_table";
 import TabMatchRoundPlayerExtRow from "./tab_match_round_player_ext_table";
 import TabRawServerRow from "./tab_raw_server_table";
 import TabRawServerPlayerRow from "./tab_raw_server_player_table";
 import TabRegisterationPlayerRow from "./tab_registeration_player_table";
+import TabRegistrationRow from "./tab_registration_table";
 import TabUserRow from "./tab_user_table";
 import UnstableCompetitionConnectionRow from "./unstable_competition_connection_table";
 
@@ -167,6 +172,26 @@ const tablesSchema = __schema({
     ],
     event: true,
   }, EventRawServerStateRow),
+  tab_match: __table({
+    name: 'tab_match',
+    indexes: [
+      { accessor: 'config', name: 'tab_match_config_idx_hash', algorithm: 'btree', columns: [
+        'config',
+      ] },
+      { accessor: 'id', name: 'tab_match_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'parent_id', name: 'tab_match_parent_id_idx_hash', algorithm: 'btree', columns: [
+        'parentId',
+      ] },
+      { accessor: 'pre_config', name: 'tab_match_pre_config_idx_hash', algorithm: 'btree', columns: [
+        'preConfig',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_match_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TabMatchRow),
   tab_match_round_player: __table({
     name: 'tab_match_round_player',
     indexes: [
@@ -270,6 +295,20 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, TabRegisterationPlayerRow),
+  tab_registration: __table({
+    name: 'tab_registration',
+    indexes: [
+      { accessor: 'id', name: 'tab_registration_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'parent_id', name: 'tab_registration_parent_id_idx_hash', algorithm: 'btree', columns: [
+        'parentId',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_registration_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TabRegistrationRow),
   tab_user: __table({
     name: 'tab_user',
     indexes: [
@@ -434,8 +473,11 @@ const proceduresSchema = __procedures(
   __procedureSchema("login_as_server", LoginAsServerProcedure.params, LoginAsServerProcedure.returnType),
   __procedureSchema("match_round_replay", MatchRoundReplayProcedure.params, MatchRoundReplayProcedure.returnType),
   __procedureSchema("node_leaderboard_input", NodeLeaderboardInputProcedure.params, NodeLeaderboardInputProcedure.returnType),
+  __procedureSchema("node_leaderboard_input_finalize", NodeLeaderboardInputFinalizeProcedure.params, NodeLeaderboardInputFinalizeProcedure.returnType),
   __procedureSchema("node_leaderboard_output", NodeLeaderboardOutputProcedure.params, NodeLeaderboardOutputProcedure.returnType),
+  __procedureSchema("node_leaderboard_output_raw", NodeLeaderboardOutputRawProcedure.params, NodeLeaderboardOutputRawProcedure.returnType),
   __procedureSchema("post_round_replay", PostRoundReplayProcedure.params, PostRoundReplayProcedure.returnType),
+  __procedureSchema("test_node_permitted_players_input", TestNodePermittedPlayersInputProcedure.params, TestNodePermittedPlayersInputProcedure.returnType),
 );
 
 /** The remote SpacetimeDB module schema, both runtime and type information. */

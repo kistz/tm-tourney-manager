@@ -58,7 +58,9 @@ pub mod template;
 /// If the ephemeral state matches the desired state. Advances to [MatchStatus::Live].
 /// - *End.* The match has concluded. Loads the post_match_config if it is present. Releases
 /// the captured server. Advances to [MatchStatus::Ended].
-#[table(accessor= tab_match)]
+///
+/// TODO make private again
+#[table(accessor= tab_match,public)]
 pub struct MatchV1 {
     name: String,
 
