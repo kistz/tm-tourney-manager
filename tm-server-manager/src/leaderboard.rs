@@ -79,23 +79,23 @@ enum LbParams {
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 pub struct LbEntry {
     // Required
-    user_id: u32,
+    pub user_id: u32,
     // Required
-    position: u16,
+    pub position: u16,
     // Default: 0
-    round: u16,
+    pub round: u16,
     // Default: 0
-    map_id: u32,
+    pub map_id: u32,
     // Default: i32::MIN
-    score: i32,
+    pub score: i32,
     // Default: i32::MIN
-    time: i32,
+    pub time: i32,
     // Required
     node_id: u32,
     // Required
     node_variant: u8,
     // Required
-    mode: TmMode,
+    pub mode: TmMode,
 
     //TODO maybe
     // mode_fallback: enum {ScoreAsc,ScoreDsc,TimeAsc,...}
@@ -147,6 +147,14 @@ impl LbEntry {
 
     pub(crate) fn get_user(&self) -> u32 {
         self.user_id
+    }
+
+    pub(crate) fn get_mode(&self) -> TmMode {
+        self.mode
+    }
+
+    pub(crate) fn get_node(&self) -> NodeHandle {
+        NodeHandle::combine(self.node_variant, self.node_id)
     }
 }
 
@@ -324,8 +332,12 @@ impl<Db: DbContext> LeadearboardRead for Db {
         for (index, setting) in settings.into_iter().enumerate() {
             leaderboard = match setting {
                 //LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
-                LbSettings::Merge(lb_merge_settings) => lb_merge_settings.evaluate(leaderboard),
-                LbSettings::Filter(lb_filter_settings) => lb_filter_settings.evaluate(leaderboard),
+                LbSettings::Merge(lb_merge_settings) => {
+                    lb_merge_settings.evaluate(leaderboard_id, leaderboard)
+                }
+                LbSettings::Filter(lb_filter_settings) => {
+                    lb_filter_settings.evaluate(leaderboard_id, leaderboard)
+                }
             }
         }
 

@@ -1,10 +1,13 @@
-use spacetimedb::{Query, ReducerContext, SpacetimeType, ViewContext, reducer, table, view};
+use spacetimedb::{
+    DbContext, Query, ReducerContext, SpacetimeType, ViewContext, reducer, table, view,
+};
 
 use crate::{
     authorization::Authorization,
     competition::{
         CompetitionPermissionsV1,
         connection::{ConnectionStatus, tab_connection},
+        node::NodeLeaderboard,
     },
     leaderboard::LbEntry,
     registration::player::RegisterationPlayer,
@@ -65,7 +68,17 @@ impl ConnectionData {
             .collect()
     } */
 
-    pub(super) fn apply_filter(&self, tm_match: Vec<LbEntry>) -> Vec<LbEntry> {
+    pub(super) fn apply_filter(
+        &self,
+        tm_match: Vec<LbEntry>,
+        ctx: &impl DbContext,
+    ) -> Vec<LbEntry> {
+        if matches!(self.options, ConnectionDataOption::All) {
+            return tm_match;
+        }
+
+        let tm_match = tm_match.finalize(ctx);
+
         let players = match &self.options {
             ConnectionDataOption::All => tm_match,
             ConnectionDataOption::FirstN(f) => tm_match.into_iter().take(*f as usize).collect(),

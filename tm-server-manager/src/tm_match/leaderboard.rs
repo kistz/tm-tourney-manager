@@ -453,3 +453,36 @@ fn match_round_player_set_score_manual(
 
     Ok(())
 }
+
+#[reducer]
+fn match_round_player_set_position_manual(
+    ctx: &ReducerContext,
+    match_id: u32,
+    user_id: u32,
+    round: u16,
+    position: u16,
+) -> Result<(), String> {
+    let Some(tm_match) = ctx.db.tab_match().id().find(match_id) else {
+        return Err("Match not found!".into());
+    };
+
+    ctx.auth_builder(tm_match.parent_id)
+        .permission(CompetitionPermissionsV1::OWNER)
+        .authorize()?;
+
+    let Some(mut entry) = ctx
+        .db
+        .tab_match_round_player()
+        .match_round_player()
+        .filter((match_id, round, user_id))
+        .next()
+    else {
+        return Err("No entry was found.".into());
+    };
+
+    entry.position = position;
+
+    ctx.db.tab_match_round_player().id().update(entry);
+
+    Ok(())
+}

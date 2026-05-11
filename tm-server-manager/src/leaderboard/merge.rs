@@ -5,6 +5,7 @@ use spacetimedb::SpacetimeType;
 use tm_server_types::config::TmMode;
 
 use crate::{
+    competition::node::NodeHandle,
     leaderboard::{LbEntry, LbParams},
     tm_match::leaderboard::MatchRoundPlayer,
 };
@@ -31,7 +32,7 @@ enum LbMergeAction {
 }
 
 impl LbMergeSettings {
-    pub(super) fn evaluate(self, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
+    pub(super) fn evaluate(self, lb_id: u32, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
         /* let mut output = Vec::new();
 
         // Player<Matches<Maps<Rounds<MatchRoundPlayer>>>>
@@ -55,7 +56,12 @@ impl LbMergeSettings {
                         for (player, rounds) in player_rounds {
                             let num_rounds = rounds.len();
                             //TODO set right position for this whole thing.
-                            let thing = LbEntry::new(player, TmMode::Unknown, 0);
+                            let thing = LbEntry::new(
+                                player,
+                                TmMode::Unknown,
+                                0,
+                                NodeHandle::LeaderboardV1(lb_id),
+                            );
                             match self.param {
                                 LbParams::Score => {
                                     let mut accumulated =

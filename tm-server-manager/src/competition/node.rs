@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, LocalReadOnly, ReducerContext, SpacetimeType, Uuid,
-    reducer, view,
+    AnonymousViewContext, DbContext, Local, LocalReadOnly, ProcedureContext, ReducerContext,
+    SpacetimeType, Uuid, procedure, reducer, view,
 };
+use tm_server_types::config::{ModeSettings, TmMode};
 
 use crate::{
     competition::{
@@ -22,7 +23,7 @@ use crate::{
         LbEntry, LeadearboardRead, LeaderboardWrite, tab_leaderboard, tab_leaderboard__view,
     },
     output::{OutputWrite, tab_output, tab_output__view},
-    raw_server::player::PermittedPlayer,
+    raw_server::{config::RawServerContigRead, player::PermittedPlayer},
     registration::{
         RegistrationWrite, player::RegistrationRead, tab_registration, tab_registration__view,
     },
@@ -348,14 +349,11 @@ fn node_resolve_input_data_inner(
         .filter(|c| c.is_data());
 
     for depending_connection in depending_connections {
-        let mut lb_entries =
+        let lb_entries =
             node_resolve_output_data_inner(ctx, depending_connection.origin(), origin_offset);
-        for round in &mut lb_entries {
-            //round.origin_idx = (origin_idx + *origin_offset as usize) as u16;
-            // TODO
-        }
+
         let filtered = ctx
-            .connection_resolve_leaderboard(depending_connection)
+            .connection_resolve_leaderboard(depending_connection, lb_entries)
             .into_iter()
             .map(|p| (p.get_user(), p));
         player_entries.extend(filtered);
@@ -432,7 +430,7 @@ fn node_name_edit(ctx: &ReducerContext, node: NodeHandle, name: String) -> Resul
     ctx.node_name_edit(node, name)
 }
 
-#[view(accessor=unstable_dw_test_permit_players,public)]
+/* #[view(accessor=unstable_dw_test_permit_players,public)]
 fn unstable_dw_test_permit_players(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
     ctx.node_permitted_players_input(NodeHandle::MatchV1(12293))
 }
@@ -440,6 +438,160 @@ fn unstable_dw_test_permit_players(ctx: &AnonymousViewContext) -> Vec<PermittedP
 #[view(accessor=unstable_dw_test_permit_players_2,public)]
 fn unstable_dw_test_permit_players_2(ctx: &AnonymousViewContext) -> Vec<PermittedPlayer> {
     ctx.node_permitted_players_input(NodeHandle::MatchV1(12294))
+} */
+
+#[procedure]
+fn node_leaderboard_output(
+    ctx: &mut ProcedureContext,
+    node: NodeHandle,
+) -> Result<Vec<LbEntry>, String> {
+    ctx.try_with_tx(|ctx| Ok(ctx.node_resolve_output_data(node).finalize(ctx)))
+}
+
+#[procedure]
+fn node_leaderboard_input(
+    ctx: &mut ProcedureContext,
+    node: NodeHandle,
+) -> Result<Vec<LbEntry>, String> {
+    ctx.try_with_tx(|ctx| Ok(ctx.node_resolve_input_data(node)))
+}
+
+pub trait NodeLeaderboard {
+    fn finalize(&self, ctx: &impl DbContext) -> Vec<LbEntry>;
+}
+
+impl NodeLeaderboard for Vec<LbEntry> {
+    fn finalize(&self, ctx: &impl DbContext) -> Vec<LbEntry> {
+        /*  let Some(state) = self
+            .db_read_only()
+            .tab_match_state()
+            .match_id()
+            .find(match_id)
+        else {
+            return Vec::new();
+        };
+        if round == 0 {
+            round = state.get_round();
+        };
+        let mut entries: Vec<MatchRoundPlayer> = self
+            .db_read_only()
+            .tab_match_round_player()
+            .match_round_range()
+            .filter((match_id, 1..=round))
+            .collect(); */
+
+        let mut entries = self.clone();
+
+        let mut map = HashMap::<u32, LbEntry>::new();
+
+        let Some(entry) = entries.get(0) else {
+            return Vec::new();
+        };
+        let entry = *entry;
+
+        let returned = match entry.get_mode() {
+            TmMode::Rounds => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            e.score += entry.score;
+                            if entry.round > e.round {
+                                e.round = entry.round;
+                            }
+                        })
+                        .or_insert(entry);
+                }
+
+                let mut standings = map.into_values().collect::<Vec<_>>();
+
+                standings.sort_by_key(|v| -v.score);
+
+                for (index, stand) in standings.iter_mut().enumerate() {
+                    stand.position = (index + 1) as u16;
+                }
+
+                standings
+            }
+            TmMode::ReverseCup => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            if entry.score <= -1000 {
+                                e.round = entry.round;
+                            }
+                            e.score += entry.score;
+
+                            if entry.round > e.round {
+                                e.round = entry.round;
+                            }
+                        })
+                        .or_insert(entry);
+                }
+
+                let mut standings = map.into_values().collect::<Vec<_>>();
+
+                let tm_match = ctx
+                    .db_read_only()
+                    .tab_match()
+                    .id()
+                    .find(entry.get_node().id())
+                    .unwrap();
+                let cfg = ctx.raw_server_config(tm_match.get_config_id()).unwrap();
+                let starting_points = match cfg.get_mode() {
+                    ModeSettings::ReverseCup(reverse_cup) => reverse_cup.starting_points,
+                    _ => unreachable!(),
+                };
+
+                for player in &mut standings {
+                    player.score += starting_points;
+
+                    if player.score <= -1000 {
+                        player.position = 1;
+                    } else {
+                        player.round += 1;
+                        player.position = 0;
+                    }
+                }
+
+                standings.sort_by_key(|v| -(v.round as i32));
+
+                for (index, stand) in standings.iter_mut().enumerate() {
+                    stand.position = (index + 1) as u16;
+                }
+
+                standings
+            }
+            TmMode::Knockout => {
+                for entry in entries {
+                    map.entry(entry.user_id)
+                        .and_modify(|e| {
+                            if entry.score == -1 {
+                                *e = entry;
+                            }
+                        })
+                        .or_insert(entry);
+                }
+                let mut standings = map.into_values().collect::<Vec<_>>();
+
+                standings.sort_by_key(|v| v.round);
+                standings
+            }
+            TmMode::TimeAttack => {
+                entries.sort_by_key(|v| if v.time <= 0 { i32::MAX } else { v.time });
+
+                entries
+            }
+            TmMode::Unknown => {
+                // should come out of lb node so its always flattened in our case rn TODO fix this up.
+                entries.sort_by_key(|k| k.position);
+                entries
+            }
+        };
+
+        // log::info!("{returned:?}");
+
+        returned
+    }
 }
 
 /*

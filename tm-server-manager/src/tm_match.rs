@@ -578,7 +578,7 @@ fn match_open(ctx: &ReducerContext, match_id: u32, open: bool) -> Result<(), Str
     Ok(())
 }
 
-#[view(accessor=my_matches,public)]
+/* #[view(accessor=my_matches,public)]
 fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1> {
     /* let Ok(user) = ctx.user_id() else {
         log::warn!(
@@ -593,7 +593,7 @@ fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1
     //TODO access control for only permitted users. e.g. walk competition tree for permission.
 
     ctx.from.tab_match()
-}
+} */
 
 pub(crate) trait MatchRead {}
 impl<Db: spacetimedb::DbContext> MatchRead for Db {}
@@ -877,10 +877,10 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db 
 
         log::info!("The match {} has successfully ended!", match_id);
 
-        log::info!(
+        /* log::info!(
             "Match leaderboard is: {:?}",
             self.match_leaderboard(match_id, 0)
-        );
+        ); */
 
         Ok(())
     }

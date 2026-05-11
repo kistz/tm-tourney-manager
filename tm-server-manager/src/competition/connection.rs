@@ -14,7 +14,7 @@ use crate::{
             action::{TabConnectionAction, tab_connection_action, try_exec_action},
             data::{ConnectionData, tab_connection_data, tab_connection_data__view},
         },
-        node::{NodeHandle, NodeRead},
+        node::{NodeHandle, NodeLeaderboard, NodeRead},
     },
     input::tab_input__view,
     leaderboard::{LbEntry, LeadearboardRead},
@@ -450,7 +450,11 @@ pub(crate) trait ConnectionRead {
 
     //fn connection_receive_leaderboard(&self, connection: TabConnection) -> Vec<PermittedPlayer>;
 
-    fn connection_resolve_leaderboard(&self, connection: TabConnection) -> Vec<LbEntry>;
+    fn connection_resolve_leaderboard(
+        &self,
+        connection: TabConnection,
+        data: Vec<LbEntry>,
+    ) -> Vec<LbEntry>;
 }
 impl<Db: DbContext> ConnectionRead for Db {
     /* fn connection_filter_permitted_players(
@@ -586,7 +590,11 @@ impl<Db: DbContext> ConnectionRead for Db {
            }
        }
     */
-    fn connection_resolve_leaderboard(&self, connection: TabConnection) -> Vec<LbEntry> {
+    fn connection_resolve_leaderboard(
+        &self,
+        connection: TabConnection,
+        data: Vec<LbEntry>,
+    ) -> Vec<LbEntry> {
         // Prevent the method from misuse because it is impossible to form a lb from a non data connection.
         if !connection.is_data() {
             log::error!("Wanted to filter a connection but it was not a data connection.");
@@ -600,9 +608,9 @@ impl<Db: DbContext> ConnectionRead for Db {
             .find(connection.id)
             .unwrap();
 
-        let players = self.node_resolve_input_data(connection.origin());
+        //let players = self.node_resolve_input_data(connection.origin());
 
-        let players = rules.apply_filter(players);
+        let players = rules.apply_filter(data, self);
         players
     }
 

@@ -4,6 +4,7 @@ use spacetimedb::SpacetimeType;
 use tm_server_types::config::TmMode;
 
 use crate::{
+    competition::node::NodeHandle,
     leaderboard::{LbEntry, LbParams},
     tm_match::leaderboard::MatchRoundPlayer,
 };
@@ -31,11 +32,11 @@ enum LbFilterKind {
     //Maps,
     Rounds,
     // Actions // TODO we should be able to inspect the actions of the player.
-    Matches,
+    //Matches,
 }
 
 impl LbFilterSettings {
-    pub(super) fn evaluate(self, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
+    pub(super) fn evaluate(self, lb_id: u32, leaderboard: Vec<LbEntry>) -> Vec<LbEntry> {
         let mut map: HashMap<u32, Vec<LbEntry>> = HashMap::new();
 
         for row in leaderboard {
@@ -101,8 +102,13 @@ impl LbFilterSettings {
                                     for _ in 0..missing {
                                         //TODO consider mode
                                         rows.push(
-                                            LbEntry::new(*user_id, TmMode::Unknown, map_len as u16)
-                                                .set_score(0),
+                                            LbEntry::new(
+                                                *user_id,
+                                                TmMode::Unknown,
+                                                map_len as u16,
+                                                NodeHandle::LeaderboardV1(lb_id),
+                                            )
+                                            .set_score(0),
                                         );
                                     }
                                 }
@@ -113,6 +119,7 @@ impl LbFilterSettings {
                                             *user_id,
                                             TmMode::Unknown,
                                             map_len as u16,
+                                            NodeHandle::LeaderboardV1(lb_id),
                                         ));
                                     }
                                 }
