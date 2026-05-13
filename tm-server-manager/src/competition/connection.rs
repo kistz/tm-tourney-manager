@@ -18,6 +18,7 @@ use crate::{
     },
     input::tab_input__view,
     leaderboard::{LbEntry, LeadearboardRead},
+    output::tab_output__view,
     raw_server::player::PermittedPlayer,
     registration::player::RegistrationRead,
     schedule::ScheduleWrite,
@@ -416,7 +417,17 @@ pub(crate) fn internal_graph_resolution_node_finished(
                 NodeHandle::InputV1(n) => {
                     internal_graph_resolution_node_finished(ctx, NodeHandle::InputV1(n))
                 }
-                NodeHandle::OutputV1(_) => todo!(),
+                NodeHandle::OutputV1(n) => {
+                    let Some(output) = ctx.db_read_only().tab_output().id().find(n) else {
+                        log::error!("Hit a output node but it does not exist!");
+                        return Ok(());
+                    };
+
+                    internal_graph_resolution_node_finished(
+                        ctx,
+                        NodeHandle::CompetitionV1(output.get_comp_id()),
+                    )
+                }
                 NodeHandle::LeaderboardV1(n) => {
                     // We can pass this through since the leadearboard has no state by itself.
                     // This means that if matches dpeend on it they will be triggered and if its

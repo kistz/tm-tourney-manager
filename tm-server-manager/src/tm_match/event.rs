@@ -6,6 +6,7 @@ use crate::{
     maps::{TabTmMap, tab_tm_map},
     tm_match::{
         MatchWrite,
+        chat::{MatchChat, tab_match_chat},
         leaderboard::{
             MatchRoundPlayer, MatchRoundPlayerExt, tab_match_round_player,
             tab_match_round_player_ext,
@@ -168,6 +169,15 @@ pub(crate) fn handle_match_event(
                     user_id
                 );
             }
+        }
+        Event::PlayerChat(chat) => {
+            let account_id = Uuid::parse_str(&chat.account_id).unwrap();
+            let user_id = ctx.user_id_from_account(account_id);
+            ctx.db.tab_match_chat().insert(MatchChat::new(
+                state.match_id,
+                user_id,
+                chat.text.clone(),
+            ));
         }
         Event::KnockoutElimination(knocked_players) if state.live_round() => {
             let round = state.get_round();
@@ -350,7 +360,7 @@ pub(crate) fn handle_match_event(
             // Reconstruct the position because the mode does not give it back.
             match state.get_mode() {
                 TmMode::Rounds => scores.sort_by_key(|k| -k.round_points),
-                TmMode::ReverseCup => scores.sort_by_key(|k| k.round_points),
+                TmMode::ReverseCup => scores.sort_by_key(|k| -k.round_points),
                 TmMode::Knockout => {
                     scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
                 }
@@ -370,10 +380,17 @@ pub(crate) fn handle_match_event(
                 if let Some(found) = found {
                     player_round.set_points(found.round_points);
                     player_round.set_position(found.position);
+                    // Player is now in last chance
                     if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -1000
                     {
-                        player_round.set_points(found.round_points + found.match_points);
+                        player_round.set_points(found.match_points);
                     }
+                    // Player is now eliminated.
+                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -2000
+                    {
+                        player_round.set_points(found.match_points);
+                    }
+
                     //player_round.set_position(found.position);
                     ctx.db.tab_match_round_player().id().update(player_round);
                 } else {

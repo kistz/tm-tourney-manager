@@ -33,7 +33,9 @@ use crate::{
 };
 
 mod auto_recovery;
+pub mod chat;
 pub mod event;
+pub mod hook;
 pub mod leaderboard;
 pub mod replay;
 pub mod state;

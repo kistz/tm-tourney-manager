@@ -57,17 +57,18 @@ fn output_create(
 
     if parent_competition.is_template() {
         return Err(
-            "Cannot add a normal server to a template. Try do add a template server to id.".into(),
+            "Cannot add a normal output to a template. Try do add a template output to id.".into(),
         );
     }
 
-    //TODO validation.
+    if ctx.db.tab_output().parent_id().filter(parent_id).count() != 0 {
+        return Err("Only one output can be present per competition!".into());
+    }
 
     // Try to load template if provided
     if with_template != 0 {
         ctx.output_template_instantiate(with_template)?;
     } else {
-        // Create an uncommitted server
         let output = OutputV1 {
             name,
             id: 0,

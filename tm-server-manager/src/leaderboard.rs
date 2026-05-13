@@ -427,3 +427,10 @@ impl LeadearboardOperations for Vec<LbEntry> {
         self.
     }
 } */
+
+// LbPropagator = HashMap<NodeHandle, HashMap<UserId,Vec<LbEntry>>>
+// Maybe this denormalization is an option? because we always know the node...
+// so the index could be internal?
+// -> would require a internal representation which gets passed around like the above 
+// -> then at the end we could somehow downcast it?
+// -> maybe thats also trash idk.

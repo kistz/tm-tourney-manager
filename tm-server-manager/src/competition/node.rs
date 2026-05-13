@@ -334,8 +334,17 @@ fn node_resolve_output_data_inner(
             Vec::new()
         }
         NodeHandle::MatchV1(n) => ctx.match_rounds(n),
-        NodeHandle::CompetitionV1(_) => todo!(), //TODO this is output material
-        NodeHandle::OutputV1(_) => todo!(),
+        NodeHandle::CompetitionV1(n) => {
+            let Some(output) = ctx.db_read_only().tab_output().parent_id().filter(n).next() else {
+                log::warn!("Requested lb for competition {n} but it has no output node!");
+                return Vec::new();
+            };
+
+            node_resolve_input_data_inner(ctx, NodeHandle::OutputV1(output.id), origin_offset)
+        }
+        NodeHandle::OutputV1(n) => {
+            node_resolve_input_data_inner(ctx, NodeHandle::OutputV1(n), origin_offset)
+        }
         NodeHandle::InputV1(n) => {
             let Some(input) = ctx.db_read_only().tab_input().id().find(n) else {
                 return Vec::new();
@@ -567,9 +576,9 @@ impl NodeLeaderboard for Vec<LbEntry> {
                 for entry in entries {
                     map.entry(entry.user_id)
                         .and_modify(|e| {
-                            if entry.score <= -1000 {
+                            /* if entry.score <= -2000 {
                                 e.round = entry.round;
-                            }
+                            } */
                             e.score += entry.score;
 
                             if entry.round > e.round {
