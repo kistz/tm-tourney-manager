@@ -44,6 +44,8 @@ impl LbFilterSettings {
     ) -> Vec<LbEntry> {
         let mut map: HashMap<u32, Vec<LbEntry>> = HashMap::new();
 
+        let max;
+
         match self.kind {
             //LbFilterKind::Match => todo!(),
             //LbFilterKind::Maps => todo!(),
@@ -66,23 +68,25 @@ impl LbFilterSettings {
                         })
                         .or_insert(vec![row]);
                 }
+
+                let Some(max_rounds) = map.values().max_by_key(|v| v.len()) else {
+                    // This case is only hit when nobody is even there so it is safe to just return nothing.
+                    return Vec::new();
+                };
+                max = max_rounds.len() as u16;
             }
             LbFilterKind::Matches => {
                 let mut lb_nodes: HashMap<NodeHandle, Vec<LbEntry>> = HashMap::new();
                 for row in leaderboard {
                     lb_nodes
                         .entry(row.get_node())
-                        .and_modify(|e| {
-                            e.push(row)
-                            /* e.entry(row.get_user())
-                            .and_modify(|e| e.push(row))
-                            .or_insert(vec![row]); */
-                        })
+                        .and_modify(|e| e.push(row))
                         .or_insert(vec![row]);
                 }
 
-                //let mut new_map: HashMap<u32, Vec<LbEntry>> = HashMap::new();
-                for lb_entires in lb_nodes.into_values() {
+                max = lb_nodes.len() as u16;
+
+                for lb_entires in lb_nodes.values() {
                     let lb_result = lb_entires.finalize(ctx);
                     for user_result in lb_result {
                         map.entry(user_result.get_user())
@@ -109,20 +113,13 @@ impl LbFilterSettings {
             }
         }
 
-        //TODO this is not possible because matches need to query it differently.
-        let Some(max_rounds) = map.values().max_by_key(|v| v.len()) else {
-            // This case is only hit when nobody is even there so it is safe to just return nothing.
-            return Vec::new();
-        };
-        let max_rounds = max_rounds.len() as u16;
-
         for (user_id, rows) in &mut map {
             match self.filter {
                 LbFilterIdent::Best(n) => {
                     rows.truncate(n as usize);
                     if rows.len() < (n as usize) {
                         // if we have played less rounds than the best n we take the current row count.
-                        let needed = if n > max_rounds { max_rounds } else { n };
+                        let needed = if n > max { max } else { n };
                         let missing = needed - rows.len() as u16;
                         match self.fallback {
                             LbFilterFallback::Worst => match self.param {

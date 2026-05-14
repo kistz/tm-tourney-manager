@@ -11,13 +11,13 @@ use crate::{
         node::{NodeHandle, NodeRead, NodeWrite},
         tab_competition,
     },
-    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings},
+    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
     tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
 };
 
 mod filter;
 mod merge;
-//mod remap;
+mod remap;
 
 #[table(accessor= tab_leaderboard)]
 pub struct LeaderboardV1 {
@@ -63,10 +63,10 @@ enum LeaderboardStatus {
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
 enum LbSettings {
-    //Remap(LbRemapSettings),
     Merge(LbMergeSettings),
-    //Separate(),
     Filter(LbFilterSettings),
+    Remap(LbRemapSettings),
+    //Separate(),
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
@@ -129,6 +129,12 @@ impl LbEntry {
     pub(crate) fn set_score(mut self, score: i32) -> Self {
         self.score = score;
         self
+    }
+
+    pub(crate) fn set_origin(&mut self, origin: NodeHandle) {
+        let (origin_idx, origin_id) = origin.split();
+        self.node_id = origin_id;
+        self.node_variant = origin_idx;
     }
 
     pub(crate) fn set_time(mut self, time: i32) -> Self {
@@ -340,6 +346,9 @@ impl<Db: DbContext> LeadearboardRead for Db {
                 }
                 LbSettings::Filter(lb_filter_settings) => {
                     lb_filter_settings.evaluate(leaderboard_id, leaderboards, self)
+                }
+                LbSettings::Remap(lb_remap_settings) => {
+                    lb_remap_settings.evaluate(leaderboard_id, leaderboards)
                 }
             }
         }
