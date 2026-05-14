@@ -8,7 +8,7 @@ use crate::{
     competition::{
         CompetitionPermissionsV1,
         connection::tab_connection__view,
-        node::{NodeHandle, NodeWrite},
+        node::{NodeHandle, NodeRead, NodeWrite},
         tab_competition,
     },
     leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings},
@@ -291,7 +291,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
 
         let settings = lb.settings;
 
-        let dependencies = self
+        /* let dependencies = self
             .db_read_only()
             .tab_connection()
             .origins_of()
@@ -301,13 +301,13 @@ impl<Db: DbContext> LeadearboardRead for Db {
         let Some(first_setting) = settings.get(0) else {
             log::warn!("Tried to evaluate leaderboard but it does not have settings");
             return Vec::new();
-        };
+        }; */
 
-        let mut leaderboard = Vec::new();
+        /*  let mut leaderboard = Vec::new();
 
-        let mut dep_len = 0;
+        let mut dep_len = 0; */
 
-        for depending_connection in dependencies {
+        /* for depending_connection in dependencies {
             if dep_len > 1 && !matches!(first_setting, LbSettings::Merge(_)) {
                 log::error!(
                     "There were more than one data connection into the leaderboard and no merge was selected"
@@ -327,23 +327,26 @@ impl<Db: DbContext> LeadearboardRead for Db {
             };
 
             dep_len += 1;
-        }
+        } */
+
+        let mut leaderboards =
+            self.node_resolve_input_data(NodeHandle::LeaderboardV1(leaderboard_id));
 
         for (index, setting) in settings.into_iter().enumerate() {
-            leaderboard = match setting {
+            leaderboards = match setting {
                 //LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
                 LbSettings::Merge(lb_merge_settings) => {
-                    lb_merge_settings.evaluate(leaderboard_id, leaderboard)
+                    lb_merge_settings.evaluate(leaderboard_id, leaderboards)
                 }
                 LbSettings::Filter(lb_filter_settings) => {
-                    lb_filter_settings.evaluate(leaderboard_id, leaderboard)
+                    lb_filter_settings.evaluate(leaderboard_id, leaderboards, self)
                 }
             }
         }
 
-        log::info!("Leaderbaord {leaderboard_id}: {:?}", leaderboard);
+        log::info!("Leaderbaord {leaderboard_id}: {:?}", leaderboards);
 
-        leaderboard
+        leaderboards
     }
 
     /* fn leaderboard_finalize(&self, lb: Vec<LbEntry>) -> Vec<LbEntry> {
@@ -431,6 +434,6 @@ impl LeadearboardOperations for Vec<LbEntry> {
 // LbPropagator = HashMap<NodeHandle, HashMap<UserId,Vec<LbEntry>>>
 // Maybe this denormalization is an option? because we always know the node...
 // so the index could be internal?
-// -> would require a internal representation which gets passed around like the above 
+// -> would require a internal representation which gets passed around like the above
 // -> then at the end we could somehow downcast it?
 // -> maybe thats also trash idk.
