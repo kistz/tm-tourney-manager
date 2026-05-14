@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 
 use crate::config::{
-    MapsPerMatch, RoundsPerMap, helper::FinishTimeout, points_repartition_format, tm_bool,
+    MapsPerMatch, RoundsPerMap, helper::FinishTimeout, points_repartition_format,
+    reverse_cup::LastChanceDnfMode, tm_bool,
 };
 
 /// The script has the rounds script as a base so it is inheriting all the settings.
@@ -9,7 +10,7 @@ use crate::config::{
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
-pub struct ReverseCup {
+pub struct ReverseCupV2 {
     //Inherited Rounds settings.
     pub finish_timeout: FinishTimeout,
     pub maps_per_match: MapsPerMatch,
@@ -32,10 +33,11 @@ pub struct ReverseCup {
     pub last_chance_dnf_mode: LastChanceDnfMode,
     /// "Number of players awaited before starting the match (0 is automatic)"
     pub number_of_players: u32,
-    //TODO pub complex_points_repartition as described in https://git.virtit.fr/beu/TM2020-Gamemodes/src/branch/master/TM_ReverseCup.Script.txt
+    //as described in https://git.virtit.fr/beu/TM2020-Gamemodes/src/branch/master/TM_ReverseCup.Script.txt
+    pub complex_points_repartition: String,
 }
 
-impl ReverseCup {
+impl ReverseCupV2 {
     pub fn into_xml(&self) -> String {
         format!(
             r#"
@@ -50,7 +52,8 @@ impl ReverseCup {
         <setting name="S_DNF_LossPoints" value="{}" type="integer"/>
         <setting name="S_LastChance_DNF_Mode" value="{}" type="integer"/>
         <setting name="S_NbOfPlayers" value="{}" type="integer"/>
-        <setting name="S_NbOfWinners" value="{}" type="integer"/>       
+        <setting name="S_NbOfWinners" value="{}" type="integer"/> 
+        <setting name="S_ComplexPointsRepartition" value="{}" type="text"/>      
             "#,
             Into::<i32>::into(self.rounds_per_map),
             Into::<i32>::into(self.maps_per_match),
@@ -63,7 +66,8 @@ impl ReverseCup {
             self.dnf_points_loss,
             Into::<i32>::into(self.last_chance_dnf_mode),
             self.number_of_players,
-            self.number_of_winners
+            self.number_of_winners,
+            self.complex_points_repartition
         )
     }
 
@@ -118,12 +122,16 @@ impl ReverseCup {
             "S_NbOfWinners".into(),
             dxr::Value::Integer(self.number_of_winners),
         );
+        map.insert(
+            "S_ComplexPointsRepartition".into(),
+            dxr::Value::String(self.complex_points_repartition.clone()),
+        );
 
         map
     }
 }
 
-impl Default for ReverseCup {
+impl Default for ReverseCupV2 {
     fn default() -> Self {
         Self {
             finish_timeout: FinishTimeout::BasedOnMedal,
@@ -138,24 +146,7 @@ impl Default for ReverseCup {
             last_chance_dnf_mode: LastChanceDnfMode::AllPlayers,
             number_of_players: 0,
             number_of_winners: 1,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
-#[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
-pub enum LastChanceDnfMode {
-    AllPlayers = 0,
-    OnlyLeastCheckpoints = 1,
-}
-
-impl From<LastChanceDnfMode> for i32 {
-    fn from(value: LastChanceDnfMode) -> Self {
-        match value {
-            LastChanceDnfMode::AllPlayers => 0,
-            LastChanceDnfMode::OnlyLeastCheckpoints => 1,
+            complex_points_repartition: String::new(),
         }
     }
 }

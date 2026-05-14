@@ -6,6 +6,9 @@ pub use rounds::Rounds;
 mod reverse_cup;
 pub use reverse_cup::ReverseCup;
 
+mod reverse_cup_v2;
+pub use reverse_cup_v2::ReverseCupV2;
+
 mod time_attack;
 pub use time_attack::TimeAttack;
 
@@ -107,6 +110,7 @@ pub enum ModeSettings {
     ReverseCup(ReverseCup),
     TimeAttack(TimeAttack),
     Knockout(Knockout),
+    ReverseCupV2(ReverseCupV2),
 }
 
 impl ModeSettings {
@@ -116,6 +120,7 @@ impl ModeSettings {
             ModeSettings::ReverseCup(reverse_cup) => reverse_cup.into_xml(),
             ModeSettings::TimeAttack(time_attack) => time_attack.into_xml(),
             ModeSettings::Knockout(knockout) => knockout.into_xml(),
+            ModeSettings::ReverseCupV2(reverse_cup_v2) => reverse_cup_v2.into_xml(),
         }
     }
 
@@ -125,6 +130,7 @@ impl ModeSettings {
             ModeSettings::ReverseCup(reverse_cup) => reverse_cup.get_xml_map(),
             ModeSettings::TimeAttack(time_attack) => time_attack.get_xml_map(),
             ModeSettings::Knockout(knockout) => knockout.get_xml_map(),
+            ModeSettings::ReverseCupV2(reverse_cup_v2) => reverse_cup_v2.get_xml_map(),
         }
     }
 
@@ -142,6 +148,9 @@ impl ModeSettings {
             ModeSettings::Knockout(_) => {
                 "<script_name>Trackmania/TM_Knockout_Online</script_name>".into()
             }
+            ModeSettings::ReverseCupV2(_) => {
+                "<script_name>Modes/Trackmania/ReverseCup</script_name>".into()
+            }
         }
     }
 
@@ -151,6 +160,7 @@ impl ModeSettings {
             ModeSettings::ReverseCup(_) => "Modes/Trackmania/ReverseCup",
             ModeSettings::TimeAttack(_) => "Trackmania/TM_TimeAttack_Online",
             ModeSettings::Knockout(_) => "Trackmania/TM_Kockout_Online",
+            ModeSettings::ReverseCupV2(_) => "Modes/Trackmania/ReverseCup",
         }
     }
 
@@ -160,6 +170,7 @@ impl ModeSettings {
             ModeSettings::ReverseCup(_) => TmMode::ReverseCup,
             ModeSettings::TimeAttack(_) => TmMode::TimeAttack,
             ModeSettings::Knockout(_) => TmMode::Knockout,
+            ModeSettings::ReverseCupV2(_) => TmMode::ReverseCup,
         }
     }
 
@@ -172,6 +183,9 @@ impl ModeSettings {
             }
             ModeSettings::TimeAttack(_) => None,
             ModeSettings::Knockout(_) => None,
+            ModeSettings::ReverseCupV2(_) => {
+                Some(include_str!("../external_modes/ReverseCup.Script.txt"))
+            }
         }
     }
 }

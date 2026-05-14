@@ -18,3 +18,12 @@ pub use points_limit::*;
 
 mod rounds;
 pub use rounds::*;
+
+pub(crate) fn points_repartition_format(points: &Vec<i32>) -> String {
+    let mut string = String::new();
+    for point in points {
+        string += &point.to_string();
+        string += ","
+    }
+    string.trim_end_matches(",").to_string()
+}
