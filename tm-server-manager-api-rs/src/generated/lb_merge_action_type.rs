@@ -9,6 +9,8 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[derive(Copy, Eq, Hash)]
 pub enum LbMergeAction {
     Average,
+
+    Summate,
 }
 
 impl __sdk::InModule for LbMergeAction {

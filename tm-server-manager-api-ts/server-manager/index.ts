@@ -70,6 +70,7 @@ import MatchTryStartReducer from "./match_try_start_reducer";
 import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
 import MemberRemoveReducer from "./member_remove_reducer";
+import NodeDeleteReducer from "./node_delete_reducer";
 import NodeNameEditReducer from "./node_name_edit_reducer";
 import OutputCreateReducer from "./output_create_reducer";
 import PostEventReducer from "./post_event_reducer";
@@ -132,6 +133,7 @@ import ProjectCompetitionDescendantsRow from "./project_competition_descendants_
 import RawServerPermittedPlayersRow from "./raw_server_permitted_players_table";
 import RawServerPlayerDestinationRow from "./raw_server_player_destination_table";
 import TabMatchRow from "./tab_match_table";
+import TabMatchChatRow from "./tab_match_chat_table";
 import TabMatchRoundPlayerRow from "./tab_match_round_player_table";
 import TabMatchRoundPlayerExtRow from "./tab_match_round_player_ext_table";
 import TabRawServerRow from "./tab_raw_server_table";
@@ -192,6 +194,23 @@ const tablesSchema = __schema({
       { name: 'tab_match_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, TabMatchRow),
+  tab_match_chat: __table({
+    name: 'tab_match_chat',
+    indexes: [
+      { accessor: 'id', name: 'tab_match_chat_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'match_id', name: 'tab_match_chat_match_id_idx_hash', algorithm: 'btree', columns: [
+        'matchId',
+      ] },
+      { accessor: 'user_id', name: 'tab_match_chat_user_id_idx_hash', algorithm: 'btree', columns: [
+        'userId',
+      ] },
+    ],
+    constraints: [
+      { name: 'tab_match_chat_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TabMatchChatRow),
   tab_match_round_player: __table({
     name: 'tab_match_round_player',
     indexes: [
@@ -427,6 +446,7 @@ const reducersSchema = __reducers(
   __reducerSchema("member_add", MemberAddReducer),
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
   __reducerSchema("member_remove", MemberRemoveReducer),
+  __reducerSchema("node_delete", NodeDeleteReducer),
   __reducerSchema("node_name_edit", NodeNameEditReducer),
   __reducerSchema("output_create", OutputCreateReducer),
   __reducerSchema("post_event", PostEventReducer),

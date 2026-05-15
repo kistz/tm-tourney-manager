@@ -4,15 +4,18 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+use super::lb_manipulation_kind_type::LbManipulationKind;
+use super::lb_params_type::LbParams;
+
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-#[derive(Copy, Eq, Hash)]
-pub enum LbFilterKind {
-    Rounds,
-
-    Matches,
+pub struct LbRemapSettings {
+    pub origin: LbParams,
+    pub target: LbParams,
+    pub manipulation: LbManipulationKind,
+    pub manipulation_value: i32,
 }
 
-impl __sdk::InModule for LbFilterKind {
+impl __sdk::InModule for LbRemapSettings {
     type Module = super::RemoteModule;
 }

@@ -65,10 +65,12 @@ pub mod lb_filter_fallback_type;
 pub mod lb_filter_ident_type;
 pub mod lb_filter_kind_type;
 pub mod lb_filter_settings_type;
+pub mod lb_manipulation_kind_type;
 pub mod lb_merge_action_type;
 pub mod lb_merge_kind_type;
 pub mod lb_merge_settings_type;
 pub mod lb_params_type;
+pub mod lb_remap_settings_type;
 pub mod lb_settings_type;
 pub mod leaderboard_configured_reducer;
 pub mod leaderboard_create_reducer;
@@ -84,6 +86,7 @@ pub mod map_pool_config_type;
 pub mod map_type;
 pub mod maps_per_match_type;
 pub mod match_assign_server_reducer;
+pub mod match_chat_type;
 pub mod match_configured_reducer;
 pub mod match_create_reducer;
 pub mod match_end_reducer;
@@ -121,9 +124,12 @@ pub mod my_node_positions_table;
 pub mod my_project_v_1_type;
 pub mod my_projects_table;
 pub mod my_user_table;
+pub mod node_delete_reducer;
 pub mod node_handle_type;
+pub mod node_leaderboard_input_finalize_procedure;
 pub mod node_leaderboard_input_procedure;
 pub mod node_leaderboard_output_procedure;
+pub mod node_leaderboard_output_raw_procedure;
 pub mod node_name_edit_reducer;
 pub mod node_position_update_type;
 pub mod output_create_reducer;
@@ -180,6 +186,7 @@ pub mod registration_type;
 pub mod respawn_behaviour_type;
 pub mod respawn_type;
 pub mod reverse_cup_type;
+pub mod reverse_cup_v_2_type;
 pub mod revoke_raw_server_reducer;
 pub mod role_assign_permission_reducer;
 pub mod role_create_reducer;
@@ -224,15 +231,19 @@ pub mod tab_competition_node_position_type;
 pub mod tab_connection_action_type;
 pub mod tab_connection_type;
 pub mod tab_match_auto_recovery_type;
+pub mod tab_match_chat_table;
 pub mod tab_match_round_player_ext_table;
 pub mod tab_match_round_player_table;
+pub mod tab_match_table;
 pub mod tab_player_destination_type;
 pub mod tab_raw_server_player_table;
 pub mod tab_raw_server_table;
 pub mod tab_registeration_player_table;
+pub mod tab_registration_table;
 pub mod tab_tm_map_type;
 pub mod tab_user_table;
 pub mod team_type;
+pub mod test_node_permitted_players_input_procedure;
 pub mod time_attack_type;
 pub mod tm_mode_type;
 pub mod unloading_map_end_type;
@@ -307,10 +318,12 @@ pub use lb_filter_fallback_type::LbFilterFallback;
 pub use lb_filter_ident_type::LbFilterIdent;
 pub use lb_filter_kind_type::LbFilterKind;
 pub use lb_filter_settings_type::LbFilterSettings;
+pub use lb_manipulation_kind_type::LbManipulationKind;
 pub use lb_merge_action_type::LbMergeAction;
 pub use lb_merge_kind_type::LbMergeKind;
 pub use lb_merge_settings_type::LbMergeSettings;
 pub use lb_params_type::LbParams;
+pub use lb_remap_settings_type::LbRemapSettings;
 pub use lb_settings_type::LbSettings;
 pub use leaderboard_configured_reducer::leaderboard_configured;
 pub use leaderboard_create_reducer::leaderboard_create;
@@ -326,6 +339,7 @@ pub use map_pool_config_type::MapPoolConfig;
 pub use map_type::Map;
 pub use maps_per_match_type::MapsPerMatch;
 pub use match_assign_server_reducer::match_assign_server;
+pub use match_chat_type::MatchChat;
 pub use match_configured_reducer::match_configured;
 pub use match_create_reducer::match_create;
 pub use match_end_reducer::match_end;
@@ -363,9 +377,12 @@ pub use my_node_positions_table::*;
 pub use my_project_v_1_type::MyProjectV1;
 pub use my_projects_table::*;
 pub use my_user_table::*;
+pub use node_delete_reducer::node_delete;
 pub use node_handle_type::NodeHandle;
+pub use node_leaderboard_input_finalize_procedure::node_leaderboard_input_finalize;
 pub use node_leaderboard_input_procedure::node_leaderboard_input;
 pub use node_leaderboard_output_procedure::node_leaderboard_output;
+pub use node_leaderboard_output_raw_procedure::node_leaderboard_output_raw;
 pub use node_name_edit_reducer::node_name_edit;
 pub use node_position_update_type::NodePositionUpdate;
 pub use output_create_reducer::output_create;
@@ -422,6 +439,7 @@ pub use registration_type::Registration;
 pub use respawn_behaviour_type::RespawnBehaviour;
 pub use respawn_type::Respawn;
 pub use reverse_cup_type::ReverseCup;
+pub use reverse_cup_v_2_type::ReverseCupV2;
 pub use revoke_raw_server_reducer::revoke_raw_server;
 pub use role_assign_permission_reducer::role_assign_permission;
 pub use role_create_reducer::role_create;
@@ -466,15 +484,19 @@ pub use tab_competition_node_position_type::TabCompetitionNodePosition;
 pub use tab_connection_action_type::TabConnectionAction;
 pub use tab_connection_type::TabConnection;
 pub use tab_match_auto_recovery_type::TabMatchAutoRecovery;
+pub use tab_match_chat_table::*;
 pub use tab_match_round_player_ext_table::*;
 pub use tab_match_round_player_table::*;
+pub use tab_match_table::*;
 pub use tab_player_destination_type::TabPlayerDestination;
 pub use tab_raw_server_player_table::*;
 pub use tab_raw_server_table::*;
 pub use tab_registeration_player_table::*;
+pub use tab_registration_table::*;
 pub use tab_tm_map_type::TabTmMap;
 pub use tab_user_table::*;
 pub use team_type::Team;
+pub use test_node_permitted_players_input_procedure::test_node_permitted_players_input;
 pub use time_attack_type::TimeAttack;
 pub use tm_mode_type::TmMode;
 pub use unloading_map_end_type::UnloadingMapEnd;
@@ -643,6 +665,9 @@ pub enum Reducer {
     },
     MemberRemove {
         member_id: u32,
+    },
+    NodeDelete {
+        node: NodeHandle,
     },
     NodeNameEdit {
         node: NodeHandle,
@@ -838,6 +863,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::MemberAdd { .. } => "member_add",
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
             Reducer::MemberRemove { .. } => "member_remove",
+            Reducer::NodeDelete { .. } => "node_delete",
             Reducer::NodeNameEdit { .. } => "node_name_edit",
             Reducer::OutputCreate { .. } => "output_create",
             Reducer::PostEvent { .. } => "post_event",
@@ -1139,6 +1165,11 @@ impl __sdk::Reducer for Reducer {
 }             => __sats::bsatn::to_vec(&member_remove_reducer::MemberRemoveArgs {
                 member_id: member_id.clone(),
 }),
+            Reducer::NodeDelete{
+                node,
+}             => __sats::bsatn::to_vec(&node_delete_reducer::NodeDeleteArgs {
+                node: node.clone(),
+}),
             Reducer::NodeNameEdit{
                 node,
                 name,
@@ -1413,11 +1444,14 @@ pub struct DbUpdate {
     project_competition_descendants: __sdk::TableUpdate<CompetitionV1>,
     raw_server_permitted_players: __sdk::TableUpdate<PermittedPlayer>,
     raw_server_player_destination: __sdk::TableUpdate<PlayerDestination>,
+    tab_match: __sdk::TableUpdate<MatchV1>,
+    tab_match_chat: __sdk::TableUpdate<MatchChat>,
     tab_match_round_player: __sdk::TableUpdate<MatchRoundPlayer>,
     tab_match_round_player_ext: __sdk::TableUpdate<MatchRoundPlayerExt>,
     tab_raw_server: __sdk::TableUpdate<RawServerV1>,
     tab_raw_server_player: __sdk::TableUpdate<RawServerPlayer>,
     tab_registeration_player: __sdk::TableUpdate<RegisterationPlayer>,
+    tab_registration: __sdk::TableUpdate<Registration>,
     tab_user: __sdk::TableUpdate<UserV1>,
     unstable_competition_connection: __sdk::TableUpdate<CompetitionConnection>,
 }
@@ -1462,6 +1496,12 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "raw_server_player_destination" => db_update.raw_server_player_destination.append(
                     raw_server_player_destination_table::parse_table_update(table_update)?,
                 ),
+                "tab_match" => db_update
+                    .tab_match
+                    .append(tab_match_table::parse_table_update(table_update)?),
+                "tab_match_chat" => db_update
+                    .tab_match_chat
+                    .append(tab_match_chat_table::parse_table_update(table_update)?),
                 "tab_match_round_player" => db_update.tab_match_round_player.append(
                     tab_match_round_player_table::parse_table_update(table_update)?,
                 ),
@@ -1477,6 +1517,9 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "tab_registeration_player" => db_update.tab_registeration_player.append(
                     tab_registeration_player_table::parse_table_update(table_update)?,
                 ),
+                "tab_registration" => db_update
+                    .tab_registration
+                    .append(tab_registration_table::parse_table_update(table_update)?),
                 "tab_user" => db_update
                     .tab_user
                     .append(tab_user_table::parse_table_update(table_update)?),
@@ -1513,6 +1556,12 @@ impl __sdk::DbUpdate for DbUpdate {
 
         diff.event_raw_server_method = self.event_raw_server_method.into_event_diff();
         diff.event_raw_server_state = self.event_raw_server_state.into_event_diff();
+        diff.tab_match = cache
+            .apply_diff_to_table::<MatchV1>("tab_match", &self.tab_match)
+            .with_updates_by_pk(|row| &row.id);
+        diff.tab_match_chat = cache
+            .apply_diff_to_table::<MatchChat>("tab_match_chat", &self.tab_match_chat)
+            .with_updates_by_pk(|row| &row.id);
         diff.tab_match_round_player = cache
             .apply_diff_to_table::<MatchRoundPlayer>(
                 "tab_match_round_player",
@@ -1538,6 +1587,9 @@ impl __sdk::DbUpdate for DbUpdate {
             "tab_registeration_player",
             &self.tab_registeration_player,
         );
+        diff.tab_registration = cache
+            .apply_diff_to_table::<Registration>("tab_registration", &self.tab_registration)
+            .with_updates_by_pk(|row| &row.id);
         diff.tab_user = cache
             .apply_diff_to_table::<UserV1>("tab_user", &self.tab_user)
             .with_updates_by_pk(|row| &row.id);
@@ -1607,6 +1659,12 @@ impl __sdk::DbUpdate for DbUpdate {
                 "raw_server_player_destination" => db_update
                     .raw_server_player_destination
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_match" => db_update
+                    .tab_match
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_match_chat" => db_update
+                    .tab_match_chat
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "tab_match_round_player" => db_update
                     .tab_match_round_player
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
@@ -1621,6 +1679,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "tab_registeration_player" => db_update
                     .tab_registeration_player
+                    .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
+                "tab_registration" => db_update
+                    .tab_registration
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "tab_user" => db_update
                     .tab_user
@@ -1671,6 +1732,12 @@ impl __sdk::DbUpdate for DbUpdate {
                 "raw_server_player_destination" => db_update
                     .raw_server_player_destination
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_match" => db_update
+                    .tab_match
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_match_chat" => db_update
+                    .tab_match_chat
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "tab_match_round_player" => db_update
                     .tab_match_round_player
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
@@ -1685,6 +1752,9 @@ impl __sdk::DbUpdate for DbUpdate {
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "tab_registeration_player" => db_update
                     .tab_registeration_player
+                    .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
+                "tab_registration" => db_update
+                    .tab_registration
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "tab_user" => db_update
                     .tab_user
@@ -1717,11 +1787,14 @@ pub struct AppliedDiff<'r> {
     project_competition_descendants: __sdk::TableAppliedDiff<'r, CompetitionV1>,
     raw_server_permitted_players: __sdk::TableAppliedDiff<'r, PermittedPlayer>,
     raw_server_player_destination: __sdk::TableAppliedDiff<'r, PlayerDestination>,
+    tab_match: __sdk::TableAppliedDiff<'r, MatchV1>,
+    tab_match_chat: __sdk::TableAppliedDiff<'r, MatchChat>,
     tab_match_round_player: __sdk::TableAppliedDiff<'r, MatchRoundPlayer>,
     tab_match_round_player_ext: __sdk::TableAppliedDiff<'r, MatchRoundPlayerExt>,
     tab_raw_server: __sdk::TableAppliedDiff<'r, RawServerV1>,
     tab_raw_server_player: __sdk::TableAppliedDiff<'r, RawServerPlayer>,
     tab_registeration_player: __sdk::TableAppliedDiff<'r, RegisterationPlayer>,
+    tab_registration: __sdk::TableAppliedDiff<'r, Registration>,
     tab_user: __sdk::TableAppliedDiff<'r, UserV1>,
     unstable_competition_connection: __sdk::TableAppliedDiff<'r, CompetitionConnection>,
     __unused: std::marker::PhantomData<&'r ()>,
@@ -1779,6 +1852,12 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.raw_server_player_destination,
             event,
         );
+        callbacks.invoke_table_row_callbacks::<MatchV1>("tab_match", &self.tab_match, event);
+        callbacks.invoke_table_row_callbacks::<MatchChat>(
+            "tab_match_chat",
+            &self.tab_match_chat,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<MatchRoundPlayer>(
             "tab_match_round_player",
             &self.tab_match_round_player,
@@ -1802,6 +1881,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<RegisterationPlayer>(
             "tab_registeration_player",
             &self.tab_registeration_player,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<Registration>(
+            "tab_registration",
+            &self.tab_registration,
             event,
         );
         callbacks.invoke_table_row_callbacks::<UserV1>("tab_user", &self.tab_user, event);
@@ -2465,11 +2549,14 @@ impl __sdk::SpacetimeModule for RemoteModule {
         project_competition_descendants_table::register_table(client_cache);
         raw_server_permitted_players_table::register_table(client_cache);
         raw_server_player_destination_table::register_table(client_cache);
+        tab_match_table::register_table(client_cache);
+        tab_match_chat_table::register_table(client_cache);
         tab_match_round_player_table::register_table(client_cache);
         tab_match_round_player_ext_table::register_table(client_cache);
         tab_raw_server_table::register_table(client_cache);
         tab_raw_server_player_table::register_table(client_cache);
         tab_registeration_player_table::register_table(client_cache);
+        tab_registration_table::register_table(client_cache);
         tab_user_table::register_table(client_cache);
         unstable_competition_connection_table::register_table(client_cache);
     }
@@ -2484,11 +2571,14 @@ impl __sdk::SpacetimeModule for RemoteModule {
         "project_competition_descendants",
         "raw_server_permitted_players",
         "raw_server_player_destination",
+        "tab_match",
+        "tab_match_chat",
         "tab_match_round_player",
         "tab_match_round_player_ext",
         "tab_raw_server",
         "tab_raw_server_player",
         "tab_registeration_player",
+        "tab_registration",
         "tab_user",
         "unstable_competition_connection",
     ];
