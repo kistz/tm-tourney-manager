@@ -7,7 +7,7 @@ use crate::{
         occupation::TabRawServerOccupationRead,
         player::{raw_server_player_add, raw_server_player_remove},
     },
-    tm_match::{event::handle_match_event, state::tab_match_state},
+    tm_match::{event::handle_match_event, hook::match_handle_hook, state::tab_match_state},
     user::{UserRead, UserV1, UserWrite},
 };
 
@@ -53,7 +53,8 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
             && let Some(state) = ctx.db.tab_match_state().match_id().find(node.id())
             && state.is_live()
         {
-            handle_match_event(ctx, state, event)?
+            match_handle_hook(ctx, state, &event)?;
+            handle_match_event(ctx, state, event)?;
         }
 
         if node.is_server() {
