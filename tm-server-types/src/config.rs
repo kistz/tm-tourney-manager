@@ -110,7 +110,7 @@ pub enum ModeSettings {
     ReverseCup(ReverseCup),
     TimeAttack(TimeAttack),
     Knockout(Knockout),
-    ReverseCupV2(ReverseCupV2),
+    ReverseCupV2(Box<ReverseCupV2>),
 }
 
 impl ModeSettings {

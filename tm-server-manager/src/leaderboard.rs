@@ -11,13 +11,15 @@ use crate::{
         node::{NodeHandle, NodeRead, NodeWrite},
         tab_competition,
     },
-    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
+    leaderboard::{
+        filter::LbFilterSettings, merge::LbMergeSettings, /*  remap::LbRemapSettings */
+    },
     tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
 };
 
 mod filter;
 mod merge;
-mod remap;
+//mod remap;
 
 #[table(accessor= tab_leaderboard)]
 pub struct LeaderboardV1 {
@@ -65,7 +67,7 @@ enum LeaderboardStatus {
 enum LbSettings {
     Merge(LbMergeSettings),
     Filter(LbFilterSettings),
-    Remap(LbRemapSettings),
+    //Remap(LbRemapSettings),
     //Separate(),
 }
 
@@ -346,10 +348,9 @@ impl<Db: DbContext> LeadearboardRead for Db {
                 }
                 LbSettings::Filter(lb_filter_settings) => {
                     lb_filter_settings.evaluate(leaderboard_id, leaderboards, self)
-                }
-                LbSettings::Remap(lb_remap_settings) => {
-                    lb_remap_settings.evaluate(leaderboard_id, leaderboards)
-                }
+                } /* LbSettings::Remap(lb_remap_settings) => {
+                      lb_remap_settings.evaluate(leaderboard_id, leaderboards)
+                  } */
             }
         }
 
