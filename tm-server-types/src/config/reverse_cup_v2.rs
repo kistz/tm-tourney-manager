@@ -15,6 +15,8 @@ pub struct ReverseCupV2 {
     pub finish_timeout: FinishTimeout,
     pub maps_per_match: MapsPerMatch,
     pub points_repartition: Vec<i32>,
+    //as described in https://git.virtit.fr/beu/TM2020-Gamemodes/src/branch/master/TM_ReverseCup.Script.txt
+    pub complex_points_repartition: String,
     pub rounds_per_map: RoundsPerMap,
 
     //New settings introduced
@@ -33,8 +35,6 @@ pub struct ReverseCupV2 {
     pub last_chance_dnf_mode: LastChanceDnfMode,
     /// "Number of players awaited before starting the match (0 is automatic)"
     pub number_of_players: u32,
-    //as described in https://git.virtit.fr/beu/TM2020-Gamemodes/src/branch/master/TM_ReverseCup.Script.txt
-    pub complex_points_repartition: String,
 }
 
 impl ReverseCupV2 {

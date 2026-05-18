@@ -529,17 +529,6 @@ export const LbFilterSettings = __t.object("LbFilterSettings", {
 });
 export type LbFilterSettings = __Infer<typeof LbFilterSettings>;
 
-// The tagged union or sum type for the algebraic type `LbManipulationKind`.
-export const LbManipulationKind = __t.enum("LbManipulationKind", {
-  Add: __t.unit(),
-  Multiply: __t.unit(),
-  SubtractLhs: __t.unit(),
-  SubtractRhs: __t.unit(),
-  DivideLhs: __t.unit(),
-  DivideRhs: __t.unit(),
-});
-export type LbManipulationKind = __Infer<typeof LbManipulationKind>;
-
 // The tagged union or sum type for the algebraic type `LbMergeAction`.
 export const LbMergeAction = __t.enum("LbMergeAction", {
   Average: __t.unit(),
@@ -574,20 +563,6 @@ export const LbParams = __t.enum("LbParams", {
 });
 export type LbParams = __Infer<typeof LbParams>;
 
-export const LbRemapSettings = __t.object("LbRemapSettings", {
-  get origin() {
-    return LbParams;
-  },
-  get target() {
-    return LbParams;
-  },
-  get manipulation() {
-    return LbManipulationKind;
-  },
-  manipulationValue: __t.i32(),
-});
-export type LbRemapSettings = __Infer<typeof LbRemapSettings>;
-
 // The tagged union or sum type for the algebraic type `LbSettings`.
 export const LbSettings = __t.enum("LbSettings", {
   get Merge() {
@@ -595,9 +570,6 @@ export const LbSettings = __t.enum("LbSettings", {
   },
   get Filter() {
     return LbFilterSettings;
-  },
-  get Remap() {
-    return LbRemapSettings;
   },
 });
 export type LbSettings = __Infer<typeof LbSettings>;
@@ -833,9 +805,6 @@ export const ModeSettings = __t.enum("ModeSettings", {
   },
   get Knockout() {
     return Knockout;
-  },
-  get ReverseCupV2() {
-    return ReverseCupV2;
   },
 });
 export type ModeSettings = __Infer<typeof ModeSettings>;
@@ -1199,31 +1168,6 @@ export const ReverseCup = __t.object("ReverseCup", {
   numberOfPlayers: __t.u32(),
 });
 export type ReverseCup = __Infer<typeof ReverseCup>;
-
-export const ReverseCupV2 = __t.object("ReverseCupV2", {
-  get finishTimeout() {
-    return FinishTimeout;
-  },
-  get mapsPerMatch() {
-    return MapsPerMatch;
-  },
-  pointsRepartition: __t.array(__t.i32()),
-  get roundsPerMap() {
-    return RoundsPerMap;
-  },
-  numberOfWinners: __t.i32(),
-  startingPoints: __t.i32(),
-  disableLastChance: __t.bool(),
-  allowFastForwardRounds: __t.bool(),
-  fastForwardPointsRepartition: __t.bool(),
-  dnfPointsLoss: __t.u32(),
-  get lastChanceDnfMode() {
-    return LastChanceDnfMode;
-  },
-  numberOfPlayers: __t.u32(),
-  complexPointsRepartition: __t.string(),
-});
-export type ReverseCupV2 = __Infer<typeof ReverseCupV2>;
 
 // The tagged union or sum type for the algebraic type `RoundTime`.
 export const RoundTime = __t.enum("RoundTime", {

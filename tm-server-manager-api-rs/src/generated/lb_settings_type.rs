@@ -6,7 +6,6 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::lb_filter_settings_type::LbFilterSettings;
 use super::lb_merge_settings_type::LbMergeSettings;
-use super::lb_remap_settings_type::LbRemapSettings;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
@@ -14,8 +13,6 @@ pub enum LbSettings {
     Merge(LbMergeSettings),
 
     Filter(LbFilterSettings),
-
-    Remap(LbRemapSettings),
 }
 
 impl __sdk::InModule for LbSettings {

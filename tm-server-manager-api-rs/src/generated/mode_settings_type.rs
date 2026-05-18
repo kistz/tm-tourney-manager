@@ -6,7 +6,6 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 use super::knockout_type::Knockout;
 use super::reverse_cup_type::ReverseCup;
-use super::reverse_cup_v_2_type::ReverseCupV2;
 use super::rounds_type::Rounds;
 use super::time_attack_type::TimeAttack;
 
@@ -20,8 +19,6 @@ pub enum ModeSettings {
     TimeAttack(TimeAttack),
 
     Knockout(Knockout),
-
-    ReverseCupV2(ReverseCupV2),
 }
 
 impl __sdk::InModule for ModeSettings {
