@@ -67,17 +67,20 @@ pub async fn setup_state_synchronization() {
         while seconds > 0 {
             match std::fs::read(&full_path) {
                 Ok(file) => {
-                    SPACETIME
-                        .read()
-                        .procedures
-                        .post_round_replay(event.time, file);
+                    SPACETIME.read().procedures.post_round_replay_then(
+                        event.time,
+                        file,
+                        |_, res| {
+                            tracing::info!("Posting replay returned: {res:?}");
+                        },
+                    );
                     if let Err(error) = std::fs::remove_file(&full_path) {
                         tracing::error!("Failed to delete the current replay file! Reason: {error}")
                     };
                     return;
                 }
                 Err(error) => {
-                    tracing::error!("Failed to read replay file. Reason: {error}")
+                    tracing::error!("Failed to read replay file {full_path}. Reason: {error}")
                 }
             };
 
