@@ -1,5 +1,5 @@
 use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
-use tm_server_types::config::ServerConfig;
+use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
     authorization::Authorization,
@@ -258,7 +258,7 @@ fn server_configuring(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 fn server_config_override(
     ctx: &ReducerContext,
     to: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
 ) -> Result<(), String> {
     let Some(mut tm_server) = ctx.db.tab_server().id().find(to) else {
         return Err("Supplied match was not found!".into());

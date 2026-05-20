@@ -13,11 +13,11 @@ pub trait TableAutoIncable {
 }
 
 pub(crate) trait AutoIncWrite {
-    fn auto_inc<T: TableInternal>(&self, _: T) -> u32;
+    fn auto_inc<T: TableInternal>(&self) -> u32;
 }
 
 impl<Db: DbContext<DbView = Local>> AutoIncWrite for Db {
-    fn auto_inc<T: TableInternal>(&self, _: T) -> u32 {
+    fn auto_inc<T: TableInternal>(&self) -> u32 {
         let table_id = T::table_id().0;
         if let Some(mut table) = self.db().auto_inc().table_id().find(table_id) {
             table.current_id += 1;
