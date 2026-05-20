@@ -6,8 +6,8 @@ pub use rounds::Rounds;
 mod reverse_cup;
 pub use reverse_cup::ReverseCup;
 
-//mod reverse_cup_v2;
-//pub use reverse_cup_v2::ReverseCupV2;
+mod reverse_cup_v2;
+pub use reverse_cup_v2::ReverseCupV2;
 
 mod time_attack;
 pub use time_attack::TimeAttack;
@@ -105,6 +105,80 @@ impl Default for ServerConfig {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
 #[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
+pub struct ServerConfigV2 {
+    // Dedicated Config TODO
+    options: ServerOptions,
+
+    // Playlist settings.
+    common: Common,
+    mode: ModeSettingsV2,
+    maps: MapPoolConfig,
+}
+
+impl ServerConfigV2 {
+    pub fn into_xml(&self) -> String {
+        r#"<?xml version="1.0" encoding="utf-8" ?>
+<playlist>
+	<gameinfos>
+		<game_mode>0</game_mode>
+		"#
+        .to_string()
+            + &self.mode.mode_header()
+            + r#"
+    </gameinfos>
+
+  	<script_settings>"#
+            + &self.common.into_xml()
+            + &self.mode.into_xml()
+            + r#"
+	</script_settings>
+	"# + &self.maps.into_xml()
+            + "
+</playlist>"
+    }
+
+    pub fn get_common(&self) -> &Common {
+        &self.common
+    }
+
+    pub fn get_mode(&self) -> &ModeSettingsV2 {
+        &self.mode
+    }
+
+    pub fn get_maps(&self) -> &MapPoolConfig {
+        &self.maps
+    }
+
+    pub fn script_name(&self) -> &str {
+        self.mode.script_name()
+    }
+
+    pub fn iter_maps(&self) -> impl Iterator<Item = &String> {
+        self.maps.map_uids.iter()
+    }
+
+    pub fn get_mode_settings_struct(&self) -> dxr::Value {
+        let mut cfg = self.common.get_xml_map();
+        cfg.append(&mut self.mode.get_xml_map());
+        dxr::Value::Struct(cfg)
+    }
+}
+
+impl Default for ServerConfigV2 {
+    fn default() -> Self {
+        Self {
+            common: Common::default_rounds(),
+            mode: ModeSettingsV2::TimeAttack(TimeAttack::default()),
+            maps: Default::default(),
+            options: Default::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
+#[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
 pub enum ModeSettings {
     Rounds(Rounds),
     ReverseCup(ReverseCup),
@@ -185,6 +259,83 @@ impl ModeSettings {
             /*  ModeSettings::ReverseCupV2(_) => {
                 Some(include_str!("../external_modes/ReverseCup.Script.txt"))
             } */
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "spacetime", derive(spacetimedb_lib::SpacetimeType))]
+#[cfg_attr(feature = "spacetime", sats(crate = spacetimedb_lib))]
+pub enum ModeSettingsV2 {
+    Rounds(Rounds),
+    ReverseCup(ReverseCupV2),
+    TimeAttack(TimeAttack),
+    Knockout(Knockout),
+}
+
+impl ModeSettingsV2 {
+    pub fn into_xml(&self) -> String {
+        match self {
+            ModeSettingsV2::Rounds(rounds) => rounds.into_xml(),
+            ModeSettingsV2::ReverseCup(reverse_cup) => reverse_cup.into_xml(),
+            ModeSettingsV2::TimeAttack(time_attack) => time_attack.into_xml(),
+            ModeSettingsV2::Knockout(knockout) => knockout.into_xml(),
+        }
+    }
+
+    pub fn get_xml_map(&self) -> BTreeMap<String, dxr::Value> {
+        match self {
+            ModeSettingsV2::Rounds(rounds) => rounds.get_xml_map(),
+            ModeSettingsV2::ReverseCup(reverse_cup) => reverse_cup.get_xml_map(),
+            ModeSettingsV2::TimeAttack(time_attack) => time_attack.get_xml_map(),
+            ModeSettingsV2::Knockout(knockout) => knockout.get_xml_map(),
+        }
+    }
+
+    pub fn mode_header(&self) -> String {
+        match self {
+            ModeSettingsV2::Rounds(_) => {
+                "<script_name>Trackmania/TM_Rounds_Online</script_name>".into()
+            }
+            ModeSettingsV2::ReverseCup(_) => {
+                "<script_name>Modes/Trackmania/ReverseCup</script_name>".into()
+            }
+            ModeSettingsV2::TimeAttack(_) => {
+                "<script_name>Trackmania/TM_TimeAttack_Online</script_name>".into()
+            }
+            ModeSettingsV2::Knockout(_) => {
+                "<script_name>Trackmania/TM_Knockout_Online</script_name>".into()
+            }
+        }
+    }
+
+    pub fn script_name(&self) -> &str {
+        match self {
+            Self::Rounds(_) => "Trackmania/TM_Rounds_Online",
+            Self::ReverseCup(_) => "Modes/Trackmania/ReverseCup",
+            Self::TimeAttack(_) => "Trackmania/TM_TimeAttack_Online",
+            Self::Knockout(_) => "Trackmania/TM_Kockout_Online",
+        }
+    }
+
+    pub fn get_mode(&self) -> TmMode {
+        match self {
+            Self::Rounds(_) => TmMode::Rounds,
+            Self::ReverseCup(_) => TmMode::ReverseCup,
+            Self::TimeAttack(_) => TmMode::TimeAttack,
+            Self::Knockout(_) => TmMode::Knockout,
+            //ModeSettings::ReverseCupV2(_) => TmMode::ReverseCup,
+        }
+    }
+
+    /// Returns the mode script of a custom mode.
+    pub fn get_external_script(&self) -> Option<&str> {
+        match self {
+            Self::Rounds(_) => None,
+            Self::ReverseCup(_) => Some(include_str!("../external_modes/ReverseCup.Script.txt")),
+            Self::TimeAttack(_) => None,
+            Self::Knockout(_) => None,
         }
     }
 }

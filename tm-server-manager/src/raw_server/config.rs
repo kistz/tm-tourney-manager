@@ -1,5 +1,7 @@
+use std::any::Any;
+
 use spacetimedb::{DbContext, ReducerContext, Table, reducer, table};
-use tm_server_types::config::ServerConfig;
+use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
     authorization::Authorization, competition::node::NodeHandle,
@@ -8,10 +10,10 @@ use crate::{
 };
 
 #[table(accessor=tab_raw_server_config)]
-pub struct RawServerConfig {
+struct RawServerConfig {
     #[auto_inc]
     #[primary_key]
-    pub id: u32,
+    id: u32,
 
     config: ServerConfig,
 
@@ -23,6 +25,35 @@ pub struct RawServerConfig {
 
 impl RawServerConfig {
     pub fn new(config: ServerConfig, competition_id: u32) -> Self {
+        Self {
+            id: 0,
+            config,
+            competition_id,
+        }
+    }
+
+    pub(crate) fn instantiate(mut self, parent_id: u32) -> Self {
+        self.competition_id = parent_id;
+        self.id = 0;
+        self
+    }
+}
+
+#[table(accessor=tab_raw_server_config_v2)]
+pub struct RawServerConfigV2 {
+    #[primary_key]
+    pub id: u32,
+
+    // This is a shared config associated with a competition.
+    #[index(hash)]
+    #[default(0)]
+    competition_id: u32,
+
+    config: ServerConfigV2,
+}
+
+impl RawServerConfigV2 {
+    pub fn new(config: ServerConfigV2, competition_id: u32) -> Self {
         Self {
             id: 0,
             config,
@@ -105,6 +136,7 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
             .id()
             .find(config_id)
             .is_some()
+
     }
 
     fn raw_server_config_shared_competition(
