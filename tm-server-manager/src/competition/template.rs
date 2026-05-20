@@ -139,9 +139,10 @@ pub(super) fn competition_template_instantiate(
     let mut config_map = HashMap::new();
     for old_config in configs {
         let old_id = old_config.id;
-        let new_match = old_config.instantiate(new_comp.id);
-        let new_match = ctx.db.tab_raw_server_config().try_insert(new_match)?;
-        config_map.insert(old_id, new_match);
+        let new_config = old_config.instantiate(new_comp.id);
+        // TODO
+        let new_config = ctx.db.tab_raw_server_config().try_insert(new_config)?;
+        config_map.insert(old_id, new_config);
     }
 
     let mut match_map = HashMap::new();

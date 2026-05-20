@@ -4,7 +4,7 @@ use spacetimedb::{
     Query, ReducerContext, SpacetimeType, Table, TimeDuration, Timestamp, ViewContext, reducer,
     table, view,
 };
-use tm_server_types::config::ServerConfig;
+use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
     authorization::Authorization,
@@ -159,7 +159,7 @@ impl MatchV1 {
 
     pub(crate) fn update_shared_configs(
         &mut self,
-        new: &HashMap<u32, crate::raw_server::config::RawServerConfig>,
+        new: &HashMap<u32, crate::raw_server::config::RawServerConfigV2>,
     ) {
         if let Some(config) = new.get(&self.config) {
             self.config = config.id
@@ -390,7 +390,7 @@ fn match_manual_recovery(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 fn match_override_pre_config(
     ctx: &ReducerContext,
     id: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
 ) -> Result<(), String> {
     if let Some(mut tm_match) = ctx.db.tab_match().id().find(id)
         && tm_match.status.before_preparation()
@@ -419,7 +419,7 @@ fn match_override_pre_config(
 fn match_override_config(
     ctx: &ReducerContext,
     id: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
 ) -> Result<(), String> {
     let Some(mut tm_match) = ctx.db.tab_match().id().find(id) else {
         return Err("Match was mot found!".into());

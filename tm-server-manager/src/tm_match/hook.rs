@@ -1,7 +1,8 @@
+use chumsky::Parser;
 use spacetimedb::{ReducerContext, SpacetimeType, table};
 use tm_server_types::event::{Event, PlayerConnect};
 
-use crate::tm_match::{MatchV1, hook::eval_msg::MessageParser, state::MatchState};
+use crate::tm_match::{MatchV1, hook::eval_msg::msg_eval, state::MatchState};
 
 mod eval_msg;
 
@@ -42,7 +43,9 @@ enum MatchHookAction {
 impl MatchHookAction {
     fn execute(self, ctx: &ReducerContext, trigger_ctx: MatchHookTriggerCtx) {
         match self {
-            MatchHookAction::ChatSend(msg) => msg.eval(ctx, trigger_ctx),
+            MatchHookAction::ChatSend(msg) => {
+                let ja = msg_eval().parse(&msg);
+            }
             MatchHookAction::ChatSendToPlayer(match_hook_action_chat_send_to_player_ctx) => todo!(),
         }
     }

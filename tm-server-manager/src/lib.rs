@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub mod authorization;
+pub mod auto_inc_manual;
 pub mod competition;
 pub mod env;
 pub mod input;

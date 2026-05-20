@@ -1,17 +1,19 @@
+use std::any::Any;
+
 use spacetimedb::{DbContext, ReducerContext, Table, reducer, table};
-use tm_server_types::config::ServerConfig;
+use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
-    authorization::Authorization, competition::node::NodeHandle,
+    authorization::Authorization, auto_inc_manual::AutoIncWrite, competition::node::NodeHandle,
     raw_server::occupation::TabRawServerOccupationRead, tm_match::tab_match__view,
     tm_server::tab_server__view,
 };
 
 #[table(accessor=tab_raw_server_config)]
-pub struct RawServerConfig {
+struct RawServerConfig {
     #[auto_inc]
     #[primary_key]
-    pub id: u32,
+    id: u32,
 
     config: ServerConfig,
 
@@ -37,6 +39,35 @@ impl RawServerConfig {
     }
 }
 
+#[table(accessor=tab_raw_server_config_v2)]
+pub struct RawServerConfigV2 {
+    #[primary_key]
+    pub id: u32,
+
+    // This is a shared config associated with a competition.
+    #[index(hash)]
+    #[default(0)]
+    competition_id: u32,
+
+    config: ServerConfigV2,
+}
+
+impl RawServerConfigV2 {
+    pub fn new(config: ServerConfigV2, competition_id: u32) -> Self {
+        Self {
+            id: 0,
+            config,
+            competition_id,
+        }
+    }
+
+    pub(crate) fn instantiate(mut self, parent_id: u32) -> Self {
+        self.competition_id = parent_id;
+        self.id = 0;
+        self
+    }
+}
+
 #[table(accessor=event_raw_server_state,event,public)]
 struct EventRawServerState {
     #[primary_key]
@@ -45,6 +76,16 @@ struct EventRawServerState {
     open: bool,
     occupied: bool,
     seamless: bool,
+}
+
+#[table(accessor=event_raw_server_state_v2,event,public)]
+struct EventRawServerStateV2 {
+    #[primary_key]
+    server_id: u32,
+    open: bool,
+    occupied: bool,
+    seamless: bool,
+    config: ServerConfigV2,
 }
 
 pub(crate) trait RawServerContigRead {
@@ -122,12 +163,12 @@ pub(crate) trait RawServerContigWrite {
     fn raw_server_config_update(
         &self,
         config_id: u32,
-        new_config: ServerConfig,
+        new_config: ServerConfigV2,
     ) -> Result<(), String>;
 
     fn raw_server_config_new(
         &self,
-        new_config: ServerConfig,
+        new_config: ServerConfigV2,
         competition_id: u32,
     ) -> Result<u32, String>;
 
@@ -138,14 +179,14 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
     fn raw_server_config_update(
         &self,
         config_id: u32,
-        new_config: ServerConfig,
+        new_config: ServerConfigV2,
     ) -> Result<(), String> {
-        let Some(mut config) = self.db().tab_raw_server_config().id().find(config_id) else {
+        let Some(mut config) = self.db().tab_raw_server_config_v2().id().find(config_id) else {
             return Err("Config not found".into());
         };
         config.config = new_config;
 
-        self.db().tab_raw_server_config().id().update(config);
+        self.db().tab_raw_server_config_v2().id().update(config);
 
         Ok(())
     }
@@ -154,13 +195,17 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
     /// If it is null it is a solo config if not then its associated with the compeition.
     fn raw_server_config_new(
         &self,
-        new_config: ServerConfig,
+        new_config: ServerConfigV2,
         competition_id: u32,
     ) -> Result<u32, String> {
         let id = self
             .db()
-            .tab_raw_server_config()
-            .try_insert(RawServerConfig::new(new_config, competition_id))?;
+            .tab_raw_server_config_v2()
+            .try_insert(RawServerConfigV2 {
+                id: self.auto_inc::<tab_raw_server_config_v2__TableHandle>(),
+                competition_id,
+                config: new_config,
+            })?;
 
         Ok(id.id)
     }
@@ -175,15 +220,15 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                 let tm_match = self.db_read_only().tab_match().id().find(m).unwrap();
                 let Some(config) = self
                     .db_read_only()
-                    .tab_raw_server_config()
+                    .tab_raw_server_config_v2()
                     .id()
                     .find(tm_match.get_config_id())
                 else {
                     return Err("Cannot find config.".into());
                 };
                 self.db()
-                    .event_raw_server_state()
-                    .try_insert(EventRawServerState {
+                    .event_raw_server_state_v2()
+                    .try_insert(EventRawServerStateV2 {
                         server_id,
                         config: config.config,
                         open: tm_match.is_open(),
@@ -233,7 +278,7 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
 fn raw_server_config_shared_new(
     ctx: &ReducerContext,
     competition_id: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
 ) -> Result<(), String> {
     ctx.auth_builder(competition_id)
         //.permission(CompetitionPermissionsV1::TODO)
@@ -248,11 +293,11 @@ fn raw_server_config_shared_new(
 fn raw_server_config_shared_update(
     ctx: &ReducerContext,
     config_id: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
 ) -> Result<(), String> {
     let Some(raw_config) = ctx
         .db_read_only()
-        .tab_raw_server_config()
+        .tab_raw_server_config_v2()
         .id()
         .find(config_id)
     else {
