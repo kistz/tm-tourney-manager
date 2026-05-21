@@ -5,28 +5,43 @@ use tm_server_types::config::TmMode;
 
 use crate::{
     authorization::Authorization,
+    auto_inc_manual::AutoIncWrite,
     competition::{
         CompetitionPermissionsV1,
         connection::tab_connection__view,
         node::{NodeHandle, NodeRead, NodeWrite},
         tab_competition,
     },
-    leaderboard::{
-        filter::LbFilterSettings, merge::LbMergeSettings, /*  remap::LbRemapSettings */
-    },
+    leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
     tm_match::leaderboard::{MatchLeadearboardRead, MatchRoundPlayer},
 };
 
 mod filter;
 mod merge;
-//mod remap;
+mod remap;
 
 #[table(accessor= tab_leaderboard)]
-pub struct LeaderboardV1 {
+struct LeaderboardV1 {
     name: String,
     settings: Vec<LbSettings>,
 
     #[auto_inc]
+    #[primary_key]
+    id: u32,
+
+    #[index(hash)]
+    parent_id: u32,
+
+    template: bool,
+
+    status: LeaderboardStatus,
+}
+
+#[table(accessor= tab_leaderboard_v2)]
+pub struct LeaderboardV2 {
+    name: String,
+    settings: Vec<LbSettingsV2>,
+
     #[primary_key]
     pub id: u32,
 
@@ -38,11 +53,16 @@ pub struct LeaderboardV1 {
     status: LeaderboardStatus,
 }
 
-impl LeaderboardV1 {
-    pub(crate) fn instantiate(mut self, parent_id: u32, stay_template: bool) -> Self {
+impl LeaderboardV2 {
+    pub(crate) fn instantiate(
+        mut self,
+        parent_id: u32,
+        stay_template: bool,
+        ctx: &ReducerContext,
+    ) -> Self {
         self.template = stay_template;
         self.parent_id = parent_id;
-        self.id = 0;
+        self.id = ctx.auto_inc::<tab_leaderboard_v2__TableHandle>();
         self
     }
 
@@ -67,8 +87,13 @@ enum LeaderboardStatus {
 enum LbSettings {
     Merge(LbMergeSettings),
     Filter(LbFilterSettings),
-    //Remap(LbRemapSettings),
-    //Separate(),
+}
+
+#[derive(Debug, SpacetimeType, Clone, Copy)]
+enum LbSettingsV2 {
+    Merge(LbMergeSettings),
+    Filter(LbFilterSettings),
+    Remap(LbRemapSettings),
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
@@ -193,16 +218,16 @@ fn leaderboard_create(
     if with_template != 0 {
         ctx.leaderboard_template_instantiate(with_template)?;
     } else {
-        let output = LeaderboardV1 {
+        let output = LeaderboardV2 {
             name,
-            id: 0,
+            id: ctx.auto_inc::<tab_leaderboard_v2__TableHandle>(),
             parent_id,
             template: false,
             status: LeaderboardStatus::Configuring,
             settings: Vec::new(),
         };
 
-        let output = ctx.db.tab_leaderboard().try_insert(output)?;
+        let output = ctx.db.tab_leaderboard_v2().try_insert(output)?;
 
         ctx.node_create(NodeHandle::LeaderboardV1(output.id))?;
     }
@@ -220,10 +245,10 @@ fn leaderboard_template_create(
         //.permission(CompetitionPermissionsV1::MATCH_CREATE)
         .authorize()?;
 
-    ctx.db.tab_leaderboard().try_insert(LeaderboardV1 {
+    ctx.db.tab_leaderboard_v2().try_insert(LeaderboardV2 {
         name,
         settings: Vec::new(),
-        id: 0,
+        id: ctx.auto_inc::<tab_leaderboard_v2__TableHandle>(),
         parent_id,
         template: true,
         status: LeaderboardStatus::Configuring,
@@ -234,7 +259,7 @@ fn leaderboard_template_create(
 
 #[reducer]
 fn leaderboard_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
-    let Some(mut leaderboard) = ctx.db.tab_leaderboard().id().find(id) else {
+    let Some(mut leaderboard) = ctx.db.tab_leaderboard_v2().id().find(id) else {
         return Err("Leaderboard was mot found!".into());
     };
 
@@ -247,7 +272,7 @@ fn leaderboard_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
     }
     leaderboard.status = LeaderboardStatus::Configured;
 
-    ctx.db.tab_leaderboard().id().update(leaderboard);
+    ctx.db.tab_leaderboard_v2().id().update(leaderboard);
 
     Ok(())
 }
@@ -256,9 +281,9 @@ fn leaderboard_configured(ctx: &ReducerContext, id: u32) -> Result<(), String> {
 fn leaderboard_settings_update(
     ctx: &ReducerContext,
     id: u32,
-    settings: Vec<LbSettings>,
+    settings: Vec<LbSettingsV2>,
 ) -> Result<(), String> {
-    let Some(mut leaderboard) = ctx.db.tab_leaderboard().id().find(id) else {
+    let Some(mut leaderboard) = ctx.db.tab_leaderboard_v2().id().find(id) else {
         return Err("Leaderboard not found.".into());
     };
 
@@ -271,7 +296,7 @@ fn leaderboard_settings_update(
 
     leaderboard.settings = settings;
 
-    ctx.db.tab_leaderboard().id().update(leaderboard);
+    ctx.db.tab_leaderboard_v2().id().update(leaderboard);
 
     Ok(())
 }
@@ -284,7 +309,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry> {
         let Some(lb) = self
             .db_read_only()
-            .tab_leaderboard()
+            .tab_leaderboard_v2()
             .id()
             .find(leaderboard_id)
         else {
@@ -342,15 +367,15 @@ impl<Db: DbContext> LeadearboardRead for Db {
 
         for (index, setting) in settings.into_iter().enumerate() {
             leaderboards = match setting {
-                //LbSettings::Remap(lb_remap_settings) => todo!(), //lb_remap_settings.evaluate(leaderboard),
-                LbSettings::Merge(lb_merge_settings) => {
+                LbSettingsV2::Merge(lb_merge_settings) => {
                     lb_merge_settings.evaluate(leaderboard_id, leaderboards)
                 }
-                LbSettings::Filter(lb_filter_settings) => {
+                LbSettingsV2::Filter(lb_filter_settings) => {
                     lb_filter_settings.evaluate(leaderboard_id, leaderboards, self)
-                } /* LbSettings::Remap(lb_remap_settings) => {
-                      lb_remap_settings.evaluate(leaderboard_id, leaderboards)
-                  } */
+                }
+                LbSettingsV2::Remap(lb_remap_settings) => {
+                    lb_remap_settings.evaluate(leaderboard_id, leaderboards)
+                }
             }
         }
 
@@ -366,7 +391,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
 }
 pub(crate) trait LeaderboardWrite: LeadearboardRead {
     fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String>;
-    fn leaderboard_insert(&self, output: LeaderboardV1) -> Result<LeaderboardV1, String>;
+    fn leaderboard_insert(&self, output: LeaderboardV2) -> Result<LeaderboardV2, String>;
     fn leaderboard_name_edit(&self, leaderboard_i32: u32, name: String) -> Result<(), String>;
 }
 impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
@@ -374,16 +399,16 @@ impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
         todo!()
     }
 
-    fn leaderboard_insert(&self, output: LeaderboardV1) -> Result<LeaderboardV1, String> {
+    fn leaderboard_insert(&self, output: LeaderboardV2) -> Result<LeaderboardV2, String> {
         todo!()
     }
 
     fn leaderboard_name_edit(&self, leaderboard_id: u32, name: String) -> Result<(), String> {
-        let Some(mut tm_match) = self.db().tab_leaderboard().id().find(leaderboard_id) else {
+        let Some(mut tm_match) = self.db().tab_leaderboard_v2().id().find(leaderboard_id) else {
             return Err("Match not found.".into());
         };
         tm_match.name = name;
-        self.db().tab_leaderboard().id().update(tm_match);
+        self.db().tab_leaderboard_v2().id().update(tm_match);
 
         Ok(())
     }
@@ -447,3 +472,56 @@ impl LeadearboardOperations for Vec<LbEntry> {
 // -> would require a internal representation which gets passed around like the above
 // -> then at the end we could somehow downcast it?
 // -> maybe thats also trash idk.
+
+mod migrate {
+    use spacetimedb::{ReducerContext, Table, reducer};
+
+    use crate::{
+        auto_inc_manual::AutoIncWrite,
+        leaderboard::{
+            LbSettings, LbSettingsV2, LeaderboardV2, tab_leaderboard, tab_leaderboard_v2,
+            tab_leaderboard_v2__TableHandle,
+        },
+    };
+
+    #[reducer]
+    fn migration_leaderboard_to_v2(ctx: &ReducerContext) -> Result<(), String> {
+        if ctx.db.tab_leaderboard_v2().count() != 0 {
+            return Err("The table is not empty anymore.".into());
+        }
+        let rows = ctx.db.tab_leaderboard().iter();
+        let mut max_id = 0;
+        for row in rows {
+            if row.id > max_id {
+                max_id = row.id
+            }
+
+            let mut settings = Vec::with_capacity(row.settings.len());
+            for setting in row.settings {
+                settings.push(setting.into());
+            }
+
+            ctx.db.tab_leaderboard_v2().try_insert(LeaderboardV2 {
+                name: row.name,
+                settings,
+                id: row.id,
+                parent_id: row.parent_id,
+                template: row.template,
+                status: row.status,
+            })?;
+        }
+
+        ctx.auto_inc_migration::<tab_leaderboard_v2__TableHandle>(max_id);
+
+        Ok(())
+    }
+
+    impl From<LbSettings> for LbSettingsV2 {
+        fn from(value: LbSettings) -> Self {
+            match value {
+                LbSettings::Merge(lb_merge_settings) => LbSettingsV2::Merge(lb_merge_settings),
+                LbSettings::Filter(lb_filter_settings) => LbSettingsV2::Filter(lb_filter_settings),
+            }
+        }
+    }
+}

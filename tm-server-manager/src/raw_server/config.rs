@@ -21,22 +21,6 @@ struct RawServerConfig {
     competition_id: u32,
 }
 
-impl RawServerConfig {
-    pub fn new(config: ServerConfig, competition_id: u32) -> Self {
-        Self {
-            id: 0,
-            config,
-            competition_id,
-        }
-    }
-
-    pub(crate) fn instantiate(mut self, parent_id: u32) -> Self {
-        self.competition_id = parent_id;
-        self.id = 0;
-        self
-    }
-}
-
 #[table(accessor=tab_raw_server_config_v2)]
 pub struct RawServerConfigV2 {
     #[primary_key]

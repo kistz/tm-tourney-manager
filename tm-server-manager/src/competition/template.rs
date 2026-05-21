@@ -11,7 +11,7 @@ use crate::{
         tab_competition,
     },
     input::{InputRead, InputWrite},
-    leaderboard::tab_leaderboard,
+    leaderboard::tab_leaderboard_v2,
     output::{OutputRead, OutputWrite},
     raw_server::config::{RawServerContigRead, tab_raw_server_config_v2},
     registration::tab_registration,
@@ -120,7 +120,7 @@ pub(super) fn competition_template_instantiate(
         .filter(competition_template.id);
     let leaderboards = ctx
         .db
-        .tab_leaderboard()
+        .tab_leaderboard_v2()
         .parent_id()
         .filter(competition_template.id);
 
@@ -197,8 +197,8 @@ pub(super) fn competition_template_instantiate(
     let mut leadearboard_map = HashMap::new();
     for old_leaderboard in leaderboards {
         let old_id = old_leaderboard.id;
-        let new_leadearboard = old_leaderboard.instantiate(new_comp.id, stay_template);
-        let new_leaderboard = ctx.db.tab_leaderboard().try_insert(new_leadearboard)?;
+        let new_leadearboard = old_leaderboard.instantiate(new_comp.id, stay_template, ctx);
+        let new_leaderboard = ctx.db.tab_leaderboard_v2().try_insert(new_leadearboard)?;
         ctx.node_create(NodeHandle::LeaderboardV1(new_leaderboard.id))?;
         leadearboard_map.insert(old_id, new_leaderboard);
     }

@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, Table, reducer, table, table::TableInternal};
+use spacetimedb::{DbContext, Local, Table, table, table::TableInternal};
 
 #[table(accessor=auto_inc)]
 struct AutoInc {
@@ -20,13 +20,7 @@ pub(crate) trait AutoIncWrite {
 
 impl<Db: DbContext<DbView = Local>> AutoIncWrite for Db {
     fn auto_inc<T: TableInternal>(&self) -> u32 {
-        let table_id = match T::TABLE_NAME {
-            "tab_raw_server_config_v2" => 1,
-            _ => {
-                log::error!("Table case not covered!");
-                panic!()
-            }
-        };
+        let table_id = table_id_from_trait::<T>();
         if let Some(mut table) = self.db().auto_inc().table_id().find(table_id) {
             table.current_id += 1;
             let current_id = table.current_id;
@@ -42,14 +36,8 @@ impl<Db: DbContext<DbView = Local>> AutoIncWrite for Db {
     }
 
     fn auto_inc_migration<T: TableInternal>(&self, current_max: u32) {
-        let table_id = match T::TABLE_NAME {
-            "tab_raw_server_config_v2" => 1,
-            _ => {
-                log::error!("Table case not covered!");
-                panic!()
-            }
-        };
-        if let Some(mut table) = self.db().auto_inc().table_id().find(table_id) {
+        let table_id = table_id_from_trait::<T>();
+        if self.db().auto_inc().table_id().find(table_id).is_some() {
             log::error!("Trying to do a auto inc migration but table already exists");
             panic!()
         }
@@ -60,5 +48,16 @@ impl<Db: DbContext<DbView = Local>> AutoIncWrite for Db {
                 current_id: current_max,
             })
             .unwrap();
+    }
+}
+
+fn table_id_from_trait<T: TableInternal>() -> u32 {
+    match T::TABLE_NAME {
+        "tab_raw_server_config_v2" => 1,
+        "tab_leaderboard_v2" => 2,
+        _ => {
+            log::error!("Table case not covered!");
+            panic!()
+        }
     }
 }

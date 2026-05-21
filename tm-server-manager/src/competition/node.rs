@@ -21,7 +21,7 @@ use crate::{
     },
     input::{InputWrite, tab_input, tab_input__view},
     leaderboard::{
-        LbEntry, LeadearboardRead, LeaderboardWrite, tab_leaderboard, tab_leaderboard__view,
+        LbEntry, LeadearboardRead, LeaderboardWrite, tab_leaderboard_v2, tab_leaderboard_v2__view,
     },
     output::{OutputWrite, tab_output, tab_output__view},
     raw_server::{config::RawServerContigRead, player::PermittedPlayer},
@@ -120,7 +120,7 @@ impl NodeHandle {
                 node.is_template()
             }
             NodeHandle::LeaderboardV1(n) => {
-                let node = ctx.db.tab_leaderboard().id().find(n).unwrap();
+                let node = ctx.db.tab_leaderboard_v2().id().find(n).unwrap();
                 node.is_template()
             }
         }
@@ -301,7 +301,7 @@ impl<Db: DbContext> NodeRead for Db {
                 }
             }
             NodeHandle::LeaderboardV1(node) => {
-                if let Some(node) = self.db_read_only().tab_leaderboard().id().find(node) {
+                if let Some(node) = self.db_read_only().tab_leaderboard_v2().id().find(node) {
                     Ok(node.get_comp_id())
                 } else {
                     Err("Registration could not be found.".into())
