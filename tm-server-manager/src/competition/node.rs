@@ -4,7 +4,7 @@ use spacetimedb::{
     AnonymousViewContext, DbContext, Local, LocalReadOnly, ProcedureContext, ReducerContext,
     SpacetimeType, Uuid, procedure, reducer, view,
 };
-use tm_server_types::config::{ModeSettings, TmMode};
+use tm_server_types::config::{ModeSettings, ModeSettingsV2, TmMode};
 
 use crate::{
     authorization::Authorization,
@@ -598,7 +598,7 @@ impl NodeLeaderboard for Vec<LbEntry> {
                     .unwrap();
                 let cfg = ctx.raw_server_config(tm_match.get_config_id()).unwrap();
                 let starting_points = match cfg.get_mode() {
-                    ModeSettings::ReverseCup(reverse_cup) => reverse_cup.starting_points,
+                    ModeSettingsV2::ReverseCup(reverse_cup) => reverse_cup.starting_points,
                     _ => unreachable!(),
                 };
 

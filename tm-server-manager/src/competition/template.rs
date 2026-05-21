@@ -13,7 +13,7 @@ use crate::{
     input::{InputRead, InputWrite},
     leaderboard::tab_leaderboard,
     output::{OutputRead, OutputWrite},
-    raw_server::config::{RawServerContigRead, tab_raw_server_config},
+    raw_server::config::{RawServerContigRead, tab_raw_server_config_v2},
     registration::tab_registration,
     schedule::tab_schedule,
     tm_match::tab_match,
@@ -139,9 +139,8 @@ pub(super) fn competition_template_instantiate(
     let mut config_map = HashMap::new();
     for old_config in configs {
         let old_id = old_config.id;
-        let new_config = old_config.instantiate(new_comp.id);
-        // TODO
-        let new_config = ctx.db.tab_raw_server_config().try_insert(new_config)?;
+        let new_config = old_config.instantiate(new_comp.id, ctx);
+        let new_config = ctx.db.tab_raw_server_config_v2().try_insert(new_config)?;
         config_map.insert(old_id, new_config);
     }
 

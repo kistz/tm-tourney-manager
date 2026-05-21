@@ -395,3 +395,41 @@ pub enum TmMode {
 fn tm_bool(value: bool) -> &'static str {
     if value { "True" } else { "False" }
 }
+
+impl From<ServerConfig> for ServerConfigV2 {
+    fn from(value: ServerConfig) -> Self {
+        ServerConfigV2 {
+            options: value.options,
+            common: value.common,
+            mode: match value.mode {
+                ModeSettings::Rounds(rounds) => ModeSettingsV2::Rounds(rounds),
+                ModeSettings::ReverseCup(reverse_cup) => {
+                    ModeSettingsV2::ReverseCup(reverse_cup.into())
+                }
+                ModeSettings::TimeAttack(time_attack) => ModeSettingsV2::TimeAttack(time_attack),
+                ModeSettings::Knockout(knockout) => ModeSettingsV2::Knockout(knockout),
+            },
+            maps: value.maps,
+        }
+    }
+}
+
+impl From<ReverseCup> for ReverseCupV2 {
+    fn from(value: ReverseCup) -> Self {
+        ReverseCupV2 {
+            finish_timeout: value.finish_timeout,
+            maps_per_match: value.maps_per_match,
+            points_repartition: value.points_repartition,
+            complex_points_repartition: String::new(),
+            rounds_per_map: value.rounds_per_map,
+            number_of_winners: value.number_of_winners,
+            starting_points: value.starting_points,
+            disable_last_chance: value.disable_last_chance,
+            allow_fast_forward_rounds: value.allow_fast_forward_rounds,
+            fast_forward_points_repartition: value.fast_forward_points_repartition,
+            dnf_points_loss: value.dnf_points_loss,
+            last_chance_dnf_mode: value.last_chance_dnf_mode,
+            number_of_players: value.number_of_players,
+        }
+    }
+}

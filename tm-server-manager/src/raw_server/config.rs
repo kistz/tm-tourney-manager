@@ -1,5 +1,3 @@
-use std::any::Any;
-
 use spacetimedb::{DbContext, ReducerContext, Table, reducer, table};
 use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
@@ -61,9 +59,9 @@ impl RawServerConfigV2 {
         }
     }
 
-    pub(crate) fn instantiate(mut self, parent_id: u32) -> Self {
+    pub(crate) fn instantiate(mut self, parent_id: u32, ctx: &ReducerContext) -> Self {
         self.competition_id = parent_id;
-        self.id = 0;
+        self.id = ctx.auto_inc::<tab_raw_server_config_v2__TableHandle>();
         self
     }
 }
@@ -90,14 +88,14 @@ struct EventRawServerStateV2 {
 
 pub(crate) trait RawServerContigRead {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle>;
-    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfig, String>;
+    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfigV2, String>;
 
     fn raw_server_config_exists(&self, config_id: u32) -> bool;
 
     fn raw_server_config_shared_competition(
         &self,
         competition_id: u32,
-    ) -> impl Iterator<Item = RawServerConfig>;
+    ) -> impl Iterator<Item = RawServerConfigV2>;
 }
 impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle> {
@@ -127,10 +125,10 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
         config_references
     }
 
-    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfig, String> {
+    fn raw_server_config(&self, config_id: u32) -> Result<ServerConfigV2, String> {
         let Some(config) = self
             .db_read_only()
-            .tab_raw_server_config()
+            .tab_raw_server_config_v2()
             .id()
             .find(config_id)
         else {
@@ -142,7 +140,7 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
 
     fn raw_server_config_exists(&self, config_id: u32) -> bool {
         self.db_read_only()
-            .tab_raw_server_config()
+            .tab_raw_server_config_v2()
             .id()
             .find(config_id)
             .is_some()
@@ -151,9 +149,9 @@ impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
     fn raw_server_config_shared_competition(
         &self,
         competition_id: u32,
-    ) -> impl Iterator<Item = RawServerConfig> {
+    ) -> impl Iterator<Item = RawServerConfigV2> {
         self.db_read_only()
-            .tab_raw_server_config()
+            .tab_raw_server_config_v2()
             .competition_id()
             .filter(competition_id)
     }
@@ -242,13 +240,13 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                 let tm_server = self.db_read_only().tab_server().id().find(s).unwrap();
                 let config = self
                     .db_read_only()
-                    .tab_raw_server_config()
+                    .tab_raw_server_config_v2()
                     .id()
                     .find(tm_server.get_config_id())
                     .unwrap();
                 self.db()
-                    .event_raw_server_state()
-                    .try_insert(EventRawServerState {
+                    .event_raw_server_state_v2()
+                    .try_insert(EventRawServerStateV2 {
                         server_id,
                         config: config.config,
                         open: tm_server.is_open(),
@@ -311,4 +309,41 @@ fn raw_server_config_shared_update(
     ctx.raw_server_config_update(config_id, config)?;
 
     Ok(())
+}
+
+mod migrate {
+    use spacetimedb::{ReducerContext, Table, reducer};
+
+    use crate::{
+        auto_inc_manual::AutoIncWrite,
+        raw_server::config::{
+            RawServerConfigV2, tab_raw_server_config, tab_raw_server_config_v2,
+            tab_raw_server_config_v2__TableHandle,
+        },
+    };
+
+    #[reducer]
+    fn migration_raw_server_config_to_v2(ctx: &ReducerContext) -> Result<(), String> {
+        if ctx.db.tab_raw_server_config_v2().count() != 0 {
+            return Err("The table is not empty anymore.".into());
+        }
+        let rows = ctx.db.tab_raw_server_config().iter();
+        let mut max_id = 0;
+        for row in rows {
+            if row.id > max_id {
+                max_id = row.id
+            }
+            ctx.db
+                .tab_raw_server_config_v2()
+                .try_insert(RawServerConfigV2 {
+                    id: row.id,
+                    competition_id: row.competition_id,
+                    config: row.config.into(),
+                })?;
+        }
+
+        ctx.auto_inc_migration::<tab_raw_server_config_v2__TableHandle>(max_id);
+
+        Ok(())
+    }
 }
