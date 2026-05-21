@@ -4,13 +4,13 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::server_config_type::ServerConfig;
+use super::server_config_v_2_type::ServerConfigV2;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct MatchOverridePreConfigArgs {
     pub id: u32,
-    pub config: ServerConfig,
+    pub config: ServerConfigV2,
 }
 
 impl From<MatchOverridePreConfigArgs> for super::Reducer {
@@ -37,7 +37,7 @@ pub trait match_override_pre_config {
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
     /// /// Use [`match_override_pre_config:match_override_pre_config_then`] to run a callback after the reducer completes.
-    fn match_override_pre_config(&self, id: u32, config: ServerConfig) -> __sdk::Result<()> {
+    fn match_override_pre_config(&self, id: u32, config: ServerConfigV2) -> __sdk::Result<()> {
         self.match_override_pre_config_then(id, config, |_, _| {})
     }
 
@@ -50,7 +50,7 @@ pub trait match_override_pre_config {
     fn match_override_pre_config_then(
         &self,
         id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -62,7 +62,7 @@ impl match_override_pre_config for super::RemoteReducers {
     fn match_override_pre_config_then(
         &self,
         id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send

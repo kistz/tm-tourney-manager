@@ -11,12 +11,12 @@ import {
 } from "spacetimedb";
 
 import {
-  ServerConfig,
+  ServerConfigV2,
 } from "./types";
 
 export default {
   to: __t.u32(),
   get config() {
-    return ServerConfig;
+    return ServerConfigV2;
   },
 };

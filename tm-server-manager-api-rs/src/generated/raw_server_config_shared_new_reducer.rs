@@ -4,13 +4,13 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::server_config_type::ServerConfig;
+use super::server_config_v_2_type::ServerConfigV2;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct RawServerConfigSharedNewArgs {
     pub competition_id: u32,
-    pub config: ServerConfig,
+    pub config: ServerConfigV2,
 }
 
 impl From<RawServerConfigSharedNewArgs> for super::Reducer {
@@ -40,7 +40,7 @@ pub trait raw_server_config_shared_new {
     fn raw_server_config_shared_new(
         &self,
         competition_id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     ) -> __sdk::Result<()> {
         self.raw_server_config_shared_new_then(competition_id, config, |_, _| {})
     }
@@ -54,7 +54,7 @@ pub trait raw_server_config_shared_new {
     fn raw_server_config_shared_new_then(
         &self,
         competition_id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -66,7 +66,7 @@ impl raw_server_config_shared_new for super::RemoteReducers {
     fn raw_server_config_shared_new_then(
         &self,
         competition_id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send

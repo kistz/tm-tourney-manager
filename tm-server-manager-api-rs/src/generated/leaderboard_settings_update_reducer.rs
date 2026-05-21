@@ -4,13 +4,13 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::lb_settings_type::LbSettings;
+use super::lb_settings_v_2_type::LbSettingsV2;
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
 pub(super) struct LeaderboardSettingsUpdateArgs {
     pub id: u32,
-    pub settings: Vec<LbSettings>,
+    pub settings: Vec<LbSettingsV2>,
 }
 
 impl From<LeaderboardSettingsUpdateArgs> for super::Reducer {
@@ -37,7 +37,11 @@ pub trait leaderboard_settings_update {
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
     /// /// Use [`leaderboard_settings_update:leaderboard_settings_update_then`] to run a callback after the reducer completes.
-    fn leaderboard_settings_update(&self, id: u32, settings: Vec<LbSettings>) -> __sdk::Result<()> {
+    fn leaderboard_settings_update(
+        &self,
+        id: u32,
+        settings: Vec<LbSettingsV2>,
+    ) -> __sdk::Result<()> {
         self.leaderboard_settings_update_then(id, settings, |_, _| {})
     }
 
@@ -50,7 +54,7 @@ pub trait leaderboard_settings_update {
     fn leaderboard_settings_update_then(
         &self,
         id: u32,
-        settings: Vec<LbSettings>,
+        settings: Vec<LbSettingsV2>,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -62,7 +66,7 @@ impl leaderboard_settings_update for super::RemoteReducers {
     fn leaderboard_settings_update_then(
         &self,
         id: u32,
-        settings: Vec<LbSettings>,
+        settings: Vec<LbSettingsV2>,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send

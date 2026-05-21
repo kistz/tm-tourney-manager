@@ -156,8 +156,8 @@ pub async fn setup_state_synchronization() {
             tracing::info!("Reapplying config on StartMapStart.");
             let config = unsafe {
                 std::mem::transmute::<
-                    tm_server_manager_api_rs::ServerConfig,
-                    tm_server_controller::config::ServerConfig,
+                    tm_server_manager_api_rs::ServerConfigV2,
+                    tm_server_controller::config::ServerConfigV2,
                 >(lock.lock().await.config.clone())
             };
 
@@ -175,8 +175,8 @@ pub async fn setup_state_synchronization() {
             tracing::info!("Reapplying config on StartMapEnd.");
             let config = unsafe {
                 std::mem::transmute::<
-                    tm_server_manager_api_rs::ServerConfig,
-                    tm_server_controller::config::ServerConfig,
+                    tm_server_manager_api_rs::ServerConfigV2,
+                    tm_server_controller::config::ServerConfigV2,
                 >(lock.lock().await.config.clone())
             };
 

@@ -4,53 +4,43 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-use super::server_config_v_2_type::ServerConfigV2;
-
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub(super) struct ServerConfigOverrideArgs {
-    pub to: u32,
-    pub config: ServerConfigV2,
-}
+pub(super) struct MigrationRawServerConfigToV2Args {}
 
-impl From<ServerConfigOverrideArgs> for super::Reducer {
-    fn from(args: ServerConfigOverrideArgs) -> Self {
-        Self::ServerConfigOverride {
-            to: args.to,
-            config: args.config,
-        }
+impl From<MigrationRawServerConfigToV2Args> for super::Reducer {
+    fn from(args: MigrationRawServerConfigToV2Args) -> Self {
+        Self::MigrationRawServerConfigToV2
     }
 }
 
-impl __sdk::InModule for ServerConfigOverrideArgs {
+impl __sdk::InModule for MigrationRawServerConfigToV2Args {
     type Module = super::RemoteModule;
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the reducer `server_config_override`.
+/// Extension trait for access to the reducer `migration_raw_server_config_to_v2`.
 ///
 /// Implemented for [`super::RemoteReducers`].
-pub trait server_config_override {
-    /// Request that the remote module invoke the reducer `server_config_override` to run as soon as possible.
+pub trait migration_raw_server_config_to_v_2 {
+    /// Request that the remote module invoke the reducer `migration_raw_server_config_to_v2` to run as soon as possible.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and this method provides no way to listen for its completion status.
-    /// /// Use [`server_config_override:server_config_override_then`] to run a callback after the reducer completes.
-    fn server_config_override(&self, to: u32, config: ServerConfigV2) -> __sdk::Result<()> {
-        self.server_config_override_then(to, config, |_, _| {})
+    /// /// Use [`migration_raw_server_config_to_v_2:migration_raw_server_config_to_v_2_then`] to run a callback after the reducer completes.
+    fn migration_raw_server_config_to_v_2(&self) -> __sdk::Result<()> {
+        self.migration_raw_server_config_to_v_2_then(|_, _| {})
     }
 
-    /// Request that the remote module invoke the reducer `server_config_override` to run as soon as possible,
+    /// Request that the remote module invoke the reducer `migration_raw_server_config_to_v2` to run as soon as possible,
     /// registering `callback` to run when we are notified that the reducer completed.
     ///
     /// This method returns immediately, and errors only if we are unable to send the request.
     /// The reducer will run asynchronously in the future,
     ///  and its status can be observed with the `callback`.
-    fn server_config_override_then(
+    fn migration_raw_server_config_to_v_2_then(
         &self,
-        to: u32,
-        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
@@ -58,17 +48,15 @@ pub trait server_config_override {
     ) -> __sdk::Result<()>;
 }
 
-impl server_config_override for super::RemoteReducers {
-    fn server_config_override_then(
+impl migration_raw_server_config_to_v_2 for super::RemoteReducers {
+    fn migration_raw_server_config_to_v_2_then(
         &self,
-        to: u32,
-        config: ServerConfigV2,
 
         callback: impl FnOnce(&super::ReducerEventContext, Result<Result<(), String>, __sdk::InternalError>)
             + Send
             + 'static,
     ) -> __sdk::Result<()> {
         self.imp
-            .invoke_reducer_with_callback(ServerConfigOverrideArgs { to, config }, callback)
+            .invoke_reducer_with_callback(MigrationRawServerConfigToV2Args {}, callback)
     }
 }

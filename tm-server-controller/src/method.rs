@@ -1,6 +1,6 @@
 use tm_server_types::{
     base::{MapInfo, PlayerInfo, account_id_to_login},
-    config::ServerConfig,
+    config::ServerConfigV2,
     method::{MethodCall, MethodError, MethodResponse},
 };
 
@@ -230,7 +230,8 @@ pub trait XmlRpcMethods {
     ) -> Result<bool, ClientError>;
 
     async fn set_script_name(&self, name: impl Into<String>) -> Result<bool, ClientError>;
-    async fn set_mode_script_settings(&self, settings: ServerConfig) -> Result<bool, ClientError>;
+    async fn set_mode_script_settings(&self, settings: ServerConfigV2)
+    -> Result<bool, ClientError>;
 
     async fn insert_map_list(&self, maps: Vec<String>) -> Result<i32, ClientError>;
 
@@ -425,7 +426,10 @@ impl XmlRpcMethods for TrackmaniaServer {
             .await
     }
 
-    async fn set_mode_script_settings(&self, settings: ServerConfig) -> Result<bool, ClientError> {
+    async fn set_mode_script_settings(
+        &self,
+        settings: ServerConfigV2,
+    ) -> Result<bool, ClientError> {
         self.call("SetModeScriptSettings", settings.get_mode_settings_struct())
             .await
     }

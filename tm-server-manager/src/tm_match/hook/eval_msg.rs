@@ -1,4 +1,4 @@
-use chumsky::{
+/* use chumsky::{
     IterParser, Parser,
     combinator::DelimitedBy,
     primitive::{any, just},
@@ -46,8 +46,8 @@ pub(super) fn msg_eval<'a>() -> impl Parser<'a, &'a str, Vec<String>> {
     }); */
 }
 
-#[test]
+/* #[test]
 fn test_eval() {
     let ja = msg_eval().parse("This is a good {{server}} server message {{wowie}}");
-    println!("{ja:?}");
-}
+} */
+ */

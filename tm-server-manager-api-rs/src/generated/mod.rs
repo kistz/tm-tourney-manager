@@ -6,6 +6,7 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+pub mod auto_inc_type;
 pub mod ban_args_type;
 pub mod chat_send_server_message_to_user_args_type;
 pub mod chat_send_to_user_args_type;
@@ -47,8 +48,8 @@ pub mod end_turn_start_type;
 pub mod env_type;
 pub mod event_raw_server_method_table;
 pub mod event_raw_server_method_type;
-pub mod event_raw_server_state_table;
-pub mod event_raw_server_state_type;
+pub mod event_raw_server_state_v_2_table;
+pub mod event_raw_server_state_v_2_type;
 pub mod event_type;
 pub mod finish_timeout_type;
 pub mod give_up_type;
@@ -65,17 +66,21 @@ pub mod lb_filter_fallback_type;
 pub mod lb_filter_ident_type;
 pub mod lb_filter_kind_type;
 pub mod lb_filter_settings_type;
+pub mod lb_manipulation_kind_type;
 pub mod lb_merge_action_type;
 pub mod lb_merge_kind_type;
 pub mod lb_merge_settings_type;
 pub mod lb_params_type;
+pub mod lb_remap_settings_type;
 pub mod lb_settings_type;
+pub mod lb_settings_v_2_type;
 pub mod leaderboard_configured_reducer;
 pub mod leaderboard_create_reducer;
 pub mod leaderboard_settings_update_reducer;
 pub mod leaderboard_status_type;
 pub mod leaderboard_template_create_reducer;
 pub mod leaderboard_v_1_type;
+pub mod leaderboard_v_2_type;
 pub mod lend_raw_server_reducer;
 pub mod loading_map_end_type;
 pub mod loading_map_start_type;
@@ -117,7 +122,10 @@ pub mod member_remove_reducer;
 pub mod method_call_type;
 pub mod method_error_type;
 pub mod method_response_type;
+pub mod migration_leaderboard_to_v_2_reducer;
+pub mod migration_raw_server_config_to_v_2_reducer;
 pub mod mode_settings_type;
+pub mod mode_settings_v_2_type;
 pub mod my_node_positions_table;
 pub mod my_project_v_1_type;
 pub mod my_projects_table;
@@ -160,6 +168,7 @@ pub mod project_v_1_type;
 pub mod raw_server_config_shared_new_reducer;
 pub mod raw_server_config_shared_update_reducer;
 pub mod raw_server_config_type;
+pub mod raw_server_config_v_2_type;
 pub mod raw_server_identity_type;
 pub mod raw_server_method_type;
 pub mod raw_server_occupation_type;
@@ -184,6 +193,7 @@ pub mod registration_type;
 pub mod respawn_behaviour_type;
 pub mod respawn_type;
 pub mod reverse_cup_type;
+pub mod reverse_cup_v_2_type;
 pub mod revoke_raw_server_reducer;
 pub mod role_assign_permission_reducer;
 pub mod role_create_reducer;
@@ -205,6 +215,7 @@ pub mod scores_type;
 pub mod server_assign_raw_server_reducer;
 pub mod server_config_override_reducer;
 pub mod server_config_type;
+pub mod server_config_v_2_type;
 pub mod server_configured_reducer;
 pub mod server_configuring_reducer;
 pub mod server_create_reducer;
@@ -256,6 +267,7 @@ pub mod warmup_round_type;
 pub mod warmup_timeout_type;
 pub mod way_point_type;
 
+pub use auto_inc_type::AutoInc;
 pub use ban_args_type::BanArgs;
 pub use chat_send_server_message_to_user_args_type::ChatSendServerMessageToUserArgs;
 pub use chat_send_to_user_args_type::ChatSendToUserArgs;
@@ -297,8 +309,8 @@ pub use end_turn_start_type::EndTurnStart;
 pub use env_type::Env;
 pub use event_raw_server_method_table::*;
 pub use event_raw_server_method_type::EventRawServerMethod;
-pub use event_raw_server_state_table::*;
-pub use event_raw_server_state_type::EventRawServerState;
+pub use event_raw_server_state_v_2_table::*;
+pub use event_raw_server_state_v_2_type::EventRawServerStateV2;
 pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
 pub use give_up_type::GiveUp;
@@ -315,17 +327,21 @@ pub use lb_filter_fallback_type::LbFilterFallback;
 pub use lb_filter_ident_type::LbFilterIdent;
 pub use lb_filter_kind_type::LbFilterKind;
 pub use lb_filter_settings_type::LbFilterSettings;
+pub use lb_manipulation_kind_type::LbManipulationKind;
 pub use lb_merge_action_type::LbMergeAction;
 pub use lb_merge_kind_type::LbMergeKind;
 pub use lb_merge_settings_type::LbMergeSettings;
 pub use lb_params_type::LbParams;
+pub use lb_remap_settings_type::LbRemapSettings;
 pub use lb_settings_type::LbSettings;
+pub use lb_settings_v_2_type::LbSettingsV2;
 pub use leaderboard_configured_reducer::leaderboard_configured;
 pub use leaderboard_create_reducer::leaderboard_create;
 pub use leaderboard_settings_update_reducer::leaderboard_settings_update;
 pub use leaderboard_status_type::LeaderboardStatus;
 pub use leaderboard_template_create_reducer::leaderboard_template_create;
 pub use leaderboard_v_1_type::LeaderboardV1;
+pub use leaderboard_v_2_type::LeaderboardV2;
 pub use lend_raw_server_reducer::lend_raw_server;
 pub use loading_map_end_type::LoadingMapEnd;
 pub use loading_map_start_type::LoadingMapStart;
@@ -367,7 +383,10 @@ pub use member_remove_reducer::member_remove;
 pub use method_call_type::MethodCall;
 pub use method_error_type::MethodError;
 pub use method_response_type::MethodResponse;
+pub use migration_leaderboard_to_v_2_reducer::migration_leaderboard_to_v_2;
+pub use migration_raw_server_config_to_v_2_reducer::migration_raw_server_config_to_v_2;
 pub use mode_settings_type::ModeSettings;
+pub use mode_settings_v_2_type::ModeSettingsV2;
 pub use my_node_positions_table::*;
 pub use my_project_v_1_type::MyProjectV1;
 pub use my_projects_table::*;
@@ -410,6 +429,7 @@ pub use project_v_1_type::ProjectV1;
 pub use raw_server_config_shared_new_reducer::raw_server_config_shared_new;
 pub use raw_server_config_shared_update_reducer::raw_server_config_shared_update;
 pub use raw_server_config_type::RawServerConfig;
+pub use raw_server_config_v_2_type::RawServerConfigV2;
 pub use raw_server_identity_type::RawServerIdentity;
 pub use raw_server_method_type::RawServerMethod;
 pub use raw_server_occupation_type::RawServerOccupation;
@@ -434,6 +454,7 @@ pub use registration_type::Registration;
 pub use respawn_behaviour_type::RespawnBehaviour;
 pub use respawn_type::Respawn;
 pub use reverse_cup_type::ReverseCup;
+pub use reverse_cup_v_2_type::ReverseCupV2;
 pub use revoke_raw_server_reducer::revoke_raw_server;
 pub use role_assign_permission_reducer::role_assign_permission;
 pub use role_create_reducer::role_create;
@@ -455,6 +476,7 @@ pub use scores_type::Scores;
 pub use server_assign_raw_server_reducer::server_assign_raw_server;
 pub use server_config_override_reducer::server_config_override;
 pub use server_config_type::ServerConfig;
+pub use server_config_v_2_type::ServerConfigV2;
 pub use server_configured_reducer::server_configured;
 pub use server_configuring_reducer::server_configuring;
 pub use server_create_reducer::server_create;
@@ -573,7 +595,7 @@ pub enum Reducer {
     },
     LeaderboardSettingsUpdate {
         id: u32,
-        settings: Vec<LbSettings>,
+        settings: Vec<LbSettingsV2>,
     },
     LeaderboardTemplateCreate {
         name: String,
@@ -607,11 +629,11 @@ pub enum Reducer {
     },
     MatchOverrideConfig {
         id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     },
     MatchOverridePreConfig {
         id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     },
     MatchRestart {
         match_id: u32,
@@ -660,6 +682,8 @@ pub enum Reducer {
     MemberRemove {
         member_id: u32,
     },
+    MigrationLeaderboardToV2,
+    MigrationRawServerConfigToV2,
     NodeDelete {
         node: NodeHandle,
     },
@@ -693,11 +717,11 @@ pub enum Reducer {
     },
     RawServerConfigSharedNew {
         competition_id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     },
     RawServerConfigSharedUpdate {
         config_id: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     },
     RawServerPlayerAdd {
         account_id: __sdk::Uuid,
@@ -775,7 +799,7 @@ pub enum Reducer {
     },
     ServerConfigOverride {
         to: u32,
-        config: ServerConfig,
+        config: ServerConfigV2,
     },
     ServerConfigured {
         id: u32,
@@ -857,6 +881,8 @@ impl __sdk::Reducer for Reducer {
             Reducer::MemberAdd { .. } => "member_add",
             Reducer::MemberAssignPermission { .. } => "member_assign_permission",
             Reducer::MemberRemove { .. } => "member_remove",
+            Reducer::MigrationLeaderboardToV2 => "migration_leaderboard_to_v2",
+            Reducer::MigrationRawServerConfigToV2 => "migration_raw_server_config_to_v2",
             Reducer::NodeDelete { .. } => "node_delete",
             Reducer::NodeNameEdit { .. } => "node_name_edit",
             Reducer::OutputCreate { .. } => "output_create",
@@ -1159,7 +1185,11 @@ impl __sdk::Reducer for Reducer {
 }             => __sats::bsatn::to_vec(&member_remove_reducer::MemberRemoveArgs {
                 member_id: member_id.clone(),
 }),
-            Reducer::NodeDelete{
+            Reducer::MigrationLeaderboardToV2 => __sats::bsatn::to_vec(&migration_leaderboard_to_v_2_reducer::MigrationLeaderboardToV2Args {
+                }),
+Reducer::MigrationRawServerConfigToV2 => __sats::bsatn::to_vec(&migration_raw_server_config_to_v_2_reducer::MigrationRawServerConfigToV2Args {
+                }),
+Reducer::NodeDelete{
                 node,
 }             => __sats::bsatn::to_vec(&node_delete_reducer::NodeDeleteArgs {
                 node: node.clone(),
@@ -1430,7 +1460,7 @@ impl __sdk::Reducer for Reducer {
 pub struct DbUpdate {
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
     event_raw_server_method: __sdk::TableUpdate<EventRawServerMethod>,
-    event_raw_server_state: __sdk::TableUpdate<EventRawServerState>,
+    event_raw_server_state_v_2: __sdk::TableUpdate<EventRawServerStateV2>,
     match_state: __sdk::TableUpdate<MatchState>,
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
     my_projects: __sdk::TableUpdate<MyProjectV1>,
@@ -1464,8 +1494,8 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "event_raw_server_method" => db_update.event_raw_server_method.append(
                     event_raw_server_method_table::parse_table_update(table_update)?,
                 ),
-                "event_raw_server_state" => db_update.event_raw_server_state.append(
-                    event_raw_server_state_table::parse_table_update(table_update)?,
+                "event_raw_server_state_v2" => db_update.event_raw_server_state_v_2.append(
+                    event_raw_server_state_v_2_table::parse_table_update(table_update)?,
                 ),
                 "match_state" => db_update
                     .match_state
@@ -1549,7 +1579,7 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut diff = AppliedDiff::default();
 
         diff.event_raw_server_method = self.event_raw_server_method.into_event_diff();
-        diff.event_raw_server_state = self.event_raw_server_state.into_event_diff();
+        diff.event_raw_server_state_v_2 = self.event_raw_server_state_v_2.into_event_diff();
         diff.tab_match = cache
             .apply_diff_to_table::<MatchV1>("tab_match", &self.tab_match)
             .with_updates_by_pk(|row| &row.id);
@@ -1629,8 +1659,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "event_raw_server_state" => db_update
-                    .event_raw_server_state
+                "event_raw_server_state_v2" => db_update
+                    .event_raw_server_state_v_2
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
@@ -1702,8 +1732,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "event_raw_server_state" => db_update
-                    .event_raw_server_state
+                "event_raw_server_state_v2" => db_update
+                    .event_raw_server_state_v_2
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
@@ -1773,7 +1803,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
     event_raw_server_method: __sdk::TableAppliedDiff<'r, EventRawServerMethod>,
-    event_raw_server_state: __sdk::TableAppliedDiff<'r, EventRawServerState>,
+    event_raw_server_state_v_2: __sdk::TableAppliedDiff<'r, EventRawServerStateV2>,
     match_state: __sdk::TableAppliedDiff<'r, MatchState>,
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
     my_projects: __sdk::TableAppliedDiff<'r, MyProjectV1>,
@@ -1814,9 +1844,9 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.event_raw_server_method,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<EventRawServerState>(
-            "event_raw_server_state",
-            &self.event_raw_server_state,
+        callbacks.invoke_table_row_callbacks::<EventRawServerStateV2>(
+            "event_raw_server_state_v2",
+            &self.event_raw_server_state_v_2,
             event,
         );
         callbacks.invoke_table_row_callbacks::<MatchState>("match_state", &self.match_state, event);
@@ -2535,7 +2565,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         competition_available_server_pool_table::register_table(client_cache);
         event_raw_server_method_table::register_table(client_cache);
-        event_raw_server_state_table::register_table(client_cache);
+        event_raw_server_state_v_2_table::register_table(client_cache);
         match_state_table::register_table(client_cache);
         my_node_positions_table::register_table(client_cache);
         my_projects_table::register_table(client_cache);
@@ -2557,7 +2587,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
         "competition_available_server_pool",
         "event_raw_server_method",
-        "event_raw_server_state",
+        "event_raw_server_state_v2",
         "match_state",
         "my_node_positions",
         "my_projects",

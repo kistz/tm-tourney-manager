@@ -11,12 +11,12 @@ import {
 } from "spacetimedb";
 
 import {
-  LbSettings,
+  LbSettingsV2,
 } from "./types";
 
 export default {
   id: __t.u32(),
   get settings() {
-    return __t.array(LbSettings);
+    return __t.array(LbSettingsV2);
   },
 };

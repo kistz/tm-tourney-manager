@@ -50,7 +50,7 @@ impl RawServerConfigV2 {
     }
 }
 
-#[table(accessor=event_raw_server_state,event,public)]
+/* #[table(accessor=event_raw_server_state,event,public)]
 struct EventRawServerState {
     #[primary_key]
     server_id: u32,
@@ -58,7 +58,7 @@ struct EventRawServerState {
     open: bool,
     occupied: bool,
     seamless: bool,
-}
+} */
 
 #[table(accessor=event_raw_server_state_v2,event,public)]
 struct EventRawServerStateV2 {

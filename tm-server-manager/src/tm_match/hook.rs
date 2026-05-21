@@ -4,7 +4,7 @@ use tm_server_types::event::{Event, PlayerConnect};
 
 use crate::tm_match::{MatchV1, hook::eval_msg::msg_eval, state::MatchState};
 
-mod eval_msg;
+//mod eval_msg;
 
 #[table(
     accessor=tab_match_hook,

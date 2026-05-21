@@ -70,6 +70,8 @@ import MatchTryStartReducer from "./match_try_start_reducer";
 import MemberAddReducer from "./member_add_reducer";
 import MemberAssignPermissionReducer from "./member_assign_permission_reducer";
 import MemberRemoveReducer from "./member_remove_reducer";
+import MigrationLeaderboardToV2Reducer from "./migration_leaderboard_to_v_2_reducer";
+import MigrationRawServerConfigToV2Reducer from "./migration_raw_server_config_to_v_2_reducer";
 import NodeDeleteReducer from "./node_delete_reducer";
 import NodeNameEditReducer from "./node_name_edit_reducer";
 import OutputCreateReducer from "./output_create_reducer";
@@ -124,7 +126,7 @@ import * as TestNodePermittedPlayersInputProcedure from "./test_node_permitted_p
 // Import all table schema definitions
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
-import EventRawServerStateRow from "./event_raw_server_state_table";
+import EventRawServerStateV2Row from "./event_raw_server_state_v_2_table";
 import MatchStateRow from "./match_state_table";
 import MyNodePositionsRow from "./my_node_positions_table";
 import MyProjectsRow from "./my_projects_table";
@@ -162,18 +164,18 @@ const tablesSchema = __schema({
     ],
     event: true,
   }, EventRawServerMethodRow),
-  event_raw_server_state: __table({
-    name: 'event_raw_server_state',
+  event_raw_server_state_v2: __table({
+    name: 'event_raw_server_state_v2',
     indexes: [
-      { accessor: 'server_id', name: 'event_raw_server_state_server_id_idx_btree', algorithm: 'btree', columns: [
+      { accessor: 'server_id', name: 'event_raw_server_state_v2_server_id_idx_btree', algorithm: 'btree', columns: [
         'serverId',
       ] },
     ],
     constraints: [
-      { name: 'event_raw_server_state_server_id_key', constraint: 'unique', columns: ['serverId'] },
+      { name: 'event_raw_server_state_v2_server_id_key', constraint: 'unique', columns: ['serverId'] },
     ],
     event: true,
-  }, EventRawServerStateRow),
+  }, EventRawServerStateV2Row),
   tab_match: __table({
     name: 'tab_match',
     indexes: [
@@ -446,6 +448,8 @@ const reducersSchema = __reducers(
   __reducerSchema("member_add", MemberAddReducer),
   __reducerSchema("member_assign_permission", MemberAssignPermissionReducer),
   __reducerSchema("member_remove", MemberRemoveReducer),
+  __reducerSchema("migration_leaderboard_to_v2", MigrationLeaderboardToV2Reducer),
+  __reducerSchema("migration_raw_server_config_to_v2", MigrationRawServerConfigToV2Reducer),
   __reducerSchema("node_delete", NodeDeleteReducer),
   __reducerSchema("node_name_edit", NodeNameEditReducer),
   __reducerSchema("output_create", OutputCreateReducer),

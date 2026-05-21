@@ -10,6 +10,12 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AutoInc = __t.object("AutoInc", {
+  tableId: __t.u32(),
+  currentId: __t.u32(),
+});
+export type AutoInc = __Infer<typeof AutoInc>;
+
 export const BanArgs = __t.object("BanArgs", {
   ubiId: __t.string(),
   message: __t.option(__t.string()),
@@ -408,16 +414,16 @@ export const EventRawServerMethod = __t.object("EventRawServerMethod", {
 });
 export type EventRawServerMethod = __Infer<typeof EventRawServerMethod>;
 
-export const EventRawServerState = __t.object("EventRawServerState", {
+export const EventRawServerStateV2 = __t.object("EventRawServerStateV2", {
   serverId: __t.u32(),
-  get config() {
-    return ServerConfig;
-  },
   open: __t.bool(),
   occupied: __t.bool(),
   seamless: __t.bool(),
+  get config() {
+    return ServerConfigV2;
+  },
 });
-export type EventRawServerState = __Infer<typeof EventRawServerState>;
+export type EventRawServerStateV2 = __Infer<typeof EventRawServerStateV2>;
 
 // The tagged union or sum type for the algebraic type `FinishTimeout`.
 export const FinishTimeout = __t.enum("FinishTimeout", {
@@ -529,6 +535,17 @@ export const LbFilterSettings = __t.object("LbFilterSettings", {
 });
 export type LbFilterSettings = __Infer<typeof LbFilterSettings>;
 
+// The tagged union or sum type for the algebraic type `LbManipulationKind`.
+export const LbManipulationKind = __t.enum("LbManipulationKind", {
+  Add: __t.unit(),
+  Multiply: __t.unit(),
+  SubtractLhs: __t.unit(),
+  SubtractRhs: __t.unit(),
+  DivideLhs: __t.unit(),
+  DivideRhs: __t.unit(),
+});
+export type LbManipulationKind = __Infer<typeof LbManipulationKind>;
+
 // The tagged union or sum type for the algebraic type `LbMergeAction`.
 export const LbMergeAction = __t.enum("LbMergeAction", {
   Average: __t.unit(),
@@ -563,6 +580,20 @@ export const LbParams = __t.enum("LbParams", {
 });
 export type LbParams = __Infer<typeof LbParams>;
 
+export const LbRemapSettings = __t.object("LbRemapSettings", {
+  get origin() {
+    return LbParams;
+  },
+  get target() {
+    return LbParams;
+  },
+  get manipulation() {
+    return LbManipulationKind;
+  },
+  manipulationValue: __t.i32(),
+});
+export type LbRemapSettings = __Infer<typeof LbRemapSettings>;
+
 // The tagged union or sum type for the algebraic type `LbSettings`.
 export const LbSettings = __t.enum("LbSettings", {
   get Merge() {
@@ -573,6 +604,20 @@ export const LbSettings = __t.enum("LbSettings", {
   },
 });
 export type LbSettings = __Infer<typeof LbSettings>;
+
+// The tagged union or sum type for the algebraic type `LbSettingsV2`.
+export const LbSettingsV2 = __t.enum("LbSettingsV2", {
+  get Merge() {
+    return LbMergeSettings;
+  },
+  get Filter() {
+    return LbFilterSettings;
+  },
+  get Remap() {
+    return LbRemapSettings;
+  },
+});
+export type LbSettingsV2 = __Infer<typeof LbSettingsV2>;
 
 // The tagged union or sum type for the algebraic type `LeaderboardStatus`.
 export const LeaderboardStatus = __t.enum("LeaderboardStatus", {
@@ -594,6 +639,20 @@ export const LeaderboardV1 = __t.object("LeaderboardV1", {
   },
 });
 export type LeaderboardV1 = __Infer<typeof LeaderboardV1>;
+
+export const LeaderboardV2 = __t.object("LeaderboardV2", {
+  name: __t.string(),
+  get settings() {
+    return __t.array(LbSettingsV2);
+  },
+  id: __t.u32(),
+  parentId: __t.u32(),
+  template: __t.bool(),
+  get status() {
+    return LeaderboardStatus;
+  },
+});
+export type LeaderboardV2 = __Infer<typeof LeaderboardV2>;
 
 export const LoadingMapEnd = __t.object("LoadingMapEnd", {
   restarted: __t.bool(),
@@ -808,6 +867,23 @@ export const ModeSettings = __t.enum("ModeSettings", {
   },
 });
 export type ModeSettings = __Infer<typeof ModeSettings>;
+
+// The tagged union or sum type for the algebraic type `ModeSettingsV2`.
+export const ModeSettingsV2 = __t.enum("ModeSettingsV2", {
+  get Rounds() {
+    return Rounds;
+  },
+  get ReverseCup() {
+    return ReverseCupV2;
+  },
+  get TimeAttack() {
+    return TimeAttack;
+  },
+  get Knockout() {
+    return Knockout;
+  },
+});
+export type ModeSettingsV2 = __Infer<typeof ModeSettingsV2>;
 
 export const MyProjectV1 = __t.object("MyProjectV1", {
   id: __t.u32(),
@@ -1033,6 +1109,15 @@ export const RawServerConfig = __t.object("RawServerConfig", {
 });
 export type RawServerConfig = __Infer<typeof RawServerConfig>;
 
+export const RawServerConfigV2 = __t.object("RawServerConfigV2", {
+  id: __t.u32(),
+  competitionId: __t.u32(),
+  get config() {
+    return ServerConfigV2;
+  },
+});
+export type RawServerConfigV2 = __Infer<typeof RawServerConfigV2>;
+
 export const RawServerIdentity = __t.object("RawServerIdentity", {
   identity: __t.identity(),
   serverId: __t.u32(),
@@ -1169,6 +1254,31 @@ export const ReverseCup = __t.object("ReverseCup", {
 });
 export type ReverseCup = __Infer<typeof ReverseCup>;
 
+export const ReverseCupV2 = __t.object("ReverseCupV2", {
+  get finishTimeout() {
+    return FinishTimeout;
+  },
+  get mapsPerMatch() {
+    return MapsPerMatch;
+  },
+  pointsRepartition: __t.array(__t.i32()),
+  complexPointsRepartition: __t.string(),
+  get roundsPerMap() {
+    return RoundsPerMap;
+  },
+  numberOfWinners: __t.i32(),
+  startingPoints: __t.i32(),
+  disableLastChance: __t.bool(),
+  allowFastForwardRounds: __t.bool(),
+  fastForwardPointsRepartition: __t.bool(),
+  dnfPointsLoss: __t.u32(),
+  get lastChanceDnfMode() {
+    return LastChanceDnfMode;
+  },
+  numberOfPlayers: __t.u32(),
+});
+export type ReverseCupV2 = __Infer<typeof ReverseCupV2>;
+
 // The tagged union or sum type for the algebraic type `RoundTime`.
 export const RoundTime = __t.enum("RoundTime", {
   None: __t.unit(),
@@ -1270,6 +1380,22 @@ export const ServerConfig = __t.object("ServerConfig", {
   },
 });
 export type ServerConfig = __Infer<typeof ServerConfig>;
+
+export const ServerConfigV2 = __t.object("ServerConfigV2", {
+  get options() {
+    return ServerOptions;
+  },
+  get common() {
+    return Common;
+  },
+  get mode() {
+    return ModeSettingsV2;
+  },
+  get maps() {
+    return MapPoolConfig;
+  },
+});
+export type ServerConfigV2 = __Infer<typeof ServerConfigV2>;
 
 export const ServerModeInfo = __t.object("ServerModeInfo", {
   updated: __t.bool(),
