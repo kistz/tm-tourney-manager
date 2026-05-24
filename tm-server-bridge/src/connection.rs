@@ -10,11 +10,11 @@ use tm_server_controller::method::XmlRpcMethods;
 use tm_server_manager_api_rs::DbConnection;
 use tm_server_manager_api_rs::ErrorContext;
 use tm_server_manager_api_rs::EventRawServerMethodTableAccess;
-use tm_server_manager_api_rs::EventRawServerStateV2TableAccess;
+use tm_server_manager_api_rs::EventRawServerStateTableAccess;
 use tm_server_manager_api_rs::RawServerPermittedPlayersTableAccess;
 use tm_server_manager_api_rs::RawServerPlayerDestinationTableAccess;
 use tm_server_manager_api_rs::event_raw_server_methodQueryTableAccess;
-use tm_server_manager_api_rs::event_raw_server_state_v_2QueryTableAccess;
+use tm_server_manager_api_rs::event_raw_server_stateQueryTableAccess;
 use tm_server_manager_api_rs::login_as_server;
 use tm_server_manager_api_rs::raw_server_permitted_playersQueryTableAccess;
 use tm_server_manager_api_rs::raw_server_player_destinationQueryTableAccess;
@@ -112,7 +112,7 @@ impl MyDbConnection {
             })
             .add_query(|ctx| {
                 ctx.from
-                    .event_raw_server_state_v_2()
+                    .event_raw_server_state()
                     .r#where(|s| s.server_id.eq(server_id))
             })
             .add_query(|ctx| ctx.from.raw_server_permitted_players())
@@ -121,7 +121,7 @@ impl MyDbConnection {
 
         spacetime
             .db
-            .event_raw_server_state_v_2()
+            .event_raw_server_state()
             .on_insert(metadata_update);
 
         spacetime

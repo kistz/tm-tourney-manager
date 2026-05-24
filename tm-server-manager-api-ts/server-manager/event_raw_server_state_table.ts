@@ -16,10 +16,10 @@ import {
 
 export default __t.row({
   serverId: __t.u32().primaryKey().name("server_id"),
-  open: __t.bool(),
-  occupied: __t.bool(),
-  seamless: __t.bool(),
   get config() {
     return ServerConfigV2;
   },
+  open: __t.bool(),
+  occupied: __t.bool(),
+  seamless: __t.bool(),
 });

@@ -126,7 +126,7 @@ import * as TestNodePermittedPlayersInputProcedure from "./test_node_permitted_p
 // Import all table schema definitions
 import CompetitionAvailableServerPoolRow from "./competition_available_server_pool_table";
 import EventRawServerMethodRow from "./event_raw_server_method_table";
-import EventRawServerStateV2Row from "./event_raw_server_state_v_2_table";
+import EventRawServerStateRow from "./event_raw_server_state_table";
 import MatchStateRow from "./match_state_table";
 import MyNodePositionsRow from "./my_node_positions_table";
 import MyProjectsRow from "./my_projects_table";
@@ -164,18 +164,18 @@ const tablesSchema = __schema({
     ],
     event: true,
   }, EventRawServerMethodRow),
-  event_raw_server_state_v2: __table({
-    name: 'event_raw_server_state_v2',
+  event_raw_server_state: __table({
+    name: 'event_raw_server_state',
     indexes: [
-      { accessor: 'server_id', name: 'event_raw_server_state_v2_server_id_idx_btree', algorithm: 'btree', columns: [
+      { accessor: 'server_id', name: 'event_raw_server_state_server_id_idx_btree', algorithm: 'btree', columns: [
         'serverId',
       ] },
     ],
     constraints: [
-      { name: 'event_raw_server_state_v2_server_id_key', constraint: 'unique', columns: ['serverId'] },
+      { name: 'event_raw_server_state_server_id_key', constraint: 'unique', columns: ['serverId'] },
     ],
     event: true,
-  }, EventRawServerStateV2Row),
+  }, EventRawServerStateRow),
   tab_match: __table({
     name: 'tab_match',
     indexes: [

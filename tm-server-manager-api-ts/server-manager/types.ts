@@ -414,16 +414,16 @@ export const EventRawServerMethod = __t.object("EventRawServerMethod", {
 });
 export type EventRawServerMethod = __Infer<typeof EventRawServerMethod>;
 
-export const EventRawServerStateV2 = __t.object("EventRawServerStateV2", {
+export const EventRawServerState = __t.object("EventRawServerState", {
   serverId: __t.u32(),
-  open: __t.bool(),
-  occupied: __t.bool(),
-  seamless: __t.bool(),
   get config() {
     return ServerConfigV2;
   },
+  open: __t.bool(),
+  occupied: __t.bool(),
+  seamless: __t.bool(),
 });
-export type EventRawServerStateV2 = __Infer<typeof EventRawServerStateV2>;
+export type EventRawServerState = __Infer<typeof EventRawServerState>;
 
 // The tagged union or sum type for the algebraic type `FinishTimeout`.
 export const FinishTimeout = __t.enum("FinishTimeout", {

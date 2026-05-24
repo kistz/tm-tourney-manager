@@ -8,7 +8,7 @@ use tm_server_controller::{
 };
 
 use crate::{chat::setup_chat, connection::MyDbConnection, state::setup_state_synchronization};
-use tm_server_manager_api_rs::EventRawServerStateV2;
+use tm_server_manager_api_rs::EventRawServerState;
 use tokio::{signal, sync::Mutex};
 
 mod chat;
@@ -32,7 +32,7 @@ static NADEO: OnceLock<Mutex<NadeoClient>> = OnceLock::new();
 /// Path to the Filesystem of the trackmnia server UserData.
 static TRACKMANIA_FILES: OnceLock<String> = OnceLock::new();
 
-static SERVER_METADATA: OnceLock<Mutex<EventRawServerStateV2>> = OnceLock::new();
+static SERVER_METADATA: OnceLock<Mutex<EventRawServerState>> = OnceLock::new();
 //static EVENT_CACHE: LazyLock<StdMutex<VecDeque<Event>>> =
 //LazyLock::new(|| StdMutex::new(VecDeque::with_capacity(1000)));
 

@@ -48,8 +48,8 @@ pub mod end_turn_start_type;
 pub mod env_type;
 pub mod event_raw_server_method_table;
 pub mod event_raw_server_method_type;
-pub mod event_raw_server_state_v_2_table;
-pub mod event_raw_server_state_v_2_type;
+pub mod event_raw_server_state_table;
+pub mod event_raw_server_state_type;
 pub mod event_type;
 pub mod finish_timeout_type;
 pub mod give_up_type;
@@ -309,8 +309,8 @@ pub use end_turn_start_type::EndTurnStart;
 pub use env_type::Env;
 pub use event_raw_server_method_table::*;
 pub use event_raw_server_method_type::EventRawServerMethod;
-pub use event_raw_server_state_v_2_table::*;
-pub use event_raw_server_state_v_2_type::EventRawServerStateV2;
+pub use event_raw_server_state_table::*;
+pub use event_raw_server_state_type::EventRawServerState;
 pub use event_type::Event;
 pub use finish_timeout_type::FinishTimeout;
 pub use give_up_type::GiveUp;
@@ -1460,7 +1460,7 @@ Reducer::NodeDelete{
 pub struct DbUpdate {
     competition_available_server_pool: __sdk::TableUpdate<RawServerV1>,
     event_raw_server_method: __sdk::TableUpdate<EventRawServerMethod>,
-    event_raw_server_state_v_2: __sdk::TableUpdate<EventRawServerStateV2>,
+    event_raw_server_state: __sdk::TableUpdate<EventRawServerState>,
     match_state: __sdk::TableUpdate<MatchState>,
     my_node_positions: __sdk::TableUpdate<CompetitionNodePosition>,
     my_projects: __sdk::TableUpdate<MyProjectV1>,
@@ -1494,8 +1494,8 @@ impl TryFrom<__ws::v2::TransactionUpdate> for DbUpdate {
                 "event_raw_server_method" => db_update.event_raw_server_method.append(
                     event_raw_server_method_table::parse_table_update(table_update)?,
                 ),
-                "event_raw_server_state_v2" => db_update.event_raw_server_state_v_2.append(
-                    event_raw_server_state_v_2_table::parse_table_update(table_update)?,
+                "event_raw_server_state" => db_update.event_raw_server_state.append(
+                    event_raw_server_state_table::parse_table_update(table_update)?,
                 ),
                 "match_state" => db_update
                     .match_state
@@ -1579,7 +1579,7 @@ impl __sdk::DbUpdate for DbUpdate {
         let mut diff = AppliedDiff::default();
 
         diff.event_raw_server_method = self.event_raw_server_method.into_event_diff();
-        diff.event_raw_server_state_v_2 = self.event_raw_server_state_v_2.into_event_diff();
+        diff.event_raw_server_state = self.event_raw_server_state.into_event_diff();
         diff.tab_match = cache
             .apply_diff_to_table::<MatchV1>("tab_match", &self.tab_match)
             .with_updates_by_pk(|row| &row.id);
@@ -1659,8 +1659,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
-                "event_raw_server_state_v2" => db_update
-                    .event_raw_server_state_v_2
+                "event_raw_server_state" => db_update
+                    .event_raw_server_state
                     .append(__sdk::parse_row_list_as_inserts(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
@@ -1732,8 +1732,8 @@ impl __sdk::DbUpdate for DbUpdate {
                 "event_raw_server_method" => db_update
                     .event_raw_server_method
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
-                "event_raw_server_state_v2" => db_update
-                    .event_raw_server_state_v_2
+                "event_raw_server_state" => db_update
+                    .event_raw_server_state
                     .append(__sdk::parse_row_list_as_deletes(table_rows.rows)?),
                 "match_state" => db_update
                     .match_state
@@ -1803,7 +1803,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     competition_available_server_pool: __sdk::TableAppliedDiff<'r, RawServerV1>,
     event_raw_server_method: __sdk::TableAppliedDiff<'r, EventRawServerMethod>,
-    event_raw_server_state_v_2: __sdk::TableAppliedDiff<'r, EventRawServerStateV2>,
+    event_raw_server_state: __sdk::TableAppliedDiff<'r, EventRawServerState>,
     match_state: __sdk::TableAppliedDiff<'r, MatchState>,
     my_node_positions: __sdk::TableAppliedDiff<'r, CompetitionNodePosition>,
     my_projects: __sdk::TableAppliedDiff<'r, MyProjectV1>,
@@ -1844,9 +1844,9 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
             &self.event_raw_server_method,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<EventRawServerStateV2>(
-            "event_raw_server_state_v2",
-            &self.event_raw_server_state_v_2,
+        callbacks.invoke_table_row_callbacks::<EventRawServerState>(
+            "event_raw_server_state",
+            &self.event_raw_server_state,
             event,
         );
         callbacks.invoke_table_row_callbacks::<MatchState>("match_state", &self.match_state, event);
@@ -2565,7 +2565,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         competition_available_server_pool_table::register_table(client_cache);
         event_raw_server_method_table::register_table(client_cache);
-        event_raw_server_state_v_2_table::register_table(client_cache);
+        event_raw_server_state_table::register_table(client_cache);
         match_state_table::register_table(client_cache);
         my_node_positions_table::register_table(client_cache);
         my_projects_table::register_table(client_cache);
@@ -2587,7 +2587,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     const ALL_TABLE_NAMES: &'static [&'static str] = &[
         "competition_available_server_pool",
         "event_raw_server_method",
-        "event_raw_server_state_v2",
+        "event_raw_server_state",
         "match_state",
         "my_node_positions",
         "my_projects",

@@ -5,11 +5,11 @@ use tokio::{sync::Mutex, time::sleep};
 use nadeo_api::{NadeoRequest, auth::AuthType, request::Method};
 use serde::{Deserialize, Serialize};
 use tm_server_controller::method::XmlRpcMethods;
-use tm_server_manager_api_rs::{EventContext, EventRawServerStateV2};
+use tm_server_manager_api_rs::{EventContext, EventRawServerState};
 
 use crate::{NADEO, SERVER_METADATA, TRACKMANIA, TRACKMANIA_FILES, state::check_allowed_players};
 
-pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerStateV2) {
+pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerState) {
     tracing::info!("Received new Server metadata. Trying to apply...");
     let new_metadata = new_metadata.clone();
     tokio::spawn(async move {
@@ -54,7 +54,7 @@ pub fn metadata_update(_: &EventContext, new_metadata: &EventRawServerStateV2) {
     });
 }
 
-async fn load_new_config(new_metadata: &EventRawServerStateV2) {
+async fn load_new_config(new_metadata: &EventRawServerState) {
     let server = TRACKMANIA.get().unwrap();
 
     let mut loaded = server

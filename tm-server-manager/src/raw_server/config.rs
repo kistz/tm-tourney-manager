@@ -50,17 +50,17 @@ impl RawServerConfigV2 {
     }
 }
 
-/* #[table(accessor=event_raw_server_state,event,public)]
+#[table(accessor=event_raw_server_state,event,public)]
 struct EventRawServerState {
     #[primary_key]
     server_id: u32,
-    config: ServerConfig,
+    config: ServerConfigV2,
     open: bool,
     occupied: bool,
     seamless: bool,
-} */
+}
 
-#[table(accessor=event_raw_server_state_v2,event,public)]
+/* #[table(accessor=event_raw_server_state_v2,event,public)]
 struct EventRawServerStateV2 {
     #[primary_key]
     server_id: u32,
@@ -68,7 +68,7 @@ struct EventRawServerStateV2 {
     occupied: bool,
     seamless: bool,
     config: ServerConfigV2,
-}
+} */
 
 pub(crate) trait RawServerContigRead {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle>;
@@ -209,8 +209,8 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                     return Err("Cannot find config.".into());
                 };
                 self.db()
-                    .event_raw_server_state_v2()
-                    .try_insert(EventRawServerStateV2 {
+                    .event_raw_server_state()
+                    .try_insert(EventRawServerState {
                         server_id,
                         config: config.config,
                         open: tm_match.is_open(),
@@ -229,8 +229,8 @@ impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWri
                     .find(tm_server.get_config_id())
                     .unwrap();
                 self.db()
-                    .event_raw_server_state_v2()
-                    .try_insert(EventRawServerStateV2 {
+                    .event_raw_server_state()
+                    .try_insert(EventRawServerState {
                         server_id,
                         config: config.config,
                         open: tm_server.is_open(),
