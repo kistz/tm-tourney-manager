@@ -53,7 +53,7 @@ impl ReverseCupV2 {
         <setting name="S_LastChance_DNF_Mode" value="{}" type="integer"/>
         <setting name="S_NbOfPlayers" value="{}" type="integer"/>
         <setting name="S_NbOfWinners" value="{}" type="integer"/> 
-        <setting name="S_ComplexPointsRepartition" value="{}" type="text"/>      
+              
             "#,
             Into::<i32>::into(self.rounds_per_map),
             Into::<i32>::into(self.maps_per_match),
@@ -67,7 +67,6 @@ impl ReverseCupV2 {
             Into::<i32>::into(self.last_chance_dnf_mode),
             self.number_of_players,
             self.number_of_winners,
-            self.complex_points_repartition
         )
     }
 
@@ -122,10 +121,10 @@ impl ReverseCupV2 {
             "S_NbOfWinners".into(),
             dxr::Value::Integer(self.number_of_winners),
         );
-        map.insert(
+        /* map.insert(
             "S_ComplexPointsRepartition".into(),
             dxr::Value::String(self.complex_points_repartition.clone()),
-        );
+        ); */
 
         map
     }
