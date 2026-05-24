@@ -607,7 +607,7 @@ impl NodeLeaderboard for Vec<LbEntry> {
                 for stand in standings.iter_mut() {
                     stand.score += starting_points;
 
-                    if !eliminated.contains(&stand.user_id) {
+                    if !eliminated.contains(&stand.user_id) || stand.score > 0 {
                         stand.round += 1;
                     }
                 }
