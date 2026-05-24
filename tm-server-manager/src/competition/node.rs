@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use spacetimedb::{
     AnonymousViewContext, DbContext, Local, LocalReadOnly, ProcedureContext, ReducerContext,
@@ -573,12 +573,14 @@ impl NodeLeaderboard for Vec<LbEntry> {
                 standings
             }
             TmMode::ReverseCup => {
+                let mut eliminated = HashSet::new();
+
                 for entry in entries {
                     map.entry(entry.user_id)
                         .and_modify(|e| {
-                            /* if entry.score <= -2000 {
-                                e.round = entry.round;
-                            } */
+                            if entry.score <= -2000 {
+                                eliminated.insert(e.user_id);
+                            }
                             e.score += entry.score;
 
                             if entry.round > e.round {
@@ -602,14 +604,11 @@ impl NodeLeaderboard for Vec<LbEntry> {
                     _ => unreachable!(),
                 };
 
-                for player in &mut standings {
-                    player.score += starting_points;
+                for stand in standings.iter_mut() {
+                    stand.score += starting_points;
 
-                    if player.score <= -1000 {
-                        player.position = 1;
-                    } else {
-                        player.round += 1;
-                        player.position = 0;
+                    if !eliminated.contains(&stand.user_id) {
+                        stand.round += 1;
                     }
                 }
 

@@ -341,9 +341,14 @@ pub(crate) fn handle_match_event(
             let mut scores = scores
                 .players
                 .iter()
-                .map(|p| {
+                .filter_map(|p| {
                     let user_id = ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
-                    ScoresPlayer {
+
+                    if matches!(state.get_mode(), TmMode::ReverseCup) && p.match_points <= -2000 {
+                        return None;
+                    }
+
+                    Some(ScoresPlayer {
                         user_id,
                         position: 0,
                         round_points: p.round_points,
@@ -353,7 +358,7 @@ pub(crate) fn handle_match_event(
                         } else {
                             -1
                         },
-                    }
+                    })
                 })
                 .collect::<Vec<_>>();
 
@@ -386,7 +391,7 @@ pub(crate) fn handle_match_event(
                         player_round.set_points(found.match_points);
                     }
                     // Player is now eliminated.
-                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -2000
+                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points <= -2000
                     {
                         player_round.set_points(found.match_points);
                     }
