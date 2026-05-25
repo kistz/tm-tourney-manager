@@ -321,88 +321,145 @@ pub(crate) fn handle_match_event(
             state.set_pause(pause.active);
             ctx.db.tab_match_state().match_id().update(state);
         }
-        Event::Scores(scores) if state.live_round() && scores.section == "PreEndRound" => {
-            // Because we delete after a pause this is empty and hence does not modify anything.
-            let player_rounds = ctx
-                .db
-                .tab_match_round_player()
-                .match_round()
-                .filter((state.match_id, state.get_round()));
+        Event::Scores(scores) if state.live_round() => {
+            if scores.section == "PreEndRound" {
+                // Because we delete after a pause this is empty and hence does not modify anything.
+                let player_rounds = ctx
+                    .db
+                    .tab_match_round_player()
+                    .match_round()
+                    .filter((state.match_id, state.get_round()));
 
-            #[derive(Debug)]
-            struct ScoresPlayer {
-                user_id: u32,
-                round_points: i32,
-                time: i32,
-                match_points: i32,
-                position: u16,
-            }
+                #[derive(Debug)]
+                struct ScoresPlayer {
+                    user_id: u32,
+                    round_points: i32,
+                    time: i32,
+                    match_points: i32,
+                    position: u16,
+                }
 
-            let mut scores = scores
-                .players
-                .iter()
-                .filter_map(|p| {
-                    let user_id = ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
+                let mut scores = scores
+                    .players
+                    .iter()
+                    .filter_map(|p| {
+                        let user_id =
+                            ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
 
-                    if matches!(state.get_mode(), TmMode::ReverseCup) && p.match_points <= -2000 {
-                        return None;
-                    }
+                        if matches!(state.get_mode(), TmMode::ReverseCup) && p.match_points <= -2000
+                        {
+                            return None;
+                        }
 
-                    Some(ScoresPlayer {
-                        user_id,
-                        position: 0,
-                        round_points: p.round_points,
-                        match_points: p.match_points,
-                        time: if let RoundTime::Time(time) = p.previous_racetime {
-                            time as i32
-                        } else {
-                            -1
-                        },
+                        Some(ScoresPlayer {
+                            user_id,
+                            position: 0,
+                            round_points: p.round_points,
+                            match_points: p.match_points,
+                            time: if let RoundTime::Time(time) = p.previous_racetime {
+                                time as i32
+                            } else {
+                                -1
+                            },
+                        })
                     })
-                })
-                .collect::<Vec<_>>();
+                    .collect::<Vec<_>>();
 
-            // Reconstruct the position because the mode does not give it back.
-            match state.get_mode() {
-                TmMode::Rounds => scores.sort_by_key(|k| -k.round_points),
-                TmMode::ReverseCup => scores.sort_by_key(|k| -k.round_points),
-                TmMode::Knockout => {
-                    scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
-                }
-                TmMode::TimeAttack => {
-                    scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
-                }
-                TmMode::Unknown => unreachable!(), // Since this a match we always have a mode available.
-            }
-
-            for (index, stand) in scores.iter_mut().enumerate() {
-                stand.position = (index + 1) as u16;
-            }
-
-            for mut player_round in player_rounds {
-                let found = scores.iter().find(|p| p.user_id == player_round.user_id);
-
-                if let Some(found) = found {
-                    player_round.set_points(found.round_points);
-                    player_round.set_position(found.position);
-                    // Player is now in last chance
-                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points == -1000
-                    {
-                        player_round.set_points(found.match_points);
+                // Reconstruct the position because the mode does not give it back.
+                match state.get_mode() {
+                    TmMode::Rounds => scores.sort_by_key(|k| -k.round_points),
+                    TmMode::ReverseCup => scores.sort_by_key(|k| -k.round_points),
+                    TmMode::Knockout => {
+                        scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
                     }
-                    // Player is now eliminated.
-                    if matches!(state.get_mode(), TmMode::ReverseCup) && found.match_points <= -2000
-                    {
-                        player_round.set_points(found.match_points);
+                    TmMode::TimeAttack => {
+                        scores.sort_by_key(|k| if k.time <= 0 { i32::MAX } else { k.time })
                     }
+                    TmMode::Unknown => unreachable!(), // Since this a match we always have a mode available.
+                }
 
-                    //player_round.set_position(found.position);
-                    ctx.db.tab_match_round_player().id().update(player_round);
-                } else {
-                    log::error!(
-                        "Player of a round could not be found in the scores even tho he was on the start line..?"
-                    )
-                };
+                for (index, stand) in scores.iter_mut().enumerate() {
+                    stand.position = (index + 1) as u16;
+                }
+
+                for mut player_round in player_rounds {
+                    let found = scores.iter().find(|p| p.user_id == player_round.user_id);
+
+                    if let Some(found) = found {
+                        player_round.set_points(found.round_points);
+                        player_round.set_position(found.position);
+                        // Player is now in last chance
+                        if matches!(state.get_mode(), TmMode::ReverseCup)
+                            && found.match_points == -1000
+                        {
+                            player_round.set_points(found.match_points);
+                        }
+
+                        //player_round.set_position(found.position);
+                        ctx.db.tab_match_round_player().id().update(player_round);
+                    } else {
+                        log::error!(
+                            "Player of a round could not be found in the scores even tho he was on the start line..?"
+                        )
+                    };
+                }
+            }
+            if scores.section == "EndRound" && state.get_mode() == TmMode::ReverseCup {
+                // Because we delete after a pause this is empty and hence does not modify anything.
+                let player_rounds = ctx
+                    .db
+                    .tab_match_round_player()
+                    .match_round()
+                    .filter((state.match_id, state.get_round()));
+
+                #[derive(Debug)]
+                struct ScoresPlayer {
+                    user_id: u32,
+                    round_points: i32,
+                    time: i32,
+                    match_points: i32,
+                    position: u16,
+                }
+
+                let scores = scores
+                    .players
+                    .iter()
+                    .map(|p| {
+                        let user_id =
+                            ctx.user_id_from_account(Uuid::parse_str(&p.account_id).unwrap());
+
+                        ScoresPlayer {
+                            user_id,
+                            position: 0,
+                            round_points: p.round_points,
+                            match_points: p.match_points,
+                            time: if let RoundTime::Time(time) = p.previous_racetime {
+                                time as i32
+                            } else {
+                                -1
+                            },
+                        }
+                    })
+                    .collect::<Vec<_>>();
+
+                for mut player_round in player_rounds {
+                    let found = scores.iter().find(|p| p.user_id == player_round.user_id);
+
+                    if let Some(found) = found {
+                        // Player is now eliminated.
+                        if matches!(state.get_mode(), TmMode::ReverseCup)
+                            && found.match_points <= -2000
+                        {
+                            player_round.set_points(found.match_points);
+                        }
+
+                        ctx.db.tab_match_round_player().id().update(player_round);
+                    } else {
+                        log::error!(
+                            "Player of a round could not be found in the scores even tho he was on the start line..?"
+                        )
+                    };
+                }
             }
         }
         _ => (),
