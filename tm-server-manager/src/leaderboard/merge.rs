@@ -124,7 +124,7 @@ impl LbMergeSettings {
                 vec.sort_by_key(|f| f.position);
             }
         }
-        log::info!("Merge Result: {:?}", vec);
+
         vec
     }
 }

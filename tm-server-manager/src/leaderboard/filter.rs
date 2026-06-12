@@ -156,7 +156,7 @@ impl LbFilterSettings {
         }
 
         let filter = map.into_values().flatten().collect();
-        log::info!("Filter Result: {:?}", filter);
+
         filter
     }
 }

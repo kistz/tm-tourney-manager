@@ -325,44 +325,6 @@ impl<Db: DbContext> LeadearboardRead for Db {
 
         let settings = lb.settings;
 
-        /* let dependencies = self
-            .db_read_only()
-            .tab_connection()
-            .origins_of()
-            .filter(NodeHandle::LeaderboardV1(leaderboard_id).split())
-            .filter(|c| c.is_data());
-
-        let Some(first_setting) = settings.get(0) else {
-            log::warn!("Tried to evaluate leaderboard but it does not have settings");
-            return Vec::new();
-        }; */
-
-        /*  let mut leaderboard = Vec::new();
-
-        let mut dep_len = 0; */
-
-        /* for depending_connection in dependencies {
-            if dep_len > 1 && !matches!(first_setting, LbSettings::Merge(_)) {
-                log::error!(
-                    "There were more than one data connection into the leaderboard and no merge was selected"
-                );
-                return Vec::new();
-            }
-
-            //TODO this should probably not be handled by this function :thinking:
-            match depending_connection.origin() {
-                NodeHandle::MatchV1(m) => leaderboard.extend(self.match_rounds(m)),
-                NodeHandle::LeaderboardV1(l) => leaderboard.extend(self.leaderboard_evaluation(l)),
-                //TODO handle rest of the cases: Input/Output/Competition should be possible since they can passthrough other stuff.
-                _ => {
-                    log::error!("Tried to fetch a leadarboard of the wrong node.");
-                    return Vec::new();
-                }
-            };
-
-            dep_len += 1;
-        } */
-
         let mut leaderboards =
             self.node_resolve_input_data(NodeHandle::LeaderboardV1(leaderboard_id));
 
@@ -381,15 +343,8 @@ impl<Db: DbContext> LeadearboardRead for Db {
             }
         }
 
-        log::info!("Leaderbaord {leaderboard_id}: {:?}", leaderboards);
-
         leaderboards
     }
-
-    /* fn leaderboard_finalize(&self, lb: Vec<LbEntry>) -> Vec<LbEntry> {
-        log::info!("{returned:?}");
-        Vec
-    } */
 }
 pub(crate) trait LeaderboardWrite: LeadearboardRead {
     fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String>;
