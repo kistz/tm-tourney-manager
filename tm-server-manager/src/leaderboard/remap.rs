@@ -61,7 +61,7 @@ impl LbRemapSettings {
                 },
             };
 
-            match self.origin {
+            match self.target {
                 LbParams::Score => entry.score = new_val,
                 LbParams::Time => entry.time = new_val,
                 LbParams::Position => entry.position = new_val as u16,

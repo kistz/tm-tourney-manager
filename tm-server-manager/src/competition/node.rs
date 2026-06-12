@@ -2,7 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use spacetimedb::{
     AnonymousViewContext, DbContext, Local, LocalReadOnly, ProcedureContext, ReducerContext,
-    SpacetimeType, Uuid, procedure, reducer, view,
+    SpacetimeType, Uuid, procedure, reducer, sys::raw::volatile_nonatomic_schedule_immediate, view,
+    volatile_nonatomic_schedule_immediate,
 };
 use tm_server_types::config::{ModeSettings, ModeSettingsV2, TmMode};
 
@@ -633,6 +634,11 @@ impl NodeLeaderboard for Vec<LbEntry> {
                 let mut standings = map.into_values().collect::<Vec<_>>();
 
                 standings.sort_by_key(|v| v.round);
+
+                for (index, stand) in standings.iter_mut().enumerate() {
+                    stand.position = (index + 1) as u16;
+                }
+
                 standings
             }
             TmMode::TimeAttack => {
