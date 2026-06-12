@@ -9,7 +9,7 @@ use crate::{
     competition::{
         CompetitionPermissionsV1,
         connection::tab_connection__view,
-        node::{NodeHandle, NodeRead, NodeWrite},
+        node::{NodeHandle, NodeLeaderboard, NodeRead, NodeWrite},
         tab_competition,
     },
     leaderboard::{filter::LbFilterSettings, merge::LbMergeSettings, remap::LbRemapSettings},
@@ -94,6 +94,7 @@ enum LbSettingsV2 {
     Merge(LbMergeSettings),
     Filter(LbFilterSettings),
     Remap(LbRemapSettings),
+    Finalize,
 }
 
 #[derive(Debug, SpacetimeType, Clone, Copy)]
@@ -376,6 +377,7 @@ impl<Db: DbContext> LeadearboardRead for Db {
                 LbSettingsV2::Remap(lb_remap_settings) => {
                     lb_remap_settings.evaluate(leaderboard_id, leaderboards)
                 }
+                LbSettingsV2::Finalize => leaderboards.finalize(self),
             }
         }
 
