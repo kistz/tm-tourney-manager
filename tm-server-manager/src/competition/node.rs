@@ -628,6 +628,10 @@ impl NodeLeaderboard for Vec<LbEntry> {
                             if entry.score == -1 {
                                 *e = entry;
                             }
+
+                            if entry.round > e.round {
+                                e.round = entry.round;
+                            }
                         })
                         .or_insert(entry);
                 }
