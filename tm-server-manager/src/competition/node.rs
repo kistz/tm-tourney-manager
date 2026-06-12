@@ -635,9 +635,10 @@ impl NodeLeaderboard for Vec<LbEntry> {
                         })
                         .or_insert(entry);
                 }
+                log::warn!("{entries:?}");
                 let mut standings = map.into_values().collect::<Vec<_>>();
 
-                standings.sort_by_key(|v| v.round);
+                standings.sort_by_key(|v| -(v.round as i32));
 
                 for (index, stand) in standings.iter_mut().enumerate() {
                     stand.position = (index + 1) as u16;
