@@ -14,7 +14,7 @@ use crate::{
             action::{TabConnectionAction, tab_connection_action, try_exec_action},
             data::{ConnectionData, tab_connection_data, tab_connection_data__view},
         },
-        node::{NodeHandle, NodeLeaderboard, NodeRead},
+        node::{NodeHandle, NodeLeaderboard, NodeRead, NodeWrite},
     },
     input::tab_input__view,
     leaderboard::{LbEntry, LeadearboardRead},
@@ -709,4 +709,16 @@ impl ConnectionCombination {
             origin, target
         )) */
     }
+}
+
+#[reducer]
+fn connection_delete(ctx: &ReducerContext, id: u32) -> Result<(), String> {
+    let Some(connection) = ctx.db.tab_connection().id().find(id) else {
+        return Err(String::new());
+    };
+    ctx.auth_builder(connection.parent_id)
+        .permission(CompetitionPermissionsV1::COMPETITION_CONNECTION_EDIT)
+        .authorize()?;
+
+    ctx.connection_delete(id)
 }

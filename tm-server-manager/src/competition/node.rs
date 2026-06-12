@@ -388,6 +388,7 @@ fn node_resolve_input_data_inner(
 pub(crate) trait NodeWrite: NodeRead {
     fn node_create(&self, node: NodeHandle) -> Result<(), String>;
     fn node_delete(&self, node: NodeHandle) -> Result<(), String>;
+    fn connection_delete(&self, connection_id: u32) -> Result<(), String>;
     fn node_name_edit(&self, node: NodeHandle, name: String) -> Result<(), String>;
 }
 impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
@@ -438,6 +439,29 @@ impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
         }
         self.db().tab_connection().origins_of().delete(node.split());
         self.db().tab_connection().targets_of().delete(node.split());
+
+        Ok(())
+    }
+
+    fn connection_delete(&self, connection_id: u32) -> Result<(), String> {
+        let Some(connection) = self.db().tab_connection().id().find(connection_id) else {
+            return Err("Connection not found".into());
+        };
+
+        if connection.is_action() {
+            self.db()
+                .tab_connection_action()
+                .connection_id()
+                .delete(connection.id);
+        }
+        if connection.is_data() {
+            self.db()
+                .tab_connection_data()
+                .connection_id()
+                .delete(connection.id);
+        }
+
+        self.db().tab_connection().id().delete(connection.id);
 
         Ok(())
     }
