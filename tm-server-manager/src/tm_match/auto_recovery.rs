@@ -1,8 +1,6 @@
 use spacetimedb::{ReducerContext, ScheduleAt, Table, TimeDuration, Timestamp, reducer, table};
 
-use crate::{
-    tm_match::{MatchWrite, tab_match},
-};
+use crate::tm_match::{MatchWrite, tab_match};
 
 // Responsible of redistributing the match if the old server does not come back.
 #[table(accessor= tab_match_auto_recovery, scheduled(on_match_auto_recovery))]
@@ -24,7 +22,7 @@ pub(super) trait RecoveryWrite {
         duration: TimeDuration,
     ) -> Result<(), String>;
 }
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RecoveryWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> RecoveryWrite for Db {
     fn match_auto_recovery_insert(
         &self,
         match_id: u32,

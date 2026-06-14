@@ -266,7 +266,7 @@ pub(crate) trait MatchLeadearboardRead {
     fn match_rounds(&self, match_id: u32) -> Vec<LbEntry>;
     //fn match_leaderboard(&self, match_id: u32) -> Vec<LbEntry>;
 }
-impl<Db: spacetimedb::DbContext> MatchLeadearboardRead for Db {
+impl<Db: spacetimedb::CtxDbRead> MatchLeadearboardRead for Db {
     /// Accumulates points of all previous rounds.
     /// Round 0 is giving you a live view.
     /// If you want points from individual rounds use the match_round view instead.

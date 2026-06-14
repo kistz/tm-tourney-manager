@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 use std::time::Duration;
 
-use spacetimedb_sdk::DbContext;
+use spacetimedb_sdk::spacetimedb::CtxDbWrite;
 use spacetimedb_sdk::EventTable;
 use spacetimedb_sdk::Table;
 use spacetimedb_sdk::Uuid;

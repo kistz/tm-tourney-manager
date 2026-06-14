@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, ReducerContext, Table, reducer, table};
+use spacetimedb::{CtxDbRead, ReducerContext, Table, reducer, table};
 use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
@@ -81,7 +81,7 @@ pub(crate) trait RawServerContigRead {
         competition_id: u32,
     ) -> impl Iterator<Item = RawServerConfigV2>;
 }
-impl<Db: spacetimedb::DbContext> RawServerContigRead for Db {
+impl<Db: spacetimedb::CtxDbRead> RawServerContigRead for Db {
     fn raw_server_config_references(&self, config_id: u32) -> Vec<NodeHandle> {
         let mut config_references = Vec::new();
         config_references.extend(
@@ -157,7 +157,7 @@ pub(crate) trait RawServerContigWrite {
     fn emit_raw_server_config(&self, server_id: u32, seamless: bool) -> Result<(), String>;
 }
 
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> RawServerContigWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> RawServerContigWrite for Db {
     fn raw_server_config_update(
         &self,
         config_id: u32,

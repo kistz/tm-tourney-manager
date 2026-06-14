@@ -1932,17 +1932,17 @@ impl __sdk::InModule for RemoteModule {
 /// The `reducers` field of [`EventContext`] and [`DbConnection`],
 /// with methods provided by extension traits for each reducer defined by the module.
 pub struct RemoteReducers {
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::InModule for RemoteReducers {
     type Module = RemoteModule;
 }
 
-/// The `procedures` field of [`DbConnection`] and other [`DbContext`] types,
+/// The `procedures` field of [`DbConnection`] and other [`spacetimedb::CtxDbWrite`] types,
 /// with methods provided by extension traits for each procedure defined by the module.
 pub struct RemoteProcedures {
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::InModule for RemoteProcedures {
@@ -1952,7 +1952,7 @@ impl __sdk::InModule for RemoteProcedures {
 /// The `db` field of [`EventContext`] and [`DbConnection`],
 /// with methods provided by extension traits for each table defined by the module.
 pub struct RemoteTables {
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::InModule for RemoteTables {
@@ -1985,14 +1985,14 @@ pub struct DbConnection {
     /// Access to procedures defined by the module via extension traits implemented for [`RemoteProcedures`].
     pub procedures: RemoteProcedures,
 
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::InModule for DbConnection {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for DbConnection {
+impl __sdk::spacetimedb::CtxDbWrite for DbConnection {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;
@@ -2048,7 +2048,7 @@ impl DbConnection {
     ///
     /// Returns an error if the connection is disconnected.
     /// If the disconnection in question was normal,
-    ///  i.e. the result of a call to [`__sdk::DbContext::disconnect`],
+    ///  i.e. the result of a call to [`__sdk::spacetimedb::CtxDbWrite::disconnect`],
     /// the returned error will be downcastable to [`__sdk::DisconnectedError`].
     ///
     /// This is a low-level primitive exposed for power users who need significant control over scheduling.
@@ -2062,7 +2062,7 @@ impl DbConnection {
     ///
     /// Returns an error if the connection is disconnected.
     /// If the disconnection in question was normal,
-    ///  i.e. the result of a call to [`__sdk::DbContext::disconnect`],
+    ///  i.e. the result of a call to [`__sdk::spacetimedb::CtxDbWrite::disconnect`],
     /// the returned error will be downcastable to [`__sdk::DisconnectedError`].
     ///
     /// This is a low-level primitive exposed for power users who need significant control over scheduling.
@@ -2076,7 +2076,7 @@ impl DbConnection {
     ///
     /// Returns an error if the connection is disconnected.
     /// If the disconnection in question was normal,
-    ///  i.e. the result of a call to [`__sdk::DbContext::disconnect`],
+    ///  i.e. the result of a call to [`__sdk::spacetimedb::CtxDbWrite::disconnect`],
     /// the returned error will be downcastable to [`__sdk::DisconnectedError`].
     ///
     /// This is a low-level primitive exposed for power users who need significant control over scheduling.
@@ -2104,7 +2104,7 @@ impl DbConnection {
 }
 
 impl __sdk::DbConnection for DbConnection {
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2151,13 +2151,13 @@ impl __sdk::SubscriptionHandle for SubscriptionHandle {
     }
 }
 
-/// Alias trait for a [`__sdk::DbContext`] connected to this module,
+/// Alias trait for a [`__sdk::spacetimedb::CtxDbWrite`] connected to this module,
 /// with that trait's associated types bounded to this module's concrete types.
 ///
 /// Users can use this trait as a boundary on definitions which should accept
 /// either a [`DbConnection`] or an [`EventContext`] and operate on either.
-pub trait RemoteDbContext:
-    __sdk::DbContext<
+pub trait Remotespacetimedb::CtxDbWrite:
+    __sdk::spacetimedb::CtxDbWrite<
     DbView = RemoteTables,
     Reducers = RemoteReducers,
     SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
@@ -2165,16 +2165,16 @@ pub trait RemoteDbContext:
 {
 }
 impl<
-        Ctx: __sdk::DbContext<
+        Ctx: __sdk::spacetimedb::CtxDbWrite<
             DbView = RemoteTables,
             Reducers = RemoteReducers,
             SubscriptionBuilder = __sdk::SubscriptionBuilder<RemoteModule>,
         >,
-    > RemoteDbContext for Ctx
+    > Remotespacetimedb::CtxDbWrite for Ctx
 {
 }
 
-/// An [`__sdk::DbContext`] augmented with a [`__sdk::Event`],
+/// An [`__sdk::spacetimedb::CtxDbWrite`] augmented with a [`__sdk::Event`],
 /// passed to [`__sdk::Table::on_insert`], [`__sdk::Table::on_delete`] and [`__sdk::TableWithPrimaryKey::on_update`] callbacks.
 pub struct EventContext {
     /// Access to tables defined by the module via extension traits implemented for [`RemoteTables`].
@@ -2185,7 +2185,7 @@ pub struct EventContext {
     pub procedures: RemoteProcedures,
     /// The event which caused these callbacks to run.
     pub event: __sdk::Event<Reducer>,
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::AbstractEventContext for EventContext {
@@ -2193,7 +2193,7 @@ impl __sdk::AbstractEventContext for EventContext {
     fn event(&self) -> &Self::Event {
         &self.event
     }
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>, event: Self::Event) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>, event: Self::Event) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2208,7 +2208,7 @@ impl __sdk::InModule for EventContext {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for EventContext {
+impl __sdk::spacetimedb::CtxDbWrite for EventContext {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;
@@ -2250,7 +2250,7 @@ impl __sdk::DbContext for EventContext {
 
 impl __sdk::EventContext for EventContext {}
 
-/// An [`__sdk::DbContext`] augmented with a [`__sdk::ReducerEvent`],
+/// An [`__sdk::spacetimedb::CtxDbWrite`] augmented with a [`__sdk::ReducerEvent`],
 /// passed to on-reducer callbacks.
 pub struct ReducerEventContext {
     /// Access to tables defined by the module via extension traits implemented for [`RemoteTables`].
@@ -2261,7 +2261,7 @@ pub struct ReducerEventContext {
     pub procedures: RemoteProcedures,
     /// The event which caused these callbacks to run.
     pub event: __sdk::ReducerEvent<Reducer>,
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::AbstractEventContext for ReducerEventContext {
@@ -2269,7 +2269,7 @@ impl __sdk::AbstractEventContext for ReducerEventContext {
     fn event(&self) -> &Self::Event {
         &self.event
     }
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>, event: Self::Event) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>, event: Self::Event) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2284,7 +2284,7 @@ impl __sdk::InModule for ReducerEventContext {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for ReducerEventContext {
+impl __sdk::spacetimedb::CtxDbWrite for ReducerEventContext {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;
@@ -2326,7 +2326,7 @@ impl __sdk::DbContext for ReducerEventContext {
 
 impl __sdk::ReducerEventContext for ReducerEventContext {}
 
-/// An [`__sdk::DbContext`] passed to procedure callbacks.
+/// An [`__sdk::spacetimedb::CtxDbWrite`] passed to procedure callbacks.
 pub struct ProcedureEventContext {
     /// Access to tables defined by the module via extension traits implemented for [`RemoteTables`].
     pub db: RemoteTables,
@@ -2334,7 +2334,7 @@ pub struct ProcedureEventContext {
     pub reducers: RemoteReducers,
     /// Access to procedures defined by the module via extension traits implemented for [`RemoteProcedures`].
     pub procedures: RemoteProcedures,
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::AbstractEventContext for ProcedureEventContext {
@@ -2342,7 +2342,7 @@ impl __sdk::AbstractEventContext for ProcedureEventContext {
     fn event(&self) -> &Self::Event {
         &()
     }
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>, _event: Self::Event) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>, _event: Self::Event) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2356,7 +2356,7 @@ impl __sdk::InModule for ProcedureEventContext {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for ProcedureEventContext {
+impl __sdk::spacetimedb::CtxDbWrite for ProcedureEventContext {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;
@@ -2398,7 +2398,7 @@ impl __sdk::DbContext for ProcedureEventContext {
 
 impl __sdk::ProcedureEventContext for ProcedureEventContext {}
 
-/// An [`__sdk::DbContext`] passed to [`__sdk::SubscriptionBuilder::on_applied`] and [`SubscriptionHandle::unsubscribe_then`] callbacks.
+/// An [`__sdk::spacetimedb::CtxDbWrite`] passed to [`__sdk::SubscriptionBuilder::on_applied`] and [`SubscriptionHandle::unsubscribe_then`] callbacks.
 pub struct SubscriptionEventContext {
     /// Access to tables defined by the module via extension traits implemented for [`RemoteTables`].
     pub db: RemoteTables,
@@ -2406,7 +2406,7 @@ pub struct SubscriptionEventContext {
     pub reducers: RemoteReducers,
     /// Access to procedures defined by the module via extension traits implemented for [`RemoteProcedures`].
     pub procedures: RemoteProcedures,
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::AbstractEventContext for SubscriptionEventContext {
@@ -2414,7 +2414,7 @@ impl __sdk::AbstractEventContext for SubscriptionEventContext {
     fn event(&self) -> &Self::Event {
         &()
     }
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>, _event: Self::Event) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>, _event: Self::Event) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2428,7 +2428,7 @@ impl __sdk::InModule for SubscriptionEventContext {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for SubscriptionEventContext {
+impl __sdk::spacetimedb::CtxDbWrite for SubscriptionEventContext {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;
@@ -2470,7 +2470,7 @@ impl __sdk::DbContext for SubscriptionEventContext {
 
 impl __sdk::SubscriptionEventContext for SubscriptionEventContext {}
 
-/// An [`__sdk::DbContext`] augmented with a [`__sdk::Error`],
+/// An [`__sdk::spacetimedb::CtxDbWrite`] augmented with a [`__sdk::Error`],
 /// passed to [`__sdk::DbConnectionBuilder::on_disconnect`], [`__sdk::DbConnectionBuilder::on_connect_error`] and [`__sdk::SubscriptionBuilder::on_error`] callbacks.
 pub struct ErrorContext {
     /// Access to tables defined by the module via extension traits implemented for [`RemoteTables`].
@@ -2481,7 +2481,7 @@ pub struct ErrorContext {
     pub procedures: RemoteProcedures,
     /// The event which caused these callbacks to run.
     pub event: Option<__sdk::Error>,
-    imp: __sdk::DbContextImpl<RemoteModule>,
+    imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>,
 }
 
 impl __sdk::AbstractEventContext for ErrorContext {
@@ -2489,7 +2489,7 @@ impl __sdk::AbstractEventContext for ErrorContext {
     fn event(&self) -> &Self::Event {
         &self.event
     }
-    fn new(imp: __sdk::DbContextImpl<RemoteModule>, event: Self::Event) -> Self {
+    fn new(imp: __sdk::spacetimedb::CtxDbWriteImpl<RemoteModule>, event: Self::Event) -> Self {
         Self {
             db: RemoteTables { imp: imp.clone() },
             reducers: RemoteReducers { imp: imp.clone() },
@@ -2504,7 +2504,7 @@ impl __sdk::InModule for ErrorContext {
     type Module = RemoteModule;
 }
 
-impl __sdk::DbContext for ErrorContext {
+impl __sdk::spacetimedb::CtxDbWrite for ErrorContext {
     type DbView = RemoteTables;
     type Reducers = RemoteReducers;
     type Procedures = RemoteProcedures;

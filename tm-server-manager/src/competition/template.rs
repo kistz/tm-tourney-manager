@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use spacetimedb::{DbContext, ReducerContext, Table, reducer};
+use spacetimedb::{ReducerContext, Table, reducer};
 
 use crate::{
     authorization::Authorization,

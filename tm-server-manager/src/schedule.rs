@@ -262,9 +262,9 @@ pub(crate) trait ScheduleWrite {
     fn schedule_start_relative(&self, schedule_id: u32, now: Timestamp) -> Result<(), String>;
     fn schedule_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
 }
-impl<Db: spacetimedb::DbContext<DbView = Local>> ScheduleWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> ScheduleWrite for Db {
     fn schedule_start_relative(&self, schedule_id: u32, now: Timestamp) -> Result<(), String> {
-        let Some(mut schedule) = self.db_read_only().tab_schedule().id().find(schedule_id) else {
+        let Some(mut schedule) = self.db().tab_schedule().id().find(schedule_id) else {
             return Err("Invalid schedule".into());
         };
         schedule.status = ScheduleStatus::Waiting;

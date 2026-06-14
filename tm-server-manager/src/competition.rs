@@ -1,6 +1,5 @@
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer,
-    table, view,
+    AnonymousViewContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer, table, view,
 };
 
 use crate::{
@@ -206,7 +205,7 @@ pub(crate) trait CompetitionRead {
     fn competition_descendants(&self, competition_id: u32) -> Vec<CompetitionV1>;
     fn competition_tree_complete(&self, competition_id: u32) -> Vec<u32>;
 }
-impl<Db: DbContext> CompetitionRead for Db {
+impl<Db: spacetimedb::CtxDbRead> CompetitionRead for Db {
     fn competition_ancestors(&self, competition_id: u32) -> Vec<u32> {
         let Some(competition) = self
             .db_read_only()
@@ -266,7 +265,7 @@ pub(crate) trait CompetitionWrite: CompetitionRead {
     fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String>;
     fn competition_name_edit(&self, competition_id: u32, name: String) -> Result<(), String>;
 }
-impl<Db: DbContext<DbView = Local>> CompetitionWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> CompetitionWrite for Db {
     fn competition_root_create(&self, user_id: u32, name: String) -> Result<u32, String> {
         let comp = self
             .db()

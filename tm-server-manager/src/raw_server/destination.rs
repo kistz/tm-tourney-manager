@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, SpacetimeType, Table, Uuid, ViewContext, table, view};
+use spacetimedb::{Local, SpacetimeType, Table, Uuid, ViewContext, table, view};
 
 use crate::{
     authorization::Authorization,
@@ -89,13 +89,13 @@ fn raw_server_player_destination(ctx: &ViewContext) -> Vec<PlayerDestination> {
 }
 
 pub(crate) trait TabRawServerDestinationRead {}
-impl<Db: DbContext> TabRawServerDestinationRead for Db {}
+impl<Db: spacetimedb::CtxDbRead> TabRawServerDestinationRead for Db {}
 
 pub(crate) trait TabRawServerDestinationWrite: TabRawServerDestinationRead {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String>;
     fn destination_free(&self, node: NodeHandle);
 }
-impl<Db: DbContext<DbView = Local>> TabRawServerDestinationWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> TabRawServerDestinationWrite for Db {
     fn destination_claim(&self, node: NodeHandle) -> Result<(), String> {
         let players = self.node_resolve_input_data(node).finalize(self);
         let server_id = self.occupation_with_occupier(node).unwrap();

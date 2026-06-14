@@ -103,7 +103,7 @@ pub(crate) trait UserRead {
     fn user_id_from_account(&self, account_id: Uuid) -> u32;
     fn user_account_from_id(&self, user_id: u32) -> Uuid;
 }
-impl<Db: spacetimedb::DbContext> UserRead for Db {
+impl<Db: spacetimedb::CtxDbRead> UserRead for Db {
     fn get_user_id(&self, identity: Identity) -> Result<u32, String> {
         let Some(user) = self
             .db_read_only()
@@ -165,7 +165,7 @@ pub(crate) trait UserWrite: UserRead {
     fn user_login(&self, user_id: u32, identity: Identity) -> Result<(), String>;
     fn user_update_name(&self, account_id: Uuid, name: String);
 }
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> UserWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> UserWrite for Db {
     fn user_insert(&self, new_user: UserV1) -> Result<u32, String> {
         let user = self.db().tab_user().account_id().find(new_user.account_id);
         if let Some(mut user) = user {

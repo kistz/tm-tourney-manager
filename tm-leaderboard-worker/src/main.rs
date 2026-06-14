@@ -4,7 +4,7 @@ use nadeo_api_rs::{
     auth::{NadeoClient, UserAgentDetails},
     live::LiveApiClient,
 };
-use spacetimedb_sdk::db_context::DbContext;
+use spacetimedb_sdk::db_context::spacetimedb::CtxDbWrite;
 use spacetimedb_sdk::{Table, Uuid};
 use tm_server_manager_api_rs::DbConnection;
 use tokio::{

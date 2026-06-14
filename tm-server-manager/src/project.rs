@@ -1,5 +1,5 @@
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Query, ReducerContext, SpacetimeType, Table, Timestamp, Uuid,
+    AnonymousViewContext, Query, ReducerContext, SpacetimeType, Table, Timestamp, Uuid,
     ViewContext, reducer, table, view,
 };
 
@@ -288,7 +288,7 @@ fn view_project_competition_descendants(
 trait ProjectRead {
     fn project_competition_descendants(&self, project_id: u32) -> Vec<CompetitionV1>;
 }
-impl<Db: DbContext> ProjectRead for Db {
+impl<Db: spacetimedb::CtxDbRead> ProjectRead for Db {
     fn project_competition_descendants(&self, project_id: u32) -> Vec<CompetitionV1> {
         let Some(project) = self.db_read_only().tab_project().id().find(project_id) else {
             return Vec::new();

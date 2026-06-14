@@ -107,7 +107,7 @@ pub(crate) trait RegistrationRead {
     //fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer>;
     fn registration_lb(&self, registration_id: u32) -> Vec<LbEntry>;
 }
-impl<Db: spacetimedb::DbContext> RegistrationRead for Db {
+impl<Db: spacetimedb::CtxDbRead> RegistrationRead for Db {
     /* fn registration_player(&self, registration_id: u32) -> Vec<RegisterationPlayer> {
         let mut registered = self
             .db_read_only()

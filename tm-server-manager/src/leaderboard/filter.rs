@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use spacetimedb::{DbContext, SpacetimeType};
+use spacetimedb::SpacetimeType;
 use tm_server_types::config::TmMode;
 
 use crate::{
@@ -40,7 +40,7 @@ impl LbFilterSettings {
         self,
         lb_id: u32,
         leaderboard: Vec<LbEntry>,
-        ctx: &impl DbContext,
+        ctx: &impl spacetimedb::CtxDbRead,
     ) -> Vec<LbEntry> {
         let mut map: HashMap<u32, Vec<LbEntry>> = HashMap::new();
 

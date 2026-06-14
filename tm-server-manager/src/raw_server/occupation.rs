@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, table};
+use spacetimedb::{Local, table};
 
 use crate::competition::node::NodeHandle;
 
@@ -41,7 +41,7 @@ pub(crate) trait TabRawServerOccupationWrite: TabRawServerOccupationRead {
     fn raw_server_occupation_remove(&self, node_handle: NodeHandle) -> Result<(), String>;
 }
 
-impl<Db: DbContext> TabRawServerOccupationRead for Db {
+impl<Db: spacetimedb::CtxDbRead> TabRawServerOccupationRead for Db {
     fn raw_server_is_occupied(&self, server_id: u32) -> bool {
         self.db_read_only()
             .tab_raw_server_occupation()
@@ -79,7 +79,7 @@ impl<Db: DbContext> TabRawServerOccupationRead for Db {
     } */
 }
 
-impl<Db: DbContext<DbView = Local>> TabRawServerOccupationWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> TabRawServerOccupationWrite for Db {
     fn raw_server_occupation_add(
         &self,
         node_handle: NodeHandle,

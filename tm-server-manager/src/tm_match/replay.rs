@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, ProcedureContext, Table, Uuid, procedure, table};
+use spacetimedb::{CtxDbRead, ProcedureContext, Table, Uuid, procedure, table};
 
 #[table(accessor= tab_match_round_replay,index(accessor=match_round,hash(columns=[match_id,round])))]
 pub struct MatchRoundReplay {
@@ -38,7 +38,7 @@ struct MatchRoundReplayTime {
 }
 
 pub(crate) trait MatchReplayRead {}
-impl<Db: spacetimedb::DbContext> MatchReplayRead for Db {}
+impl<Db: spacetimedb::CtxDbRead> MatchReplayRead for Db {}
 
 pub(crate) trait MatchReplayWrite: MatchReplayRead {
     fn match_round_replay_time_update(
@@ -57,7 +57,7 @@ pub(crate) trait MatchReplayWrite: MatchReplayRead {
         replay: Vec<u8>,
     ) -> Result<(), String>;
 }
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchReplayWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> MatchReplayWrite for Db {
     fn insert_match_round_replay(
         &self,
         match_id: u32,

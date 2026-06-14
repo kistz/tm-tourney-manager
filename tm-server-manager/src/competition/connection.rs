@@ -2,8 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use petgraph::acyclic::Acyclic;
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, Uuid,
-    ViewContext, reducer, view,
+    CtxDbRead, Local, Query, ReducerContext, SpacetimeType, Table, Uuid, ViewContext, reducer, view,
 };
 
 use crate::{
@@ -467,7 +466,7 @@ pub(crate) trait ConnectionRead {
         data: Vec<LbEntry>,
     ) -> Vec<LbEntry>;
 }
-impl<Db: DbContext> ConnectionRead for Db {
+impl<Db: spacetimedb::CtxDbRead> ConnectionRead for Db {
     /* fn connection_filter_permitted_players(
            &self,
            connection: TabConnection,
@@ -634,7 +633,7 @@ impl<Db: DbContext> ConnectionRead for Db {
     } */
 }
 /* pub(crate) trait ConnectionWrite: ConnectionRead {}
-impl<Db: DbContext<DbView = Local>> ConnectionWrite for Db {} */
+impl<Db: spacetimedb::CtxDbWrite<DbView = Local>> ConnectionWrite for Db {} */
 
 // Connection Rules
 // Schedule:

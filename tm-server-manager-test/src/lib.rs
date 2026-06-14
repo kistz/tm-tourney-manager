@@ -31,7 +31,7 @@ fn enforce_unique_tournament_name() {
 
 #[test]
 fn normal_account_cant_post_event() {
-    use spacetimedb_sdk::{DbContext, Table};
+    use spacetimedb_sdk::{spacetimedb::CtxDbWrite, Table};
 
     let db = setup::test();
 

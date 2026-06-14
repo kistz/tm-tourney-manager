@@ -1,6 +1,8 @@
 use std::ops::{Add, BitAnd, BitOr, Not};
 
-use spacetimedb::{DbContext, ReducerContext, ViewContext};
+use spacetimedb::{
+    CtxDbRead, CtxDbWrite, CtxWithSender, Identity, LocalReadOnly, ReducerContext, ViewContext,
+};
 
 use crate::{
     competition::{
@@ -15,53 +17,25 @@ use crate::{
     user::UserRead,
 };
 
-pub(crate) trait Authorization {
-    type Context: DbContext;
+pub(crate) trait Authorization<T: CtxWithSender + CtxDbRead> {
     fn user_id(&self) -> Result<u32, String>;
 
     fn server_id(&self) -> Result<u32, String>;
 
-    fn auth_builder(
-        &'_ self,
-        competition_id: u32,
-    ) -> AuthBuilder<'_, CompetitionPermissionsV1, Self::Context>;
+    fn auth_builder(&'_ self, competition_id: u32) -> AuthBuilder<'_, CompetitionPermissionsV1, T>;
 }
 
-impl Authorization for ReducerContext {
-    type Context = ReducerContext;
-
+impl<T: CtxWithSender + CtxDbRead> Authorization<T> for T {
     fn server_id(&self) -> Result<u32, String> {
         self.get_raw_server_id(self.sender())
     }
 
-    fn auth_builder(
-        &'_ self,
-        competition_id: u32,
-    ) -> AuthBuilder<'_, CompetitionPermissionsV1, ReducerContext> {
-        AuthBuilder::<CompetitionPermissionsV1, ReducerContext>::new(competition_id, self)
+    fn auth_builder(&'_ self, competition_id: u32) -> AuthBuilder<'_, CompetitionPermissionsV1, T> {
+        AuthBuilder::<CompetitionPermissionsV1, T>::new(competition_id, self, self.sender())
     }
 
     fn user_id(&self) -> Result<u32, String> {
         self.get_user_id(self.sender())
-    }
-}
-
-impl Authorization for ViewContext {
-    type Context = ViewContext;
-
-    fn user_id(&self) -> Result<u32, String> {
-        self.get_user_id(self.sender())
-    }
-
-    fn server_id(&self) -> Result<u32, String> {
-        self.get_raw_server_id(self.sender())
-    }
-
-    fn auth_builder(
-        &'_ self,
-        competition_id: u32,
-    ) -> AuthBuilder<'_, CompetitionPermissionsV1, ViewContext> {
-        AuthBuilder::<CompetitionPermissionsV1, ViewContext>::new(competition_id, self)
     }
 }
 
@@ -78,19 +52,21 @@ pub(crate) trait PermissionType:
 
     fn bypass(self) -> bool;
 }
-pub(crate) struct AuthBuilder<'a, Item: PermissionType, Ctx: DbContext> {
+pub(crate) struct AuthBuilder<'a, Item: PermissionType, Db: CtxDbRead> {
     //got: Item,
     expected: Item,
     competition_id: u32,
-    ctx: &'a Ctx,
+    ctx: &'a Db,
+    sender: Identity,
 }
 
-impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
-    fn new(competition_id: u32, ctx: &'a ReducerContext) -> Self {
+impl<'a, Db: CtxDbRead> AuthBuilder<'a, CompetitionPermissionsV1, Db> {
+    fn new(competition_id: u32, ctx: &'a Db, sender: Identity) -> Self {
         AuthBuilder {
             expected: CompetitionPermissionsV1::initial(),
             competition_id,
             ctx,
+            sender,
         }
     }
 
@@ -100,21 +76,21 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
     }
 
     pub(crate) fn authorize(self) -> Result<u32, String> {
-        let user_id = self.ctx.get_user_id(self.ctx.sender())?;
+        let user_id = self.ctx.get_user_id(self.sender)?;
 
         let tree = self.ctx.competition_ancestors(self.competition_id);
         let mut permissions = Vec::new();
         for competition_id in tree {
             permissions.push(
                 self.ctx
-                    .db()
+                    .db_read_only()
                     .tab_competition_role_member()
                     .user_roles()
                     .filter((competition_id, user_id))
                     .fold(CompetitionPermissionsV1::default(), |acc, member| {
                         if let Some(role) = self
                             .ctx
-                            .db
+                            .db_read_only()
                             .tab_competition_role()
                             .id()
                             .find(member.get_role_id())
@@ -126,7 +102,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
             );
             permissions.push(
                 self.ctx
-                    .db()
+                    .db_read_only()
                     .tab_competition_member()
                     .user_member()
                     .filter((competition_id, user_id))
@@ -148,7 +124,7 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ReducerContext> {
     }
 }
 
-impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
+/* impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
     fn new(competition_id: u32, ctx: &'a ViewContext) -> Self {
         AuthBuilder {
             expected: CompetitionPermissionsV1::initial(),
@@ -209,4 +185,4 @@ impl<'a> AuthBuilder<'a, CompetitionPermissionsV1, ViewContext> {
             Err("Not sufficient permissions to perform this action.".into())
         }
     }
-}
+} */

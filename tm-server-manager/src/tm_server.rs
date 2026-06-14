@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{Local, ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::config::{ServerConfig, ServerConfigV2};
 
 use crate::{
@@ -293,7 +293,7 @@ pub(crate) trait ServerWrite {
     fn server_name_edit(&self, match_id: u32, name: String) -> Result<(), String>;
 }
 
-impl<Db: DbContext<DbView = Local>> ServerWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> ServerWrite for Db {
     fn server_name_edit(&self, match_id: u32, name: String) -> Result<(), String> {
         let Some(mut tm_match) = self.db().tab_server().id().find(match_id) else {
             return Err("Match not found.".into());

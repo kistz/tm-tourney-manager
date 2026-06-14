@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, ReducerContext, Table, reducer, table};
+use spacetimedb::{Local, ReducerContext, Table, reducer, table};
 
 use crate::{
     authorization::Authorization,
@@ -102,7 +102,7 @@ fn input_template_create(ctx: &ReducerContext, name: String, parent_id: u32) -> 
 pub(crate) trait InputRead {
     fn inputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = InputV1>;
 }
-impl<Db: DbContext> InputRead for Db {
+impl<Db: spacetimedb::CtxDbRead> InputRead for Db {
     fn inputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = InputV1> {
         self.db_read_only()
             .tab_input()
@@ -115,7 +115,7 @@ pub(crate) trait InputWrite: InputRead {
     fn input_insert(&self, input: InputV1) -> Result<InputV1, String>;
     fn input_name_edit(&self, input_id: u32, name: String) -> Result<(), String>;
 }
-impl<Db: DbContext<DbView = Local>> InputWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> InputWrite for Db {
     fn input_template_instantiate(&self, with_template: u32) -> Result<(), String> {
         todo!()
     }

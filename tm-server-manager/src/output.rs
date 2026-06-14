@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, ReducerContext, Table, reducer, table};
+use spacetimedb::{Local, ReducerContext, Table, reducer, table};
 
 use crate::{
     authorization::Authorization,
@@ -87,7 +87,7 @@ fn output_create(
 pub(crate) trait OutputRead {
     fn outputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = OutputV1>;
 }
-impl<Db: DbContext> OutputRead for Db {
+impl<Db: spacetimedb::CtxDbRead> OutputRead for Db {
     fn outputs_in_parent(&self, parent_id: u32) -> impl Iterator<Item = OutputV1> {
         self.db_read_only()
             .tab_output()
@@ -100,7 +100,7 @@ pub(crate) trait OutputWrite: OutputRead {
     fn output_insert(&self, output: OutputV1) -> Result<OutputV1, String>;
     fn output_name_edit(&self, output_id: u32, name: String) -> Result<(), String>;
 }
-impl<Db: DbContext<DbView = Local>> OutputWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> OutputWrite for Db {
     fn output_template_instantiate(&self, with_template: u32) -> Result<(), String> {
         todo!()
     }

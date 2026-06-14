@@ -600,7 +600,7 @@ fn my_matches(ctx: &ViewContext /* competition_id: u32 */) -> impl Query<MatchV1
 } */
 
 pub(crate) trait MatchRead {}
-impl<Db: spacetimedb::DbContext> MatchRead for Db {}
+impl<Db: spacetimedb::CtxDbRead> MatchRead for Db {}
 
 pub(crate) trait MatchWrite: MatchRead {
     fn match_recovery_enter(&self, match_id: u32, manual: bool) -> Result<(), String>;
@@ -612,7 +612,7 @@ pub(crate) trait MatchWrite: MatchRead {
     fn match_restart(&self, match_id: u32) -> Result<(), String>;
     fn match_end(&self, match_id: u32) -> Result<(), String>;
 }
-impl<Db: spacetimedb::DbContext<DbView = spacetimedb::Local>> MatchWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> MatchWrite for Db {
     fn match_recovery_enter(&self, match_id: u32, manual: bool) -> Result<(), String> {
         //SAFETY: if a occupation is inserted it must also exist.
         let mut tm_match = self.db().tab_match().id().find(match_id).unwrap();

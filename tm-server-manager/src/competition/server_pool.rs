@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, ReducerContext, Table, ViewContext, reducer, table, view};
+use spacetimedb::{ReducerContext, Table, ViewContext, reducer, table, view};
 
 use crate::{
     authorization::Authorization,
@@ -130,7 +130,7 @@ pub(crate) trait TabCompetitionServerPoolRead {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1>;
 }
 
-impl<Db: DbContext> TabCompetitionServerPoolRead for Db {
+impl<Db: spacetimedb::CtxDbRead> TabCompetitionServerPoolRead for Db {
     fn server_pool_available(&self, competition_id: u32) -> Vec<RawServerV1> {
         let tree = self.competition_ancestors(competition_id);
 

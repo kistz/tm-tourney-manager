@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, LocalReadOnly, ProcedureContext, ReducerContext,
-    SpacetimeType, Uuid, procedure, reducer, sys::raw::volatile_nonatomic_schedule_immediate, view,
+    AnonymousViewContext, Local, LocalReadOnly, ProcedureContext, ReducerContext, SpacetimeType,
+    Uuid, procedure, reducer, sys::raw::volatile_nonatomic_schedule_immediate, view,
     volatile_nonatomic_schedule_immediate,
 };
 use tm_server_types::config::{ModeSettings, ModeSettingsV2, TmMode};
@@ -193,7 +193,7 @@ pub(crate) trait NodeRead {
     fn node_resolve_input_data(&self, node: NodeHandle) -> Vec<LbEntry>;
     fn node_resolve_output_data(&self, node: NodeHandle) -> Vec<LbEntry>;
 }
-impl<Db: DbContext> NodeRead for Db {
+impl<Db: spacetimedb::CtxDbRead> NodeRead for Db {
     fn node_permitted_players_input(&self, node: NodeHandle) -> Vec<PermittedPlayer> {
         let mut map: HashMap<Uuid, PermittedPlayer> = HashMap::new();
 
@@ -321,7 +321,7 @@ impl<Db: DbContext> NodeRead for Db {
 }
 
 fn node_resolve_output_data_inner(
-    ctx: &impl DbContext,
+    ctx: &impl spacetimedb::CtxDbRead,
     node: NodeHandle,
     origin_offset: &mut u8,
 ) -> Vec<LbEntry> {
@@ -360,7 +360,7 @@ fn node_resolve_output_data_inner(
 }
 
 fn node_resolve_input_data_inner(
-    ctx: &impl DbContext,
+    ctx: &impl spacetimedb::CtxDbRead,
     node: NodeHandle,
     origin_offset: &mut u8,
 ) -> Vec<LbEntry> {
@@ -391,7 +391,7 @@ pub(crate) trait NodeWrite: NodeRead {
     fn connection_delete(&self, connection_id: u32) -> Result<(), String>;
     fn node_name_edit(&self, node: NodeHandle, name: String) -> Result<(), String>;
 }
-impl<Db: DbContext<DbView = Local>> NodeWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> NodeWrite for Db {
     fn node_create(&self, node: NodeHandle) -> Result<(), String> {
         self.node_position_insert(node)?;
 
@@ -542,11 +542,11 @@ fn test_node_permitted_players_input(
 }
 
 pub trait NodeLeaderboard {
-    fn finalize(&self, ctx: &impl DbContext) -> Vec<LbEntry>;
+    fn finalize(&self, ctx: &impl spacetimedb::CtxDbRead) -> Vec<LbEntry>;
 }
 
 impl NodeLeaderboard for Vec<LbEntry> {
-    fn finalize(&self, ctx: &impl DbContext) -> Vec<LbEntry> {
+    fn finalize(&self, ctx: &impl spacetimedb::CtxDbRead) -> Vec<LbEntry> {
         /*  let Some(state) = self
             .db_read_only()
             .tab_match_state()

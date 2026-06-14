@@ -1,7 +1,7 @@
 pub mod occupation {
     use crate::competition::node::NodeHandle;
     use petgraph::graph::Node;
-    use spacetimedb::{DbContext, Local, ReducerContext, table};
+    use spacetimedb::{spacetimedb::CtxDbWrite, Local, ReducerContext, table};
     struct RawServerOccupation {
         #[primary_key]
         pub(crate) server_id: u32,
@@ -494,7 +494,7 @@ pub mod occupation {
         ) -> Result<(), String>;
         fn raw_server_occupation_remove(&self, node_handle: NodeHandle) -> Result<(), String>;
     }
-    impl<Db: DbContext> TabRawServerOccupationRead for Db {
+    impl<Db: spacetimedb::CtxDbRead> TabRawServerOccupationRead for Db {
         fn raw_server_is_occupied(&self, server_id: u32) -> bool {
             self.db_read_only()
                 .tab_raw_server_occupation()
@@ -518,7 +518,7 @@ pub mod occupation {
                 .map(|o| NodeHandle::combine(o.node_variant, o.node_id))
         }
     }
-    impl<Db: DbContext<DbView = Local>> TabRawServerOccupationWrite for Db {
+    impl<Db: spacetimedb::CtxDbWrite<DbView = Local>> TabRawServerOccupationWrite for Db {
         fn raw_server_occupation_add(
             &self,
             node_handle: NodeHandle,

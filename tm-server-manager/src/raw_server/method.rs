@@ -1,8 +1,7 @@
 use std::time::SystemTime;
 
 use spacetimedb::{
-    DbContext, Local, ReducerContext, Table, TimeDuration, Timestamp, Uuid, ViewContext, reducer,
-    table, view,
+    Local, ReducerContext, Table, TimeDuration, Timestamp, Uuid, ViewContext, reducer, table, view,
 };
 use tm_server_types::method::{MethodCall, MethodResponse};
 
@@ -116,7 +115,7 @@ pub(crate) trait RawServerMethodWrite {
     ) -> Result<(), String>;
 }
 
-impl<Db: DbContext<DbView = Local>> RawServerMethodWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> RawServerMethodWrite for Db {
     fn send_raw_server_message(
         &self,
         server_id: u32,

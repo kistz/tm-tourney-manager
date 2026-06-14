@@ -4,8 +4,8 @@ use petgraph::visit::Time;
 use serde::Deserialize;
 use spacetimedb::http::Request;
 use spacetimedb::{
-    DbContext, Identity, Local, Query, RawQuery, ReducerContext, Table, Timestamp, Uuid,
-    ViewContext, reducer, table,
+    CtxDbRead, CtxDbWrite, Identity, Local, Query, RawQuery, ReducerContext, Table, Timestamp,
+    Uuid, ViewContext, reducer, table,
 };
 use spacetimedb::{ProcedureContext, view};
 
@@ -258,7 +258,7 @@ pub(crate) trait TabRawServerWrite: TabRawServerRead {
     fn raw_server_disconnected(&self, server_id: u32, now: Timestamp);
 }
 
-impl<Db: DbContext> TabRawServerRead for Db {
+impl<Db: CtxDbRead> TabRawServerRead for Db {
     fn raw_server_last_connection(&self, server_id: u32) -> Timestamp {
         self.db_read_only()
             .tab_raw_server()
@@ -281,7 +281,7 @@ impl<Db: DbContext> TabRawServerRead for Db {
     }
 }
 
-impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
+impl<Db: CtxDbWrite> TabRawServerWrite for Db {
     fn raw_server_pool_assign(&self, node_handle: NodeHandle) -> Result<u32, String> {
         let available_servers = self.server_pool_available(self.node_get_parent(node_handle)?);
         if available_servers.is_empty() {
@@ -296,12 +296,7 @@ impl<Db: DbContext<DbView = Local>> TabRawServerWrite for Db {
     }
 
     fn raw_server_disconnected(&self, server_id: u32, when: Timestamp) {
-        let mut server = self
-            .db_read_only()
-            .tab_raw_server()
-            .id()
-            .find(server_id)
-            .unwrap();
+        let mut server = self.db().tab_raw_server().id().find(server_id).unwrap();
 
         server.set_offline(when);
 

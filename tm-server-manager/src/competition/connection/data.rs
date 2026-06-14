@@ -1,6 +1,4 @@
-use spacetimedb::{
-    DbContext, Query, ReducerContext, SpacetimeType, ViewContext, reducer, table, view,
-};
+use spacetimedb::{Query, ReducerContext, SpacetimeType, ViewContext, reducer, table, view};
 
 use crate::{
     authorization::Authorization,
@@ -71,7 +69,7 @@ impl ConnectionData {
     pub(super) fn apply_filter(
         &self,
         tm_match: Vec<LbEntry>,
-        ctx: &impl DbContext,
+        ctx: &impl spacetimedb::CtxDbRead,
     ) -> Vec<LbEntry> {
         if matches!(self.options, ConnectionDataOption::All) {
             return tm_match;

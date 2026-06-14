@@ -1,6 +1,5 @@
 use spacetimedb::{
-    AnonymousViewContext, DbContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer,
-    table, view,
+    AnonymousViewContext, Local, Query, ReducerContext, SpacetimeType, Table, reducer, table, view,
 };
 
 use crate::{
@@ -260,7 +259,7 @@ pub(crate) trait RegistrationWrite {
     fn registration_close(&self, registration_id: u32) -> Result<(), String>;
 }
 
-impl<Db: DbContext<DbView = Local>> RegistrationWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> RegistrationWrite for Db {
     fn registration_name_edit(&self, registration_id: u32, name: String) -> Result<(), String> {
         let Some(mut registration) = self.db().tab_registration().id().find(registration_id) else {
             return Err("Match not found.".into());

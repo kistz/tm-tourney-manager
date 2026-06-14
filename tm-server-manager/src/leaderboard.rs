@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use spacetimedb::{DbContext, Local, ReducerContext, SpacetimeType, Table, reducer, table};
+use spacetimedb::{Local, ReducerContext, SpacetimeType, Table, reducer, table};
 use tm_server_types::config::TmMode;
 
 use crate::{
@@ -306,7 +306,7 @@ pub(crate) trait LeadearboardRead {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry>;
     //fn leaderboard_finalize(&self, lb: Vec<LbEntry>) -> Vec<LbEntry>;
 }
-impl<Db: DbContext> LeadearboardRead for Db {
+impl<Db: spacetimedb::CtxDbRead> LeadearboardRead for Db {
     fn leaderboard_evaluation(&self, leaderboard_id: u32) -> Vec<LbEntry> {
         let Some(lb) = self
             .db_read_only()
@@ -351,7 +351,7 @@ pub(crate) trait LeaderboardWrite: LeadearboardRead {
     fn leaderboard_insert(&self, output: LeaderboardV2) -> Result<LeaderboardV2, String>;
     fn leaderboard_name_edit(&self, leaderboard_i32: u32, name: String) -> Result<(), String>;
 }
-impl<Db: DbContext<DbView = Local>> LeaderboardWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> LeaderboardWrite for Db {
     fn leaderboard_template_instantiate(&self, with_template: u32) -> Result<(), String> {
         todo!()
     }

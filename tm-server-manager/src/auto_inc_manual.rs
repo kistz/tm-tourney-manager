@@ -1,4 +1,4 @@
-use spacetimedb::{DbContext, Local, Table, table, table::TableInternal};
+use spacetimedb::{Local, Table, table, table::TableInternal};
 
 #[table(accessor=auto_inc)]
 struct AutoInc {
@@ -18,7 +18,7 @@ pub(crate) trait AutoIncWrite {
         T: TableInternal;
 }
 
-impl<Db: DbContext<DbView = Local>> AutoIncWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> AutoIncWrite for Db {
     fn auto_inc<T: TableInternal>(&self) -> u32 {
         let table_id = table_id_from_trait::<T>();
         if let Some(mut table) = self.db().auto_inc().table_id().find(table_id) {

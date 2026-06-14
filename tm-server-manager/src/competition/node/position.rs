@@ -1,6 +1,4 @@
-use spacetimedb::{
-    DbContext, Local, Query, ReducerContext, SpacetimeType, Table, ViewContext, reducer, view,
-};
+use spacetimedb::{Local, Query, ReducerContext, SpacetimeType, Table, ViewContext, reducer, view};
 
 use crate::{
     authorization::Authorization,
@@ -175,9 +173,9 @@ pub(super) trait NodePositionWrite: NodePositionRead {
     fn node_position_delete(&self, node: NodeHandle);
 }
 
-impl<Db: DbContext> NodePositionRead for Db {}
+impl<Db: spacetimedb::CtxDbRead> NodePositionRead for Db {}
 
-impl<Db: DbContext<DbView = Local>> NodePositionWrite for Db {
+impl<Db: spacetimedb::CtxDbWrite> NodePositionWrite for Db {
     fn node_position_insert(&self, node: NodeHandle) -> Result<(), String> {
         self.db()
             .tab_competition_node_position()
