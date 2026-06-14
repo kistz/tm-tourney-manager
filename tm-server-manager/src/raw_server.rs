@@ -4,8 +4,8 @@ use petgraph::visit::Time;
 use serde::Deserialize;
 use spacetimedb::http::Request;
 use spacetimedb::{
-    CtxDbRead, CtxDbWrite, Identity, Local, Query, RawQuery, ReducerContext, Table, Timestamp,
-    Uuid, ViewContext, reducer, table,
+    CtxDbRead, CtxDbWrite, CtxWithTimestamp, Identity, Local, Query, RawQuery, ReducerContext,
+    Table, Timestamp, Uuid, ViewContext, reducer, table,
 };
 use spacetimedb::{ProcedureContext, view};
 

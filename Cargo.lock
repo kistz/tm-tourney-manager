@@ -3270,7 +3270,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -3292,7 +3292,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-bindings-macro"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "heck 0.4.1",
  "humantime",
@@ -3305,7 +3305,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-bindings-sys"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "spacetimedb-primitives",
 ]
@@ -3313,7 +3313,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-client-api-messages"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "bytes",
  "bytestring",
@@ -3334,7 +3334,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-data-structures"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "ahash",
  "crossbeam-queue",
@@ -3348,7 +3348,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-lib"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "anyhow",
  "bitflags 2.13.0",
@@ -3371,7 +3371,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-memory-usage"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "decorum",
  "ethnum",
@@ -3380,7 +3380,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-metrics"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "arrayvec",
  "itertools 0.12.1",
@@ -3391,7 +3391,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-primitives"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "bitflags 2.13.0",
  "either",
@@ -3404,7 +3404,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-query-builder"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "spacetimedb-lib",
 ]
@@ -3412,7 +3412,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-sats"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "anyhow",
  "arrayvec",
@@ -3444,7 +3444,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-schema"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "anyhow",
  "convert_case 0.6.0",
@@ -3474,7 +3474,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-sdk"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "anymap",
  "base64 0.21.7",
@@ -3505,7 +3505,7 @@ dependencies = [
 [[package]]
 name = "spacetimedb-sql-parser"
 version = "2.0.5"
-source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#633a9be77f63a76007b7f875a67901f339cb977e"
+source = "git+https://github.com/kistz/SpacetimeDB.git?branch=async-procedures#b252975958f92b20de6255ea9fd46e8ee7f8ab91"
 dependencies = [
  "derive_more 0.99.20",
  "spacetimedb-lib",
