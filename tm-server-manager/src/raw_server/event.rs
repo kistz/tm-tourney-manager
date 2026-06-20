@@ -1,4 +1,4 @@
-use spacetimedb::{ReducerContext, Uuid, reducer};
+use spacetimedb::{ReducerContext, Table, Uuid, reducer};
 use tm_server_types::event::Event;
 
 use crate::{
@@ -7,7 +7,11 @@ use crate::{
         occupation::TabRawServerOccupationRead,
         player::{raw_server_player_add, raw_server_player_remove},
     },
-    tm_match::{event::handle_match_event, /* hook::match_handle_hook, */ state::tab_match_state,},
+    tm_match::{
+        chat::{MatchChat, tab_match_chat},
+        event::handle_match_event,
+        state::tab_match_state,
+    },
     user::{UserRead, UserV1, UserWrite},
 };
 
@@ -51,10 +55,21 @@ fn post_event(ctx: &ReducerContext, event: Event) -> Result<(), String> {
     if let Some(node) = ctx.raw_server_occupation(server_id) {
         if node.is_match()
             && let Some(state) = ctx.db.tab_match_state().match_id().find(node.id())
-            && state.is_live()
         {
             //match_handle_hook(ctx, state, &event)?;
-            handle_match_event(ctx, state, event)?;
+            if let Event::PlayerChat(chat) = &event {
+                let account_id = Uuid::parse_str(&chat.account_id).unwrap();
+                let user_id = ctx.user_id_from_account(account_id);
+                ctx.db.tab_match_chat().insert(MatchChat::new(
+                    state.match_id,
+                    state.status(),
+                    user_id,
+                    chat.text.clone(),
+                ));
+            }
+            if state.is_live() {
+                handle_match_event(ctx, state, event)?;
+            }
         }
 
         if node.is_server() {

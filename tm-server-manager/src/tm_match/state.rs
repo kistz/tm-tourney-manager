@@ -100,6 +100,10 @@ impl MatchState {
         self.paused
     }
 
+    pub(crate) fn status(&self) -> MatchStatus {
+        self.status
+    }
+
     pub(super) fn live_round(&self) -> bool {
         !self.is_warmup && !self.paused
     }

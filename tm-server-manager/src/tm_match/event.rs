@@ -170,15 +170,6 @@ pub(crate) fn handle_match_event(
                 );
             }
         }
-        Event::PlayerChat(chat) => {
-            let account_id = Uuid::parse_str(&chat.account_id).unwrap();
-            let user_id = ctx.user_id_from_account(account_id);
-            ctx.db.tab_match_chat().insert(MatchChat::new(
-                state.match_id,
-                user_id,
-                chat.text.clone(),
-            ));
-        }
         Event::KnockoutElimination(knocked_players) if state.live_round() => {
             let round = state.get_round();
 
