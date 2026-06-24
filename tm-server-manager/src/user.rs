@@ -102,6 +102,7 @@ pub(crate) trait UserRead {
     //fn user(&self, identity: Identity) -> Result<UserV1, String>;
     fn user_id_from_account(&self, account_id: Uuid) -> u32;
     fn user_account_from_id(&self, user_id: u32) -> Uuid;
+    fn user_name(&self, user_id: u32) -> String;
 }
 impl<Db: spacetimedb::CtxDbRead> UserRead for Db {
     fn get_user_id(&self, identity: Identity) -> Result<u32, String> {
@@ -115,6 +116,11 @@ impl<Db: spacetimedb::CtxDbRead> UserRead for Db {
         };
 
         Ok(user.user_id)
+    }
+
+    fn user_name(&self, user_id: u32) -> String {
+        let user = self.db_read_only().tab_user().id().find(user_id).unwrap();
+        user.name.clone()
     }
 
     /* fn user(&self, identity: Identity) -> Result<UserV1, String> {

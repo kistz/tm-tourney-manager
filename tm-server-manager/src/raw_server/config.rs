@@ -295,6 +295,33 @@ fn raw_server_config_shared_update(
     Ok(())
 }
 
+#[reducer]
+fn unstable_raw_server_config_update_maps(
+    ctx: &ReducerContext,
+    config_id: u32,
+    maps: Vec<String>,
+) -> Result<(), String> {
+    let Some(mut raw_config) = ctx
+        .db_read_only()
+        .tab_raw_server_config_v2()
+        .id()
+        .find(config_id)
+    else {
+        return Err("Config not found.".into());
+    };
+
+    //TODO
+    /* ctx.auth_builder(raw_config.competition_id)
+    //.permission(CompetitionPermissionsV1::TODO)
+    .authorize()?; */
+
+    raw_config.config.set_maps(maps);
+
+    ctx.db.tab_raw_server_config_v2().id().update(raw_config);
+
+    Ok(())
+}
+
 mod migrate {
     use spacetimedb::{ReducerContext, Table, reducer};
 

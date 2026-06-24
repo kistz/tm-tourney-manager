@@ -1,14 +1,15 @@
 use spacetimedb::{
-    AnonymousViewContext, Query, RawQuery, ReducerContext, Table, Timestamp, Uuid, reducer, table,
-    view,
+    AnonymousViewContext, Query, RawQuery, ReducerContext, Table, TimeDuration, Timestamp, Uuid,
+    reducer, table, view,
 };
 use tm_server_types::config::TmMode;
 
 use crate::{
     authorization::Authorization,
-    competition::node::NodeHandle,
+    competition::{CompetitionPermissionsV1, node::NodeHandle},
     leaderboard::LbEntry,
     registration::{RegistrationStatus, tab_registration},
+    user::{UserRead, UserV1, UserWrite},
 };
 
 //TODO make this table private again.
@@ -143,4 +144,43 @@ impl<Db: spacetimedb::CtxDbRead> RegistrationRead for Db {
             })
             .collect()
     }
+}
+
+#[reducer]
+fn unstable_manual_register_override_players(
+    ctx: &ReducerContext,
+    registration_id: u32,
+    players: Vec<String>,
+) -> Result<(), String> {
+    let Some(registration) = ctx.db.tab_registration().id().find(registration_id) else {
+        return Err("Tried to register but the registration id does not exist.".into());
+    };
+
+    ctx.auth_builder(registration.get_comp_id())
+        //TODO
+        .permission(CompetitionPermissionsV1::OWNER)
+        .authorize()?;
+
+    for (index, player) in players.iter().enumerate() {
+        let account_id = Uuid::parse_str(player).unwrap();
+        let user_id: u32;
+        if ctx.has_user(account_id) {
+            user_id = ctx.user_id_from_account(account_id);
+        } else {
+            let user = ctx.user_insert(UserV1::new(account_id))?;
+            user_id = user;
+        }
+
+        ctx.db
+            .tab_registeration_player()
+            .try_insert(RegisterationPlayer {
+                registration_id,
+                user_id,
+                registered_at: ctx
+                    .timestamp
+                    .checked_add(TimeDuration::from_micros(index as i64))
+                    .unwrap(),
+            })?;
+    }
+    Ok(())
 }

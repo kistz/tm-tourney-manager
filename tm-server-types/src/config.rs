@@ -149,6 +149,10 @@ impl ServerConfigV2 {
         &self.maps
     }
 
+    pub fn set_maps(&mut self, maps: Vec<String>) {
+        self.maps.map_uids = maps;
+    }
+
     pub fn script_name(&self) -> &str {
         self.mode.script_name()
     }
