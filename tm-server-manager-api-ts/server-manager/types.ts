@@ -616,6 +616,7 @@ export const LbSettingsV2 = __t.enum("LbSettingsV2", {
   get Remap() {
     return LbRemapSettings;
   },
+  Finalize: __t.unit(),
 });
 export type LbSettingsV2 = __Infer<typeof LbSettingsV2>;
 
@@ -707,6 +708,9 @@ export const MatchChat = __t.object("MatchChat", {
   userId: __t.u32(),
   matchId: __t.u32(),
   id: __t.u32(),
+  get status() {
+    return MatchStatus;
+  },
 });
 export type MatchChat = __Infer<typeof MatchChat>;
 

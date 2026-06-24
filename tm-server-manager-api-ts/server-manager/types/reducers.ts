@@ -14,6 +14,7 @@ import CompetitionTemplateCreateReducer from "../competition_template_create_red
 import ConnectionActionUpdateReducer from "../connection_action_update_reducer";
 import ConnectionConfiguredReducer from "../connection_configured_reducer";
 import ConnectionCreateReducer from "../connection_create_reducer";
+import ConnectionDeleteReducer from "../connection_delete_reducer";
 import CreateProjectReducer from "../create_project_reducer";
 import InputCreateReducer from "../input_create_reducer";
 import InputTemplateCreateReducer from "../input_template_create_reducer";
@@ -84,6 +85,9 @@ import ServerRemoveRawServerReducer from "../server_remove_raw_server_reducer";
 import ServerTemplateCreateReducer from "../server_template_create_reducer";
 import SetEnvVarReducer from "../set_env_var_reducer";
 import UnregisterPlayerReducer from "../unregister_player_reducer";
+import UnstableManualRegisterOverridePlayersReducer from "../unstable_manual_register_override_players_reducer";
+import UnstableMatchChatMessageReducer from "../unstable_match_chat_message_reducer";
+import UnstableRawServerConfigUpdateMapsReducer from "../unstable_raw_server_config_update_maps_reducer";
 
 export type CompetitionConnectionDataUpdateParams = __Infer<typeof CompetitionConnectionDataUpdateReducer>;
 export type CompetitionCreateParams = __Infer<typeof CompetitionCreateReducer>;
@@ -93,6 +97,7 @@ export type CompetitionTemplateCreateParams = __Infer<typeof CompetitionTemplate
 export type ConnectionActionUpdateParams = __Infer<typeof ConnectionActionUpdateReducer>;
 export type ConnectionConfiguredParams = __Infer<typeof ConnectionConfiguredReducer>;
 export type ConnectionCreateParams = __Infer<typeof ConnectionCreateReducer>;
+export type ConnectionDeleteParams = __Infer<typeof ConnectionDeleteReducer>;
 export type CreateProjectParams = __Infer<typeof CreateProjectReducer>;
 export type InputCreateParams = __Infer<typeof InputCreateReducer>;
 export type InputTemplateCreateParams = __Infer<typeof InputTemplateCreateReducer>;
@@ -163,4 +168,7 @@ export type ServerRemoveRawServerParams = __Infer<typeof ServerRemoveRawServerRe
 export type ServerTemplateCreateParams = __Infer<typeof ServerTemplateCreateReducer>;
 export type SetEnvVarParams = __Infer<typeof SetEnvVarReducer>;
 export type UnregisterPlayerParams = __Infer<typeof UnregisterPlayerReducer>;
+export type UnstableManualRegisterOverridePlayersParams = __Infer<typeof UnstableManualRegisterOverridePlayersReducer>;
+export type UnstableMatchChatMessageParams = __Infer<typeof UnstableMatchChatMessageReducer>;
+export type UnstableRawServerConfigUpdateMapsParams = __Infer<typeof UnstableRawServerConfigUpdateMapsReducer>;
 

@@ -42,6 +42,7 @@ import CompetitionTemplateCreateReducer from "./competition_template_create_redu
 import ConnectionActionUpdateReducer from "./connection_action_update_reducer";
 import ConnectionConfiguredReducer from "./connection_configured_reducer";
 import ConnectionCreateReducer from "./connection_create_reducer";
+import ConnectionDeleteReducer from "./connection_delete_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import InputCreateReducer from "./input_create_reducer";
 import InputTemplateCreateReducer from "./input_template_create_reducer";
@@ -112,6 +113,9 @@ import ServerRemoveRawServerReducer from "./server_remove_raw_server_reducer";
 import ServerTemplateCreateReducer from "./server_template_create_reducer";
 import SetEnvVarReducer from "./set_env_var_reducer";
 import UnregisterPlayerReducer from "./unregister_player_reducer";
+import UnstableManualRegisterOverridePlayersReducer from "./unstable_manual_register_override_players_reducer";
+import UnstableMatchChatMessageReducer from "./unstable_match_chat_message_reducer";
+import UnstableRawServerConfigUpdateMapsReducer from "./unstable_raw_server_config_update_maps_reducer";
 
 // Import all procedure arg schemas
 import * as LoginAsServerProcedure from "./login_as_server_procedure";
@@ -420,6 +424,7 @@ const reducersSchema = __reducers(
   __reducerSchema("connection_action_update", ConnectionActionUpdateReducer),
   __reducerSchema("connection_configured", ConnectionConfiguredReducer),
   __reducerSchema("connection_create", ConnectionCreateReducer),
+  __reducerSchema("connection_delete", ConnectionDeleteReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("input_create", InputCreateReducer),
   __reducerSchema("input_template_create", InputTemplateCreateReducer),
@@ -490,6 +495,9 @@ const reducersSchema = __reducers(
   __reducerSchema("server_template_create", ServerTemplateCreateReducer),
   __reducerSchema("set_env_var", SetEnvVarReducer),
   __reducerSchema("unregister_player", UnregisterPlayerReducer),
+  __reducerSchema("unstable_manual_register_override_players", UnstableManualRegisterOverridePlayersReducer),
+  __reducerSchema("unstable_match_chat_message", UnstableMatchChatMessageReducer),
+  __reducerSchema("unstable_raw_server_config_update_maps", UnstableRawServerConfigUpdateMapsReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
