@@ -161,6 +161,11 @@ fn unstable_manual_register_override_players(
         .permission(CompetitionPermissionsV1::OWNER)
         .authorize()?;
 
+    ctx.db
+        .tab_registeration_player()
+        .registration_id()
+        .delete(registration_id);
+
     for (index, player) in players.iter().enumerate() {
         let account_id = Uuid::parse_str(player).unwrap();
         let user_id: u32;
