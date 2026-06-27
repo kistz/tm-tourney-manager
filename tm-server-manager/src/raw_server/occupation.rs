@@ -2,9 +2,11 @@ use spacetimedb::{Local, table};
 
 use crate::competition::node::NodeHandle;
 
+// TODO private
 #[table(
     accessor=tab_raw_server_occupation,
-    index(accessor=node_handle, hash(columns=[node_variant,node_id]))
+    index(accessor=node_handle, hash(columns=[node_variant,node_id])),
+    public
 )]
 struct RawServerOccupation {
     #[primary_key]
