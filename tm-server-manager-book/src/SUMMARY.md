@@ -6,20 +6,21 @@
     - [Projects/Tournaments](./user_tournament.md)
     - [Node Based Architecture](./user_nodes.md)
         - [Competition](./user_competition.md)
-            - [Input]()
-            - [Output]()
-        - [Match]()
-        - [Leaderboard]()
+            - [Input/Output](./user_io.md)
+        - [Connection](./user_connection.md)
+        - [Match](./user_match.md)
+        - [Leaderboard](./user_leaderboard.md)
         - [Registration]()
         - [Schedule]()
         - [Server]()
+
     - [Features]()
         - [Permissions]()
         - [Player Moving]()
         - [Replay Archiving]()
         - [Templating]()
         - [Hooks]()
-    - [Connecting Servers]()
+    - [Connecting Servers](./user_connecting_servers.md)
 
 
 # Developer Guide
