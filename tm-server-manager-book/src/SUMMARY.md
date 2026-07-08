@@ -2,20 +2,25 @@
 
 
 # User Guide
-- [Getting Started](./chapter_1.md)
-    - [Connecting Trackmania Servers]()
-
-
-- [Building Blocks](./building_blocks.md)
-    - [Tournament]()
-    - [Competition]()
-- [Match]()
-- [Leaderboard Monitoring]()
-- [Server]()
-
+- [Getting Started](./user_intro.md)
+    - [Projects/Tournaments](./user_tournament.md)
+    - [Node Based Architecture](./user_nodes.md)
+        - [Competition](./user_competition.md)
+            - [Input]()
+            - [Output]()
+        - [Match]()
+        - [Leaderboard]()
+        - [Registration]()
+        - [Schedule]()
+        - [Server]()
+    - [Features]()
+        - [Permissions]()
+        - [Player Moving]()
+        - [Replay Archiving]()
+        - [Templating]()
+        - [Hooks]()
+    - [Connecting Servers]()
 
 
 # Developer Guide
-
-
-# Developer Cookbook
+- [Getting Started]()

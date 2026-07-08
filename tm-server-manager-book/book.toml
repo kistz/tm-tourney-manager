@@ -1,6 +1,5 @@
 [book]
 authors = ["kistz (Kilian Strunz)"]
 language = "en"
-multilingual = false
 src = "src"
-title = "The Tournament Manager Book"
+title = "Server Manager Guide"

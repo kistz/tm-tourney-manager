@@ -6,7 +6,7 @@ Like nodes they also have a configuring state.
 A node can have multiple input and output connections but the graph always stays acyclic.
 
 Multiple types of connections exist:
-- Wait: 
+- Wait 
 - Data
 - Action
 
