@@ -7,7 +7,6 @@ members = [
     "tm-server-types",
     "tm-server-manager",
     "tm-server-manager-api-rs",
-    "tm-server-manager-test",
 ]
 resolver = "3"
 
